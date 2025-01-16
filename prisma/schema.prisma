@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Employees {
+  emp_ID       Int     @id @default(autoincrement())
+  emp_name     String  @db.VarChar(50)
+  emp_lastname String  @db.VarChar(50)
+  emp_sex      String  @db.VarChar(50)
+  emp_username String  @db.VarChar(20)
+  emp_password String  @db.VarChar(10)
+  emp_tel      String  @db.VarChar(10)
+  emp_job      Boolean // 0 = พนักงาน, 1 = ผู้จัดการ
+
+  Bookings        Bookings[]
+  Buying_Exercise Buying_Exercise[]
+}
+
+model Users {
+  user_ID                  Int      @id @default(autoincrement())
+  user_name                String   @db.VarChar(50)
+  user_lastname            String   @default("") @db.VarChar(50)
+  user_date_of_birth       DateTime
+  user_email               String?  @unique @default("") @db.VarChar(100)
+  user_tel                 String   @db.VarChar(10)
+  user_username            String   @unique @db.VarChar(20)
+  user_password            String   @default("") @db.VarChar(10)
+  ID_card_photo            String?  @db.VarChar(255)
+  accom_rent_contrac_photo String?  @db.VarChar(255)
+  status_of_VIP            Boolean  @default(false) // 0 = สมาชิกทั่วไป, 1 = VIP
+  user_profile_picture     String?  @db.VarChar(255)
+  sex                      String?  @db.VarChar(10)
+
+  Bookings        Bookings[]
+  Buying_Exercise Buying_Exercise[]
+  Reviews         Reviews[]
+}
+
+model Bookings {
+  booking_ID           Int      @id @default(autoincrement())
+  user_ID              Int
+  field_ID             Int
+  booking_date         DateTime
+  desired_booking_date DateTime
+  start_Time           DateTime
+  end_Time             DateTime
+  Price                Int
+  payment_confirmation String   @db.VarChar(255)
+  booking_status       Boolean // 0 = ไม่สำเร็จ, 1 = สำเร็จ
+  emp_ID               Int
+
+  Users     Users     @relation(fields: [user_ID], references: [user_ID])
+  Employees Employees @relation(fields: [emp_ID], references: [emp_ID])
+  Fields    Fields    @relation(fields: [field_ID], references: [field_ID])
+}
+
+model Fields {
+  field_ID   Int     @id @default(autoincrement())
+  field_name String  @db.VarChar(15)
+  status     Boolean // 0 = ปิดปรับปรุง, 1 = เปิดใช้งาน
+
+  Bookings   Bookings[]
+  PriceField PriceField[]
+}
+
+model PriceField {
+  price_ID     Int @id @default(autoincrement())
+  field_ID     Int
+  period_ID    Int
+  price_per_1h Int
+  price_for_2h Int
+
+  Fields Fields @relation(fields: [field_ID], references: [field_ID])
+  Period Period @relation(fields: [period_ID], references: [period_ID])
+}
+
+model Period {
+  period_ID    Int      @id @default(autoincrement())
+  period_start DateTime
+  period_end   DateTime
+
+  PriceField PriceField[]
+}
+
+model Buying_Exercise {
+  buying_ID            Int      @id @default(autoincrement())
+  user_ID              Int
+  service_ID           Int
+  buying_date          DateTime
+  amount_of_time       String   @db.VarChar(15)
+  desired_start_date   DateTime
+  expire_date          DateTime
+  Price                Int
+  payment_confirmation String   @db.VarChar(255)
+  buying_status        Boolean // 0 = ไม่สำเร็จ, 1 = สำเร็จ
+  emp_ID               Int
+
+  Users               Users               @relation(fields: [user_ID], references: [user_ID])
+  Service_of_Exercise Service_of_Exercise @relation(fields: [service_ID], references: [service_ID])
+  Employees           Employees           @relation(fields: [emp_ID], references: [emp_ID])
+}
+
+model Price_Exercise {
+  price_ID   Int @id @default(autoincrement())
+  service_ID Int
+  time_ID    Int
+  price      Int
+
+  Service_of_Exercise Service_of_Exercise @relation(fields: [service_ID], references: [service_ID], onDelete: Cascade)
+  Time_Of_Service     Time_Of_Service     @relation(fields: [time_ID], references: [time_ID])
+}
+
+model Time_Of_Service {
+  time_ID          Int    @id @default(autoincrement())
+  quantity_of_days Int
+  unit             String @db.VarChar(10)
+
+  Price_Exercise Price_Exercise[]
+}
+
+model Service_of_Exercise {
+  service_ID       Int     @id @default(autoincrement())
+  service_name     String  @db.VarChar(20)
+  capacity_of_room Int
+  Status           Boolean // 0 = ปิดปรับปรุง, 1 = เปิดใช้งาน
+
+  Buying_Exercise Buying_Exercise[]
+  Price_Exercise  Price_Exercise[]
+
+  Reviews Reviews[]
+}
+
+model Reviews {
+  re_ID       Int    @id @default(autoincrement())
+  user_ID     Int
+  service_ID  Int
+  Text_review String @db.Text
+  score       Int
+
+  Users               Users               @relation(fields: [user_ID], references: [user_ID])
+  Service_of_Exercise Service_of_Exercise @relation(fields: [service_ID], references: [service_ID])
+  // Fields          Fields          @relation(fields: [field_ID], references: [field_ID])
+}
+
+model Content {
+  content_ID       Int    @id @default(autoincrement())
+  img_content_path String @db.VarChar(255)
+}
