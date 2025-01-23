@@ -47,6 +47,9 @@ export default function MainLayout({ children }: mainLayoutProp) {
   };
 
   useEffect(() => {
+    // if(status === 'unauthenticated') {
+    //   router.push('/pages/user/AAA/login');
+    // }
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);

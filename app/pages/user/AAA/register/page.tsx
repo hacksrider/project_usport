@@ -16,20 +16,35 @@ const RegisterForm: React.FC = () => {
         user_username: "",
         user_password: "",
         user_email: "",
-        password: "",
+        confirm_password: "",
         consent: false,
     });
+
+    const [passwordValidation, setPasswordValidation] = useState({
+        length: false,
+        upperLowerCase: false,
+        specialCharacter: false,
+    });
+
     const router = useRouter();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const target = e.target as HTMLInputElement; // หรือ HTMLSelectElement
+        const target = e.target as HTMLInputElement;
         const { name, value, type } = target;
-    
+
         setFormData({
             ...formData,
             [name]: type === "checkbox" ? (target as HTMLInputElement).checked : value,
         });
+
+        if (name === "user_password") {
+            setPasswordValidation({
+                length: value.length >= 8,
+                upperLowerCase: /[A-Z]/.test(value) && /[a-z]/.test(value),
+                specialCharacter: /[_.\-!@]/.test(value),
+            });
+        }
     };
-    
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, files } = e.target;
@@ -43,14 +58,22 @@ const RegisterForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (formData.user_password !== formData.password) {
+
+        if (formData.user_password !== formData.confirm_password) {
             alert("รหัสผ่านไม่ตรงกัน!");
             return;
         }
+
         if (!formData.consent) {
             alert("กรุณายินยอมการเปิดเผยข้อมูล!");
             return;
         }
+
+        if (formData.user_tel.length !== 10) {
+            alert("เบอร์โทรศัพท์ต้องมี 10 ตัวอักษร");
+            return;
+        }
+
         console.log("Form submitted:", formData);
 
         try {
@@ -65,6 +88,7 @@ const RegisterForm: React.FC = () => {
                     apiFormData.append(key, String(value));
                 }
             });
+
             const response = await axios.post("/api/user", apiFormData);
             if (response.status === 200) {
                 alert("ลงทะเบียนสำเร็จ!");
@@ -80,7 +104,6 @@ const RegisterForm: React.FC = () => {
             } else {
                 console.error(error);
             }
-            return console.error(error);
         }
     };
 
@@ -168,7 +191,7 @@ const RegisterForm: React.FC = () => {
                             <option value="LGBTQSA+">LGBTQSA+</option>
                         </select>
                     </div>
-                    
+
                     <div className="mb-4 col-span-3">
                         <label htmlFor="ID_card_photo" className="block text-sm font-medium text-gray-700">
                             รูปบัตรประชาชน
@@ -238,17 +261,28 @@ const RegisterForm: React.FC = () => {
                             className="mt-1 pl-2 h-10 block w-full border border-black rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                             required
                         />
+                        <ul className="text-sm mt-2">
+                            <li className={`flex items-center ${passwordValidation.length ? "text-green-600" : "text-red-600"}`}>
+                                {passwordValidation.length ? "✔" : "✘"} ความยาวมากกว่า 8 ตัวอักษร
+                            </li>
+                            <li className={`flex items-center ${passwordValidation.upperLowerCase ? "text-green-600" : "text-red-600"}`}>
+                                {passwordValidation.upperLowerCase ? "✔" : "✘"} มีอักษรตัวพิมพ์ใหญ่และเล็กรวมกัน
+                            </li>
+                            <li className={`flex items-center ${passwordValidation.specialCharacter ? "text-green-600" : "text-red-600"}`}>
+                                {passwordValidation.specialCharacter ? "✔" : "✘"} มีอักษรพิเศษ เช่น _ . - ! @
+                            </li>
+                        </ul>
                     </div>
                     <div className="mb-4 col-span-3">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700">
                             ยืนยันรหัสผ่าน
                         </label>
                         <input
                             type="password"
-                            id="password"
-                            name="password"
+                            id="confirm_password"
+                            name="confirm_password"
                             placeholder="กรอกยืนยันรหัสผ่าน"
-                            value={formData.password}
+                            value={formData.confirm_password}
                             onChange={handleChange}
                             className="mt-1 pl-2 h-10 block w-full border border-black rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                             required
@@ -266,7 +300,7 @@ const RegisterForm: React.FC = () => {
                             ฉันยินยอมให้เปิดเผยข้อมูลของฉัน
                         </label>
                     </div>
-                    <div className="col-span-6 ">
+                    <div className="col-span-6">
                         <button
                             type="submit"
                             className="w-full bg-indigo-600 text-white py-2 px-4 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 'use client';
@@ -5,14 +6,102 @@
 import MainLayout from "@/app/components/mainLayout";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
 
-export default function Summary() {
+export default function Calculate_price() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data, status } = useSession();
+  const { data: session } = useSession();
+  const [userData, setUserData] = useState<any>(null); // แก้ไขตามโครงสร้างข้อมูล API ของคุณ
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const [selectedActivities, setSelectedActivities] = useState<
     {
-      [x: string]: any; name: string; price: number; duration: number; dateStart: string; dateEnd: string 
-}[]
+      [x: string]: any; name: string; price: number; duration: number; dateStart: string; dateEnd: string;
+    }[]
   >([]);
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/pages/user/AAA/login");
+    }
+  })
+
+  useEffect(() => {
+    
+    const fetchUserData = async () => {
+      try {
+        // @ts-expect-error
+        const userId = session?.user?.id;
+        if (userId) {
+          const response = await axios.get(`/api/user/${userId}`);
+          if (response.status === 200) {
+            setUserData(response.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const loadSelectedServices = () => {
+      const tempData = sessionStorage.getItem("selectServices");
+      const temp = tempData ? JSON.parse(tempData) : [];
+      const tempService = temp.map((i: any) => {
+        const duration = i.quantity_of_days || i.time?.time_of_service?.quantity_of_days || 0;
+        const dateStart = i.date || "";
+        let dateEnd = "";
+
+        if (dateStart) {
+          const startDate = new Date(dateStart);
+          switch (i.unit) {
+            case "วัน":
+              dateEnd = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+              break;
+            case "สัปดาห์":
+              dateEnd = new Date(startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+              break;
+            case "เดือน":
+              startDate.setMonth(startDate.getMonth() + duration);
+              dateEnd = startDate.toISOString().split("T")[0];
+              break;
+            case "ปี":
+              startDate.setFullYear(startDate.getFullYear() + duration);
+              dateEnd = startDate.toISOString().split("T")[0];
+              break;
+            default:
+              dateEnd = "";
+          }
+        }
+
+        return {
+          name: i.detail.service_name,
+          duration,
+          unit: i.unit, // เพิ่มการดึง unit จากข้อมูล
+          price: i.price || 0,
+          dateStart,
+          dateEnd,
+        };
+      });
+
+      setSelectedActivities(tempService);
+    };
+
+    fetchUserData();
+    loadSelectedServices();
+  }, [session]);
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-xl font-semibold text-gray-100">กำลังโหลดข้อมูล...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const formatDate = (date: string) => {
     if (!date) return "";
@@ -21,45 +110,17 @@ export default function Summary() {
     return `${parseInt(day, 10)}-${parseInt(month, 10)}-${thaiYear}`;
   };
 
-
-  useEffect(() => {
-    const tempData = sessionStorage.getItem("selectServices");
-    const temp = tempData ? JSON.parse(tempData) : [];
-    const tempService = temp.map((i: any) => {
-      const duration = i.quantity_of_days || i.time?.Time_Of_Service?.quantity_of_days || 0;
-      const dateStart = i.date || "";
-      const dateEnd = dateStart
-        ? new Date(new Date(dateStart).getTime() + duration * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
-        : "";
-  
-      return {
-        name: i.detail.service_name,
-        unit: i.unit, // เพิ่มการดึง unit จากข้อมูล
-        duration,
-        price: i.price || 0,
-        dateStart,
-        dateEnd,
-      };
-    });
-  
-    setSelectedActivities(tempService);
-  }, []);
-  
-
-
-
   const totalCost = selectedActivities.reduce((sum, activity) => {
     return sum + activity.price;
   }, 0);
 
-  const total50 =+ totalCost * 0.5
-  const totalAll = totalCost - total50
+  const total50 = +totalCost * 0.5;
+  const totalAll = totalCost - total50;
 
   const handleConfirmPurchase = () => {
     sessionStorage.setItem("totalAll", totalAll.toString());
     router.push("/pages/user/exercise/payment");
   };
-  
 
   return (
     <MainLayout>
@@ -83,7 +144,6 @@ export default function Summary() {
                   {activity.dateEnd && (
                     <p className="text-gray-600">{`วันที่สิ้นสุด : ${formatDate(activity.dateEnd)}`}</p>
                   )}
-
                 </div>
                 <div>
                   <span className="text-lg font-bold text-blue-600">
@@ -94,23 +154,32 @@ export default function Summary() {
             ))}
           </div>
           <div className="border-t border-b border-gray-300 pt-6 pb-5">
-            <div className="flex justify-between items-center mb-1">
-              <p className="text-lg text-gray-900">ราคารวม</p>
-              <p className="text-lg text-blue-500">฿{totalCost}</p>
-            </div>
-            <div className="flex justify-between items-center mb-1">
-              <p className="text-lg text-gray-900">ส่วนลดลูกค้า VIP</p>
-              <p className="text-lg text-blue-500">฿{total50}</p>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="text-2xl font-extrabold text-gray-900">รวมสุทธิ</p>
-              <p className="text-2xl font-extrabold text-red-500">฿{totalAll}</p>
-            </div>
+            {userData.status_of_VIP ? (
+              <>
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-lg text-gray-900">ราคารวม</p>
+                  <p className="text-lg text-blue-500">฿{totalCost}</p>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-lg text-gray-900">ส่วนลดลูกค้า VIP</p>
+                  <p className="text-lg text-blue-500">฿{total50}</p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="text-2xl font-extrabold text-gray-900">รวมสุทธิ</p>
+                  <p className="text-2xl font-extrabold text-red-500">฿{totalAll}</p>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-center">
+                <p className="text-2xl font-extrabold text-gray-900">รวมสุทธิ</p>
+                <p className="text-2xl font-extrabold text-red-500">฿{totalCost}</p>
+              </div>
+            )}
           </div>
           <div className="mt-10 flex gap-6">
             <button
               className="w-full bg-gray-200 text-gray-800 py-4 rounded-xl font-bold hover:bg-gray-300 transition-colors"
-              onClick={() => window.history.back()/*router.push("../exercise")*/}
+              onClick={() => router.push("../exercise")}
             >
               แก้ไขรายการ
             </button>

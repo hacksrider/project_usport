@@ -1,20 +1,16 @@
-// นี่คือไฟล์ C:\Users\USER\OneDrive\เดสก์ท็อป\U-Sport\project\app\pages\admin\exercise\page.tsx
-
 'use client';
 
 import React, { useEffect } from 'react';
 import MainLayoutAdmin from '@/app/components/mainLayoutAdmin';
-// import { Package } from '@/types/package';
 import { useRouter } from 'next/navigation';
 import { ServiceAll, ServicesInterface } from '@/app/interface/services';
 import axios from 'axios';
 
 export default function AdminExercise() {
     const [services, setServices] = React.useState<ServiceAll[]>([]);
+    const [confirmDelete, setConfirmDelete] = React.useState<{ show: boolean; serviceId: number | null }>({ show: false, serviceId: null });
     const router = useRouter();
 
-
-    ///-----------------
     const fetchServices = async () => {
         try {
             const response = await axios.get('/api/services');
@@ -23,19 +19,28 @@ export default function AdminExercise() {
         } catch (error) {
             console.error('Error fetching services:', error);
         }
-    }
+    };
+
+    const handleDelete = async (serviceId: number) => {
+        try {
+            await axios.delete(`/api/services/${serviceId}`);
+            alert('ลบสำเร็จ');
+            fetchServices();
+        } catch (error) {
+            console.error('Error deleting service:', error);
+        }
+    };
 
     useEffect(() => {
         fetchServices();
-    }, [])
+    }, []);
 
     return (
         <MainLayoutAdmin>
-            <h1 className="text-2xl font-semibold mb-3 text-black">บริการการออกกำลังกาย</h1>
-            <div className="bg-gray-300 p-6 rounded shadow-md">
+            <h1 className="text-2xl font-semibold mb-3 ml-2 text-black">บริการการออกกำลังกาย</h1>
+            <div className="bg-gray-300 p-6 rounded shadow-md ml-2">
                 <div className="flex-grow">
 
-                    {/* ปุ่มเพิ่มบริการ */}
                     <div className="flex justify-between mb-4">
                         <h1 className='text-2xl font-semibold'>บริการทั้งหมด</h1>
                         <button
@@ -58,7 +63,6 @@ export default function AdminExercise() {
                             </svg>
                             <span>เพิ่มบริการ</span>
                         </button>
-
                     </div>
 
                     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
@@ -83,43 +87,27 @@ export default function AdminExercise() {
                                 <tbody className='bg-gray-100'>
                                     {services.map((v, index) => (
                                         <tr key={index}>
-                                            <td
-                                                className={`min-w-[10%] text-center border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 xl:pl-7.5 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}
-                                            >
+                                            <td className={`min-w-[10%] text-center border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 xl:pl-7.5 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}>
                                                 <h5 className="text-dark dark:text-white">
                                                     {index + 1}
                                                 </h5>
                                             </td>
-                                            <td
-                                                className={`min-w-[50%] text-left border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}
-                                            >
+                                            <td className={`min-w-[50%] text-left border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}>
                                                 <p className="text-dark dark:text-white">
                                                     <a
-                                                        className='hover:underline dark:text-white dark:hover:text-white hover:text-blue-500 dark:hover:text-blue-500 cursor-pointer' 
-
-                                                        onClick={() => {router.push(`/pages/admin/exercise/edit_service/${v.service_ID}`);}}
+                                                        className='hover:underline dark:text-white dark:hover:text-white hover:text-blue-500 cursor-pointer'
+                                                        onClick={() => { router.push(`/pages/admin/exercise/edit_service/${v.service_ID}`); }}
                                                     >{v.service_name}</a>
                                                 </p>
                                             </td>
-                                            <td
-                                                className={`min-w-[20%] text-center border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}
-                                            >
-                                                <p
-                                                    className={`inline-flex rounded-full px-3.5 py-1 text-body-sm font-medium ${v.Status === true
-                                                        ? "bg-[#219653]/[0.08] text-[#219653]"
-                                                        : v.Status === false
-                                                            ? "bg-[#D34053]/[0.08] text-[#D34053]"
-                                                            : "bg-[#FFA70B]/[0.08] text-[#FFA70B]"
-                                                        }`}
-                                                >
-                                                    {v.Status == true ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+                                            <td className={`min-w-[20%] text-center border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}>
+                                                <p className={`inline-flex rounded-full px-3.5 py-1 text-body-sm font-medium ${v.Status ? "bg-[#219653]/[0.08] text-[#219653]" : "bg-[#D34053]/[0.08] text-[#D34053]"}`}>
+                                                    {v.Status ? "เปิดใช้งาน" : "ปิดใช้งาน"}
                                                 </p>
                                             </td>
-                                            <td
-                                                className={`min-w-[20%] text-center  border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}
-                                            >
+                                            <td className={`min-w-[20%] text-center border-solid border-1 border-gray-300 px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === services.length - 1 ? "border-b-0" : "border-b"}`}>
                                                 <div className="flex items-center justify-center space-x-3.5">
-                                                    <button className="hover:text-primary border  border-solid border-1 border-gray-300 p-1.5 bg-gray-300 hover:bg-yellow-400"
+                                                    <button className="hover:text-primary border border-solid border-1 border-gray-300 p-1.5 bg-gray-300 hover:bg-yellow-400"
                                                         onClick={() => {
                                                             router.push(`/pages/admin/exercise/${v.service_ID}`);
                                                         }}
@@ -132,18 +120,11 @@ export default function AdminExercise() {
                                                             fill="none"
                                                             xmlns="http://www.w3.org/2000/svg"
                                                         >
-                                                            <path
-                                                                d="M3 21H9L19.712 10.288C20.1024 9.89758 20.1024 9.26542 19.712 8.875L15.125 4.287C14.7346 3.89658 14.1024 3.89658 13.712 4.287L3 15V21ZM5.5 18.5L14.288 9.712L15.712 11.138L6.925 20H5.5V18.5ZM16.838 9.012L15.413 7.587L16.587 6.413L18.013 7.837L16.838 9.012ZM3 16.25L12.75 6.5L17.25 11L7.5 20.75H3V16.25Z"
-                                                                fill="currentColor"
-                                                            />
+                                                            <path d="M3 21H9L19.712 10.288C20.1024 9.89758 20.1024 9.26542 19.712 8.875L15.125 4.287C14.7346 3.89658 14.1024 3.89658 13.712 4.287L3 15V21ZM5.5 18.5L14.288 9.712L15.712 11.138L6.925 20H5.5V18.5ZM16.838 9.012L15.413 7.587L16.587 6.413L18.013 7.837L16.838 9.012ZM3 16.25L12.75 6.5L17.25 11L7.5 20.75H3V16.25Z" fill="currentColor" />
                                                         </svg>
                                                     </button>
-
-                                                    <button className="hover:text-primary border  border-solid border-1 border-gray-300 p-1.5 bg-gray-300 hover:bg-red-500"
-                                                        onClick={() => {
-                                                            // console.log(v.service_ID)
-                                                            axios.delete(`/api/services/${v.service_ID}`).then(() => { alert('ลบสำเร็จ'); window.location.reload(); }).catch(e => console.log(e))
-                                                        }}
+                                                    <button className="hover:text-primary border border-solid border-1 border-gray-300 p-1.5 bg-gray-300 hover:bg-red-500"
+                                                        onClick={() => setConfirmDelete({ show: true, serviceId: v.service_ID })}
                                                     >
                                                         <svg
                                                             className="fill-current"
@@ -181,10 +162,31 @@ export default function AdminExercise() {
                             </table>
                         </div>
                     </div>
-
-
                 </div>
             </div>
+
+            {confirmDelete.show && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white rounded shadow-lg p-6 w-96">
+                        <h2 className="text-lg font-semibold mb-4">คุณแน่ใจหรือไม่ที่จะลบบริการนี้</h2>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                onClick={() => setConfirmDelete({ show: false, serviceId: null })}
+                            >ยกเลิก</button>
+                            <button
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                onClick={() => {
+                                    if (confirmDelete.serviceId !== null) {
+                                        handleDelete(confirmDelete.serviceId);
+                                    }
+                                    setConfirmDelete({ show: false, serviceId: null });
+                                }}
+                            >ตกลง</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MainLayoutAdmin>
     );
 }

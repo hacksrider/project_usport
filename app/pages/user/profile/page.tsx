@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
@@ -40,6 +41,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        // @ts-expect-error
         const userId = session?.user?.id;
         if (userId) {
           const response = await axios.get(`/api/user/${userId}`);

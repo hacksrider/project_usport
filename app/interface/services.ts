@@ -41,7 +41,7 @@ export interface ServiceAll {
   Status: boolean
   // Buying_Exercise: any[]
   // Reviews: any[]
-  Price_Exercise: PriceExercise[]
+  price_exercise: PriceExercise[]
 }
 
 export interface PriceExercise {
@@ -49,7 +49,7 @@ export interface PriceExercise {
   service_ID: number
   time_ID: number
   price: number
-  Time_Of_Service: TimeOfService
+  time_of_service: TimeOfService
 }
 
 export interface TimeOfService {

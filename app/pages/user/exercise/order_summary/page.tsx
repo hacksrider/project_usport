@@ -18,23 +18,36 @@ export default function OrderSummary() {
         const [year, month, day] = date.split("-");
         const thaiYear = parseInt(year, 10) + 543; // แปลงเป็นปีพุทธศักราช
         return `${parseInt(day, 10)}-${parseInt(month, 10)}-${thaiYear}`;
-      };
+    };
 
     const [selectedActivities, setSelectedActivities] = useState<
         { name: string; price: number; duration: number; dateStart: string; dateEnd: string }[]
     >([]);
     // const [totalAll, setTotalAll] = useState<number>(0);
 
+    // useEffect(() => {
+    //     const activitiesData = sessionStorage.getItem("selectedActivities");
+    //     setSelectedActivities(activitiesData ? JSON.parse(activitiesData) : []);
+
+    //     const slipFile = sessionStorage.getItem("uploadedSlip");
+    //     if (slipFile) {
+    //         setSlipFile(slipFile); // Directly set the base64 string
+    //     }
+    // }, []);
+
     useEffect(() => {
         const activitiesData = sessionStorage.getItem("selectedActivities");
-        setSelectedActivities(activitiesData ? JSON.parse(activitiesData) : []);
-    
-        const slipFile = sessionStorage.getItem("uploadedSlip");
-        if (slipFile) {
-            setSlipFile(slipFile); // Directly set the base64 string
+        if (activitiesData) {
+          setSelectedActivities(JSON.parse(activitiesData));
         }
-    }, []);
-    
+      
+        const slipData = sessionStorage.getItem("uploadedSlip");
+        if (slipData) {
+          setSlipFile(slipData);
+        }
+      }, []);
+      
+
 
     const averageRating = useMemo(() => {
         if (reviews.length === 0) return 0;
@@ -74,7 +87,7 @@ export default function OrderSummary() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {selectedActivities.map((activity, index) => (
+                            {selectedActivities.map((activity, index) => (
                                     <tr key={index}>
                                         <td className="px-1 py-3 border border-gray-300 text-sm">{activity.name}</td>
                                         <td className="px-1 py-3 border border-gray-300 text-sm text-center">{activity.duration}</td>
@@ -87,17 +100,17 @@ export default function OrderSummary() {
                             </tbody>
                         </table>
                         <div className="mt-4">
-    <p className="font-medium">สลิปการโอน:</p>
-    {slipFile ? (
-        <img
-            src={slipFile} // Use the base64 string directly
-            alt="Transfer Slip"
-            className="w-[35%] h-auto rounded-md shadow-md mt-2"
-        />
-    ) : (
-        <p className="text-gray-500 mt-2">ไม่มีสลิปการโอน</p>
-    )}
-</div>
+                            <p className="font-medium">สลิปการโอน:</p>
+                            {slipFile ? (
+                                <img
+                                    src={slipFile} // Use the base64 string directly
+                                    alt="Transfer Slip"
+                                    className="w-[35%] h-auto rounded-md shadow-md mt-2"
+                                />
+                            ) : (
+                                <p className="text-gray-500 mt-2">ไม่มีสลิปการโอน</p>
+                            )}
+                        </div>
 
 
 

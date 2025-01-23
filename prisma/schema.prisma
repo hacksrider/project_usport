@@ -7,147 +7,152 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Employees {
-  emp_ID       Int     @id @default(autoincrement())
-  emp_name     String  @db.VarChar(50)
-  emp_lastname String  @db.VarChar(50)
-  emp_sex      String  @db.VarChar(50)
-  emp_username String  @db.VarChar(20)
-  emp_password String  @db.VarChar(10)
-  emp_tel      String  @db.VarChar(10)
-  emp_job      Boolean // 0 = พนักงาน, 1 = ผู้จัดการ
-
-  Bookings        Bookings[]
-  Buying_Exercise Buying_Exercise[]
-}
-
-model Users {
-  user_ID                  Int      @id @default(autoincrement())
-  user_name                String   @db.VarChar(50)
-  user_lastname            String   @default("") @db.VarChar(50)
-  user_date_of_birth       DateTime
-  user_email               String?  @unique @default("") @db.VarChar(100)
-  user_tel                 String   @db.VarChar(10)
-  user_username            String   @unique @db.VarChar(20)
-  user_password            String   @default("") @db.VarChar(10)
-  ID_card_photo            String?  @db.VarChar(255)
-  accom_rent_contrac_photo String?  @db.VarChar(255)
-  status_of_VIP            Boolean  @default(false) // 0 = สมาชิกทั่วไป, 1 = VIP
-  user_profile_picture     String?  @db.VarChar(255)
-  sex                      String?  @db.VarChar(10)
-
-  Bookings        Bookings[]
-  Buying_Exercise Buying_Exercise[]
-  Reviews         Reviews[]
-}
-
-model Bookings {
-  booking_ID           Int      @id @default(autoincrement())
+model bookings {
   user_ID              Int
   field_ID             Int
   booking_date         DateTime
   desired_booking_date DateTime
-  start_Time           DateTime
-  end_Time             DateTime
-  Price                Int
-  payment_confirmation String   @db.VarChar(255)
-  booking_status       Boolean // 0 = ไม่สำเร็จ, 1 = สำเร็จ
+  payment_confirmation String    @db.VarChar(255)
   emp_ID               Int
+  booking_ID           Int       @id @default(autoincrement())
+  booking_status       Boolean
+  Price                Int
+  end_Time             DateTime
+  start_Time           DateTime
+  employees            employees @relation(fields: [emp_ID], references: [emp_ID], map: "Bookings_emp_ID_fkey")
+  fields               fields    @relation(fields: [field_ID], references: [field_ID], map: "Bookings_field_ID_fkey")
+  users                users     @relation(fields: [user_ID], references: [user_ID], map: "Bookings_user_ID_fkey")
 
-  Users     Users     @relation(fields: [user_ID], references: [user_ID])
-  Employees Employees @relation(fields: [emp_ID], references: [emp_ID])
-  Fields    Fields    @relation(fields: [field_ID], references: [field_ID])
+  @@index([emp_ID], map: "Bookings_emp_ID_fkey")
+  @@index([field_ID], map: "Bookings_field_ID_fkey")
+  @@index([user_ID], map: "Bookings_user_ID_fkey")
 }
 
-model Fields {
-  field_ID   Int     @id @default(autoincrement())
-  field_name String  @db.VarChar(15)
-  status     Boolean // 0 = ปิดปรับปรุง, 1 = เปิดใช้งาน
-
-  Bookings   Bookings[]
-  PriceField PriceField[]
-}
-
-model PriceField {
-  price_ID     Int @id @default(autoincrement())
-  field_ID     Int
-  period_ID    Int
-  price_per_1h Int
-  price_for_2h Int
-
-  Fields Fields @relation(fields: [field_ID], references: [field_ID])
-  Period Period @relation(fields: [period_ID], references: [period_ID])
-}
-
-model Period {
-  period_ID    Int      @id @default(autoincrement())
-  period_start DateTime
-  period_end   DateTime
-
-  PriceField PriceField[]
-}
-
-model Buying_Exercise {
-  buying_ID            Int      @id @default(autoincrement())
+model buying_exercise {
+  buying_ID            Int                 @id @default(autoincrement())
   user_ID              Int
   service_ID           Int
   buying_date          DateTime
-  amount_of_time       String   @db.VarChar(15)
+  amount_of_time       String              @db.VarChar(15)
+  units                String              @db.VarChar(10)
   desired_start_date   DateTime
   expire_date          DateTime
   Price                Int
-  payment_confirmation String   @db.VarChar(255)
-  buying_status        Boolean // 0 = ไม่สำเร็จ, 1 = สำเร็จ
+  payment_confirmation String              @db.VarChar(255)
+  buying_status        Boolean
   emp_ID               Int
+  employees            employees           @relation(fields: [emp_ID], references: [emp_ID], map: "Buying_Exercise_emp_ID_fkey")
+  service_of_exercise  service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "Buying_Exercise_service_ID_fkey")
+  users                users               @relation(fields: [user_ID], references: [user_ID], map: "Buying_Exercise_user_ID_fkey")
 
-  Users               Users               @relation(fields: [user_ID], references: [user_ID])
-  Service_of_Exercise Service_of_Exercise @relation(fields: [service_ID], references: [service_ID])
-  Employees           Employees           @relation(fields: [emp_ID], references: [emp_ID])
+  @@index([emp_ID], map: "Buying_Exercise_emp_ID_fkey")
+  @@index([service_ID], map: "Buying_Exercise_service_ID_fkey")
+  @@index([user_ID], map: "Buying_Exercise_user_ID_fkey")
 }
 
-model Price_Exercise {
-  price_ID   Int @id @default(autoincrement())
-  service_ID Int
-  time_ID    Int
-  price      Int
-
-  Service_of_Exercise Service_of_Exercise @relation(fields: [service_ID], references: [service_ID], onDelete: Cascade)
-  Time_Of_Service     Time_Of_Service     @relation(fields: [time_ID], references: [time_ID])
-}
-
-model Time_Of_Service {
-  time_ID          Int    @id @default(autoincrement())
-  quantity_of_days Int
-  unit             String @db.VarChar(10)
-
-  Price_Exercise Price_Exercise[]
-}
-
-model Service_of_Exercise {
-  service_ID       Int     @id @default(autoincrement())
-  service_name     String  @db.VarChar(20)
-  capacity_of_room Int
-  Status           Boolean // 0 = ปิดปรับปรุง, 1 = เปิดใช้งาน
-
-  Buying_Exercise Buying_Exercise[]
-  Price_Exercise  Price_Exercise[]
-
-  Reviews Reviews[]
-}
-
-model Reviews {
-  re_ID       Int    @id @default(autoincrement())
-  user_ID     Int
-  service_ID  Int
-  Text_review String @db.Text
-  score       Int
-
-  Users               Users               @relation(fields: [user_ID], references: [user_ID])
-  Service_of_Exercise Service_of_Exercise @relation(fields: [service_ID], references: [service_ID])
-  // Fields          Fields          @relation(fields: [field_ID], references: [field_ID])
-}
-
-model Content {
+model content {
   content_ID       Int    @id @default(autoincrement())
   img_content_path String @db.VarChar(255)
+}
+
+model employees {
+  emp_ID          Int               @id @default(autoincrement())
+  emp_tel         String?           @db.VarChar(10)
+  emp_job         Boolean
+  emp_username    String            @unique(map: "Employees_emp_username_key") @db.VarChar(20)
+  emp_sex         String?           @db.VarChar(50)
+  emp_lastname    String            @db.VarChar(50)
+  emp_name        String            @db.VarChar(50)
+  emp_password    String            @db.VarChar(10)
+  bookings        bookings[]
+  buying_exercise buying_exercise[]
+}
+
+model fields {
+  field_ID   Int          @id @default(autoincrement())
+  field_name String       @db.VarChar(15)
+  status     Boolean
+  bookings   bookings[]
+  pricefield pricefield[]
+}
+
+model period {
+  period_ID    Int          @id @default(autoincrement())
+  period_start DateTime
+  period_end   DateTime
+  pricefield   pricefield[]
+}
+
+model price_exercise {
+  price_ID            Int                 @id @default(autoincrement())
+  service_ID          Int
+  time_ID             Int
+  price               Int
+  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], onDelete: Cascade, map: "Price_Exercise_service_ID_fkey")
+  time_of_service     time_of_service     @relation(fields: [time_ID], references: [time_ID], map: "Price_Exercise_time_ID_fkey")
+
+  @@index([service_ID], map: "Price_Exercise_service_ID_fkey")
+  @@index([time_ID], map: "Price_Exercise_time_ID_fkey")
+}
+
+model pricefield {
+  price_ID     Int    @id @default(autoincrement())
+  field_ID     Int
+  period_ID    Int
+  price_for_2h Int
+  price_per_1h Int
+  fields       fields @relation(fields: [field_ID], references: [field_ID], map: "PriceField_field_ID_fkey")
+  period       period @relation(fields: [period_ID], references: [period_ID], map: "PriceField_period_ID_fkey")
+
+  @@index([field_ID], map: "PriceField_field_ID_fkey")
+  @@index([period_ID], map: "PriceField_period_ID_fkey")
+}
+
+model reviews {
+  re_ID               Int                 @id @default(autoincrement())
+  user_ID             Int
+  service_ID          Int
+  score               Int
+  Text_review         String              @db.Text
+  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "Reviews_service_ID_fkey")
+  users               users               @relation(fields: [user_ID], references: [user_ID], map: "Reviews_user_ID_fkey")
+
+  @@index([service_ID], map: "Reviews_service_ID_fkey")
+  @@index([user_ID], map: "Reviews_user_ID_fkey")
+}
+
+model service_of_exercise {
+  service_ID       Int               @id @default(autoincrement())
+  service_name     String            @db.VarChar(20)
+  capacity_of_room Int
+  Status           Boolean
+  buying_exercise  buying_exercise[]
+  price_exercise   price_exercise[]
+  reviews          reviews[]
+}
+
+model time_of_service {
+  time_ID          Int              @id @default(autoincrement())
+  quantity_of_days Int
+  unit             String           @db.VarChar(10)
+  price_exercise   price_exercise[]
+}
+
+model users {
+  user_ID                  Int               @id @default(autoincrement())
+  user_name                String            @db.VarChar(50)
+  user_date_of_birth       DateTime
+  user_tel                 String            @db.VarChar(15)
+  user_username            String            @unique(map: "Users_user_username_key") @db.VarChar(20)
+  ID_card_photo            String?           @db.VarChar(255)
+  accom_rent_contrac_photo String?           @db.VarChar(255)
+  status_of_VIP            Boolean           @default(false)
+  user_email               String?           @unique(map: "Users_user_email_key") @db.VarChar(100)
+  user_lastname            String            @db.VarChar(50)
+  user_password            String            @db.VarChar(255)
+  sex                      String?           @db.VarChar(20)
+  user_profile_picture     String?           @db.VarChar(255)
+  bookings                 bookings[]
+  buying_exercise          buying_exercise[]
+  reviews                  reviews[]
 }

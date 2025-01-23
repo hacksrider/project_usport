@@ -24,7 +24,7 @@ export default function Login() {
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const result = await signIn('credentials', {
+            const result = await signIn('user', {
                 redirect: false,
                 username,
                 password

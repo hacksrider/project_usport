@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import bcrypt from 'bcrypt';
 
 async function writeImageToPublic(fileName: string, imageBuffer: Buffer) {
   const filePath = path.join(process.cwd(), "public", "account", fileName);
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
       const buffer3 = Buffer.from(await user_profile_picture.arrayBuffer());
       await writeImageToPublic(user_profile_picture.name, buffer3);
     }
-
+ const hashedPassword = await bcrypt.hash(user_password, 10);
     // บันทึกข้อมูลในฐานข้อมูล
     const data = await prisma.users.create({
       data: {
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
         user_date_of_birth: new Date(user_date_of_birth),
         user_tel,
         user_username,
-        user_password,
+        user_password: hashedPassword,
         status_of_VIP: status_of_VIP === "true",
         user_email,
         sex,

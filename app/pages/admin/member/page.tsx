@@ -14,6 +14,8 @@ export default function Member() {
     const [dataUser, setDataUser] = useState<ResData[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortOption, setSortOption] = useState("เรียงลําดับ");
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState(null);
     const rowsPerPage = 20;
 
     // Fetch user data
@@ -49,10 +51,6 @@ export default function Member() {
                 return a.user_name.localeCompare(b.user_name, "en", { sensitivity: "base" });
             case "ก-ฮ":
                 return a.user_name.localeCompare(b.user_name, "th", { sensitivity: "base" });
-            // case "newest":
-            //     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            // case "oldest":
-            //     return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
             default:
                 return 0;
         }
@@ -65,14 +63,33 @@ export default function Member() {
         currentPage * rowsPerPage
     );
 
+    // Handle delete confirmation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const confirmDelete = (userId:any) => {
+        setShowConfirmation(true);
+        setSelectedUserId(userId);
+    };
+
+    const handleDelete = () => {
+        if (selectedUserId) {
+            axios.delete(`/api/user/${selectedUserId}`)
+                .then(() => {
+                    alert('ลบสมาชิกสำเร็จ');
+                    setShowConfirmation(false);
+                    setDataUser(dataUser.filter(user => user.user_ID !== selectedUserId));
+                })
+                .catch(e => console.log(e));
+        }
+    };
+
     return (
         <MainLayoutAdmin>
-            <h1 className="text-2xl font-semibold mb-3 text-black">สมาชิก</h1>
-            <div className="w-full bg-gray-300 p-6 rounded shadow-md">
+            <h1 className="text-2xl font-semibold mb-3 ml-2 text-black">สมาชิก</h1>
+            <div className="w-full bg-gray-300 ml-2 p-6 rounded shadow-md">
                 <div className="p-0">
                     {/* Header Section */}
                     <div className="flex flex-col md:flex-row items-center justify-between mb-4">
-                        <h1 className="text-2xl font-bold">Member Users</h1>
+                        <h1 className="text-2xl font-bold">รายชื่อสมาชิก</h1>
                         <div className="flex space-x-4 mt-4 md:mt-0">
                             {/* Search Input */}
                             <input
@@ -91,8 +108,6 @@ export default function Member() {
                                 <option value="เรียงลําดับ ">เลือกเรียงลําดับ</option>
                                 <option value="A-Z">เรียงลำดับ A-Z</option>
                                 <option value="ก-ฮ">เรียงลําดับ ก-ฮ</option>
-                                {/* <option value="newest">ข้อมูลใหม่สุดที่เพิ่มเข้า database</option>
-                                <option value="oldest">ข้อมูลเก่าสุดที่เพิ่มเข้า database</option> */}
                             </select>
                         </div>
                     </div>
@@ -151,9 +166,8 @@ export default function Member() {
 
                                             <button
                                                 className="text-red-500 hover:underline ml-2"
-                                                onClick={() => {
-                                                    axios.delete(`/api/user/${row.user_ID}`).then(() => { alert('ลบสมาชิกสำเร็จ'); window.location.reload(); }).catch(e => console.log(e))
-                                                }}>Delete</button>
+                                                onClick={() => confirmDelete(row.user_ID)}
+                                            >Delete</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -178,6 +192,29 @@ export default function Member() {
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            {showConfirmation && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+                    <div className="bg-white p-6 rounded shadow-md">
+                        <p className="text-lg font-semibold mb-4">คุณแน่ใจหรือไม่ที่จะลบสมาชิกคนนี้?</p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                onClick={() => setShowConfirmation(false)}
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                onClick={handleDelete}
+                            >
+                                ตกลง
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MainLayoutAdmin>
     );
 }

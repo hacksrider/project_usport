@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     // Transaction to insert data into all three tables
     const result = await prisma.$transaction(async (prisma) => {
       // Insert into Service of Exercise
-      const service = await prisma.service_of_Exercise.create({
+      const service = await prisma.service_of_exercise.create({
         data: {
           service_name,
           capacity_of_room: Number(capacity_of_room),
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       // Insert into quantity_of_days of Service
       const timeServices = await Promise.all(
         detail.map((v: Detail) =>
-          prisma.time_Of_Service.create({
+          prisma.time_of_service.create({
             data: {
               quantity_of_days: Number(v.quantity_of_days),
               unit: v.unit,
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
       const priceExercise = await Promise.all(
         detail.map((v: Detail, i: number) =>
-          prisma.price_Exercise.create({
+          prisma.price_exercise.create({
             data: {
               service_ID: service.service_ID, // Adjust key if schema uses different name
               time_ID: timeServices[i].time_ID, // Adjust key if schema uses different name
@@ -76,14 +76,14 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const data = await prisma.service_of_Exercise.findMany(
+    const data = await prisma.service_of_exercise.findMany(
         {
             include: {
-                Buying_Exercise: true,
-                Reviews: true,
-                Price_Exercise: {
+                buying_exercise: true,
+                reviews: true,
+                price_exercise: {
                     include: {
-                        Time_Of_Service: true
+                        time_of_service: true
                     }
                 }
             }
