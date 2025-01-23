@@ -9,7 +9,7 @@ export async function DELETE(
 ) {
   try {
     const id = await parseInt(params.id); //parseInt(params.id)
-    const service = await prisma.service_of_Exercise.delete({
+    const service = await prisma.service_of_exercise.delete({
       where: {
         service_ID: id,
       },
@@ -33,16 +33,16 @@ export async function GET(
 ) {
   try {
     const id = await parseInt(params.id); //parseInt(params.id)
-    const data = await prisma.service_of_Exercise.findUnique({
+    const data = await prisma.service_of_exercise.findUnique({
       where: {
         service_ID: id,
       },
       include: {
-        Buying_Exercise: true,
-        Reviews: true,
-        Price_Exercise: {
+        buying_exercise: true,
+        reviews: true,
+        price_exercise: {
           include: {
-            Time_Of_Service: true,
+            time_of_service: true,
           },
         },
       },
@@ -80,7 +80,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
     }
 
     // Update Service data
-    const updatedService = await prisma.service_of_Exercise.update({
+    const updatedService = await prisma.service_of_exercise.update({
       where: { service_ID: id },
       data: {
         service_name,
@@ -93,7 +93,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
     const incomingPriceIDs = detail.map((v: any) => v.price_ID).filter((id: any) => id);
 
     // Delete Price_Exercise entries not in the incoming detail
-    await prisma.price_Exercise.deleteMany({
+    await prisma.price_exercise.deleteMany({
       where: {
         service_ID: id,
         NOT: {
@@ -107,12 +107,12 @@ export async function PUT(request: Request, context: { params: { id: string } })
       detail.map(async (v: any) => {
         if (v.price_ID && v.time_ID) {
           // Update existing entries
-          const updatedTime = await prisma.time_Of_Service.update({
+          const updatedTime = await prisma.time_of_service.update({
             where: { time_ID: v.time_ID },
             data: { quantity_of_days: Number(v.quantity_of_days), unit: v.unit },
           });
 
-          const updatedPrice = await prisma.price_Exercise.update({
+          const updatedPrice = await prisma.price_exercise.update({
             where: { price_ID: v.price_ID },
             data: { price: Number(v.price) },
             
@@ -121,11 +121,11 @@ export async function PUT(request: Request, context: { params: { id: string } })
           return { updatedTime, updatedPrice };
         } else if (!v.price_ID && !v.time_ID) {
           // Add new entries
-          const newTime = await prisma.time_Of_Service.create({
+          const newTime = await prisma.time_of_service.create({
             data: { quantity_of_days: Number(v.quantity_of_days), unit: v.unit },
           });
 
-          const newPrice = await prisma.price_Exercise.create({
+          const newPrice = await prisma.price_exercise.create({
             data: {
               service_ID: id,
               time_ID: newTime.time_ID,

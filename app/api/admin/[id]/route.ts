@@ -129,8 +129,8 @@ export async function GET(
         emp_ID: id,
       },
       include: {
-        Buying_Exercise: true,
-        Bookings: true,
+        buying_exercise: true,
+        bookings: true,
       },
     });
     return NextResponse.json({ data: data, msg: "success", status: 200 });

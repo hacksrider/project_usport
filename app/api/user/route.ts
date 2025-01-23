@@ -145,7 +145,7 @@ export async function PUT(request: Request) {
 
     // Initialize the data object with mandatory fields
     // eslint-disable-next-line prefer-const
-    let data: Prisma.UsersUpdateInput = {
+    let data: Prisma.usersUpdateInput = {
       user_name,
       user_lastname,
       user_tel,
