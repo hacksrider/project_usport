@@ -8,25 +8,35 @@ datasource db {
 }
 
 model bookings {
+  booking_ID           Int      @id @default(autoincrement()) // เพิ่มฟิลด์ id ที่เป็น primary key
   user_ID              Int
   field_ID             Int
   booking_date         DateTime
   desired_booking_date DateTime
-  payment_confirmation String    @db.VarChar(255)
-  emp_ID               Int
-  booking_ID           Int       @id @default(autoincrement())
-  booking_status       Boolean
   Price                Int
   end_Time             DateTime
-  start_Time           DateTime
-  employees            employees @relation(fields: [emp_ID], references: [emp_ID], map: "Bookings_emp_ID_fkey")
+  start_Time           DateTime    
+  booking_status       String    @db.VarChar(255)
+  order_ID             Int       @default(0)
+
   fields               fields    @relation(fields: [field_ID], references: [field_ID], map: "Bookings_field_ID_fkey")
   users                users     @relation(fields: [user_ID], references: [user_ID], map: "Bookings_user_ID_fkey")
+  order                order_Bookings    @relation(fields: [order_ID], references: [order_ID], map: "Bookings_order_ID_fkey") // ใช้ `order_id` จากโมเดล `oders`
 
-  @@index([emp_ID], map: "Bookings_emp_ID_fkey")
   @@index([field_ID], map: "Bookings_field_ID_fkey")
   @@index([user_ID], map: "Bookings_user_ID_fkey")
+  @@index([order_ID], map: "Bookings_oder_ID_fkey") // เปลี่ยนชื่อ index ให้ตรงกับฟิลด์ `oder_ID`
 }
+
+model order_Bookings {
+  order_ID              Int           @id @default(autoincrement()) 
+  totalprice            Int
+  payment_confirmation  String        @db.VarChar(255)
+  emp_ID                Int
+  employee              employees     @relation(fields: [emp_ID], references: [emp_ID])
+  bookings              bookings[]    // ความสัมพันธ์ 1-to-many
+}
+
 
 model buying_exercise {
   buying_ID            Int                 @id @default(autoincrement())
@@ -57,14 +67,14 @@ model content {
 
 model employees {
   emp_ID          Int               @id @default(autoincrement())
+  emp_name        String            @db.VarChar(50)
+  emp_lastname    String            @db.VarChar(50)
+  emp_sex         String?           @db.VarChar(50)
   emp_tel         String?           @db.VarChar(10)
   emp_job         Boolean
   emp_username    String            @unique(map: "Employees_emp_username_key") @db.VarChar(20)
-  emp_sex         String?           @db.VarChar(50)
-  emp_lastname    String            @db.VarChar(50)
-  emp_name        String            @db.VarChar(50)
   emp_password    String            @db.VarChar(10)
-  bookings        bookings[]
+  oders          order_Bookings[]
   buying_exercise buying_exercise[]
 }
 
@@ -155,4 +165,10 @@ model users {
   bookings                 bookings[]
   buying_exercise          buying_exercise[]
   reviews                  reviews[]
+}
+
+model accountBank{
+  acc_ID                Int               @id @default(autoincrement())
+  path_image_acc        String            @db.VarChar(255)
+  path_image_Prom       String?           @db.VarChar(255)
 }
