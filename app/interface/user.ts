@@ -16,6 +16,7 @@ export interface User {
   accom_rent_contrac_photo: string;
   user_profile_picture: string;
   status_of_VIP: boolean;
+  status_of_Member: boolean;
 }
 
 export interface ResGetAllUser {
@@ -25,6 +26,9 @@ export interface ResGetAllUser {
 }
 
 export interface ResData {
+  id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fullName: any;
   created_at: string | number | Date;
   user_ID: number;
   user_name: string;
@@ -39,4 +43,5 @@ export interface ResData {
   accom_rent_contrac_photo: string;
   user_profile_picture: string;
   status_of_VIP: boolean;
+  status_of_Member: boolean;
 }

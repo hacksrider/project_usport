@@ -29,25 +29,41 @@ model bookings {
 }
 
 model buying_exercise {
-  buying_ID            Int                 @id @default(autoincrement())
+  buying_ID            Int      @id @default(autoincrement())
   user_ID              Int
-  service_ID           Int
+  payment_confirmation String   @db.VarChar(255)
   buying_date          DateTime
-  amount_of_time       String              @db.VarChar(15)
-  units                String              @db.VarChar(10)
-  desired_start_date   DateTime
-  expire_date          DateTime
-  Price                Int
-  payment_confirmation String              @db.VarChar(255)
   buying_status        Boolean
-  emp_ID               Int
-  employees            employees           @relation(fields: [emp_ID], references: [emp_ID], map: "Buying_Exercise_emp_ID_fkey")
-  service_of_exercise  service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "Buying_Exercise_service_ID_fkey")
-  users                users               @relation(fields: [user_ID], references: [user_ID], map: "Buying_Exercise_user_ID_fkey")
+  emp_ID               Int?
+
+  // Relationships
+  employees           employees?            @relation(fields: [emp_ID], references: [emp_ID], map: "Buying_Exercise_emp_ID_fkey")
+  users               users                 @relation(fields: [user_ID], references: [user_ID], map: "Buying_Exercise_user_ID_fkey")
+  orders              orders[]
+  service_of_exercise service_of_exercise[]
 
   @@index([emp_ID], map: "Buying_Exercise_emp_ID_fkey")
-  @@index([service_ID], map: "Buying_Exercise_service_ID_fkey")
   @@index([user_ID], map: "Buying_Exercise_user_ID_fkey")
+}
+
+model orders {
+  order_ID           Int      @id @default(autoincrement())
+  buying_ID          Int
+  service_ID         Int
+  service_name       String
+  amount_of_time     String   @db.VarChar(15)
+  units              String   @db.VarChar(10)
+  desired_start_date DateTime
+  status_order       Int      @default(0)
+  expire_date        DateTime
+  Price              Int
+
+  // Relationships
+  buying_exercise     buying_exercise     @relation(fields: [buying_ID], references: [buying_ID], map: "Order_Buying_Exercise_fkey", onDelete: Cascade)
+  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "Order_Service_ID_fkey")
+
+  @@index([buying_ID], map: "Order_Buying_Exercise_fkey")
+  @@index([service_ID], map: "Order_Service_ID_fkey")
 }
 
 model content {
@@ -129,6 +145,8 @@ model service_of_exercise {
   buying_exercise  buying_exercise[]
   price_exercise   price_exercise[]
   reviews          reviews[]
+
+  order orders[] @relation(map: "Order_Service_ID_fkey")
 }
 
 model time_of_service {
@@ -147,6 +165,7 @@ model users {
   ID_card_photo            String?           @db.VarChar(255)
   accom_rent_contrac_photo String?           @db.VarChar(255)
   status_of_VIP            Boolean           @default(false)
+  status_of_Member         Boolean           @default(false)
   user_email               String?           @unique(map: "Users_user_email_key") @db.VarChar(100)
   user_lastname            String            @db.VarChar(50)
   user_password            String            @db.VarChar(255)

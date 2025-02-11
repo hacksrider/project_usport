@@ -21,6 +21,7 @@ const RegisterForm: React.FC = () => {
     });
 
     const [passwordValidation, setPasswordValidation] = useState({
+        number: false,
         length: false,
         upperLowerCase: false,
         specialCharacter: false,
@@ -40,6 +41,7 @@ const RegisterForm: React.FC = () => {
         if (name === "user_password") {
             setPasswordValidation({
                 length: value.length >= 8,
+                number: /\d/.test(value),
                 upperLowerCase: /[A-Z]/.test(value) && /[a-z]/.test(value),
                 specialCharacter: /[_.\-!@]/.test(value),
             });
@@ -267,6 +269,9 @@ const RegisterForm: React.FC = () => {
                             </li>
                             <li className={`flex items-center ${passwordValidation.upperLowerCase ? "text-green-600" : "text-red-600"}`}>
                                 {passwordValidation.upperLowerCase ? "✔" : "✘"} มีอักษรตัวพิมพ์ใหญ่และเล็กรวมกัน
+                            </li>
+                            <li className={`flex items-center ${passwordValidation.number ? "text-green-600" : "text-red-600"}`}>
+                                {passwordValidation.number ? "✔" : "✘"} มีตัวเลข
                             </li>
                             <li className={`flex items-center ${passwordValidation.specialCharacter ? "text-green-600" : "text-red-600"}`}>
                                 {passwordValidation.specialCharacter ? "✔" : "✘"} มีอักษรพิเศษ เช่น _ . - ! @

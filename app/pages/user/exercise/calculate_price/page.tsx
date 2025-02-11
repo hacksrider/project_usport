@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { ServiceToSave } from "@/app/interface/buyingExercise";
+// import { ServiceToSave } from "@/app/interface/buyingExercise";
 
 export default function Calculate_price() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,11 +18,9 @@ export default function Calculate_price() {
   const [userData, setUserData] = useState<any>(null); // แก้ไขตามโครงสร้างข้อมูล API ของคุณ
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [selectedActivities, setSelectedActivities] = useState<
-    {
-      [x: string]: any; name: string; price: number; duration: number; dateStart: string; dateEnd: string;
-    }[]
-  >([]);
+  // const [receivedData, setReceivedData] = useState<ServiceToSave[]>([]);
+
+  const [selectedActivities, setSelectedActivities] = useState<ServiceToSave[]>([]);
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/pages/user/AAA/login");
@@ -28,7 +28,7 @@ export default function Calculate_price() {
   })
 
   useEffect(() => {
-    
+
     const fetchUserData = async () => {
       try {
         // @ts-expect-error
@@ -45,18 +45,22 @@ export default function Calculate_price() {
         setIsLoading(false);
       }
     };
-
+    // const data = sessionStorage.getItem("serviceToSave");
+    // if (data) {
+    //   setReceivedData(JSON.parse(data));
+    //   console.log("Received Data:", JSON.parse(data));
+    // }
     const loadSelectedServices = () => {
-      const tempData = sessionStorage.getItem("selectServices");
-      const temp = tempData ? JSON.parse(tempData) : [];
+      const data = sessionStorage.getItem("serviceToSave"); // ดึงข้อมูล serviceToSave จาก sessionStorage
+      const temp = data ? JSON.parse(data) : []; // แปลงข้อมูลเป็น JSON
       const tempService = temp.map((i: any) => {
-        const duration = i.quantity_of_days || i.time?.time_of_service?.quantity_of_days || 0;
-        const dateStart = i.date || "";
+        const duration = i.amount_of_time || 0; // ใช้ amount_of_time แทน quantity_of_days
+        const dateStart = i.desired_start_date || ""; // ใช้ desired_start_date แทน date
         let dateEnd = "";
 
         if (dateStart) {
           const startDate = new Date(dateStart);
-          switch (i.unit) {
+          switch (i.units) {
             case "วัน":
               dateEnd = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
               break;
@@ -77,16 +81,18 @@ export default function Calculate_price() {
         }
 
         return {
-          name: i.detail.service_name,
-          duration,
-          unit: i.unit, // เพิ่มการดึง unit จากข้อมูล
-          price: i.price || 0,
-          dateStart,
-          dateEnd,
+          service_name: i.service_name, // ใช้ service_name จาก serviceToSave
+          amount_of_time: duration,
+          units: i.units, // ใช้ units แทน unit
+          Price: i.Price || 0, // ใช้ Price แทน price
+          desired_start_date: dateStart,
+          expire_date: dateEnd,
+          service_ID: i.service_ID
         };
       });
-
-      setSelectedActivities(tempService);
+      console.log('tempService', tempService);
+      sessionStorage.setItem("serviceToSave2", JSON.stringify(tempService));
+      setSelectedActivities(tempService); // อัปเดต state ของ selectedActivities
     };
 
     fetchUserData();
@@ -111,14 +117,18 @@ export default function Calculate_price() {
   };
 
   const totalCost = selectedActivities.reduce((sum, activity) => {
-    return sum + activity.price;
+    return sum + activity.Price;
   }, 0);
 
   const total50 = +totalCost * 0.5;
   const totalAll = totalCost - total50;
 
   const handleConfirmPurchase = () => {
-    sessionStorage.setItem("totalAll", totalAll.toString());
+    if (userData.status_of_VIP) {
+      sessionStorage.setItem("totalAll", totalAll.toString());
+    } else {
+      sessionStorage.setItem("totalAll", totalCost.toString());
+    }
     router.push("/pages/user/exercise/payment");
   };
 
@@ -136,18 +146,18 @@ export default function Calculate_price() {
                 className="bg-gray-100 p-6 rounded-xl mb-6 shadow-md flex items-center justify-between"
               >
                 <div>
-                  <p className="text-lg font-bold text-gray-800">{activity.name}</p>
-                  <p className="text-gray-600">{`ระยะเวลา : ${activity.duration} ${activity.unit}`}</p>
-                  {activity.dateStart && (
-                    <p className="text-gray-600">{`วันที่เริ่ม : ${formatDate(activity.dateStart)}`}</p>
+                  <p className="text-lg font-bold text-gray-800">{activity.service_name}</p>
+                  <p className="text-gray-600">{`ระยะเวลา : ${activity.amount_of_time} ${activity.units}`}</p>
+                  {activity.desired_start_date && (
+                    <p className="text-gray-600">{`วันที่เริ่ม : ${formatDate(activity.desired_start_date)}`}</p>
                   )}
-                  {activity.dateEnd && (
-                    <p className="text-gray-600">{`วันที่สิ้นสุด : ${formatDate(activity.dateEnd)}`}</p>
+                  {activity.expire_date && (
+                    <p className="text-gray-600">{`วันที่สิ้นสุด : ${formatDate(activity.expire_date)}`}</p>
                   )}
                 </div>
                 <div>
                   <span className="text-lg font-bold text-blue-600">
-                    ฿{activity.price}
+                    ฿{activity.Price}
                   </span>
                 </div>
               </div>

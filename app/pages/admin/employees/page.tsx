@@ -1,8 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
-import { ResDataAdmin, ResGetAllAdmin } from "@/app/interface/admin";
+import { AdminInterface, ResDataAdmin, ResGetAllAdmin } from "@/app/interface/admin";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -36,6 +37,18 @@ export default function Employees() {
     adminApi();
   }, []);
 
+   const { data } = useSession();
+   const userData = data as AdminInterface;
+
+  useEffect(() => {
+    if (userData) {
+      if(userData.user.emp_job == false){
+        router.push("/pages/admin/dashboard");
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <MainLayoutAdmin>
       <h1 className="text-2xl font-semibold mb-3 text-black ml-20">พนักงาน</h1>
@@ -45,7 +58,7 @@ export default function Employees() {
         </span>
         <button
           onClick={() => router.push("/pages/admin/employees/add_employee")}
-          className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition mr-4 mb-4 font-semibold flex items-center space-x-2 mr-[35px] mt-4"
+          className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition mb-4 font-semibold flex items-center space-x-2 mr-[35px] mt-4"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,11 +1,27 @@
 "use client";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
+import { AdminInterface } from "@/app/interface/admin";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import ไอคอนรูปตา
 
 export default function AddEmployees() {
+    const { data } = useSession();
+    const userData = data as AdminInterface;
+
+    useEffect(() => {
+        if (userData) {
+            if (userData.user.emp_job == false) {
+                router.push("/pages/admin/dashboard");
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+
+
     const router = useRouter();
     const [emp_name, setEmpName] = useState("");
     const [emp_lastname, setEmpLastname] = useState("");

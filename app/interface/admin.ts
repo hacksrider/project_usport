@@ -47,7 +47,7 @@ export interface Admin {
   emp_username: string;
   emp_password: string;
   emp_tel: string;
-  emp_job: string;
+  emp_job: boolean;
 }
 
 
