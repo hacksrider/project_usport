@@ -41,7 +41,6 @@ const Booking : React.FC = () => {
     const [previewImgBanking, setPreviewImgBanking] = useState<string | null>(null);
   
     useEffect(() => {
-      // ฟังก์ชันดึงข้อมูลจาก API
       const fetchBookings = async (field_ID: number) => {
           try {
               const response = await axios.get(`/api/booking/dataBooking?field_ID=${field_ID}`);
@@ -59,17 +58,30 @@ const Booking : React.FC = () => {
                       booking_status: status
                   };
               });
-
               setDataBooking(updatedData);  // ตั้งค่าข้อมูลการจอง
           } catch (error) {
               console.error("Error fetching bookings:", error);
-          }
+          };
+
       };
       fetchBookings(IDF);
+      
   }, []);  
 
+  useEffect(()=>{
+    const fetchAccountBankData = async () => {
+      try {
+            const response = await axios.get('/api/booking/uploadPayment');
+            console.log(response);
+            setPreviewImgBanking(response.data);
+      } catch (error) {
+        console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
+      }
+    };
+    fetchAccountBankData();
+  },[])
+
   useEffect(() => {
-    
     const generateWeekSlots = (startDate: string, dataBooking: dataBookingFromAPI[]): Slots => {
         const slots: Slots = {};
 
@@ -159,6 +171,8 @@ const Booking : React.FC = () => {
     const [dateSeparate, setDateseperate] = useState<sepDate[]>([]);
     const [dataForSend, setDataForSend] = useState<dataForSendToAPI[]>([]);
     const [totalPriceBooking, setTotalPriceBooking] = useState(0);
+
+    
     const pricePer1_1 = 800;
     const pricePer1_2 = 1000;
     const pricePer2_1 = 1200;
@@ -356,6 +370,7 @@ const sendBookingToAPI = async (bookingData: any[]) => {
       });
       keepOrderIDthisLocal = orderResponse.data;
       setKeepOrderID(orderResponse.data);
+      console.log("ไอดีออเดอร์",keepOrderID)
     }
     
     if (keepOrderIDthisLocal) {
@@ -425,7 +440,6 @@ const handleConfirmBooking = () => {
 
   const openPayment = () => {
     setIsPaymantPageOpen(true);
-    fetchAccountBankData();
   };
 
   const closePayment = () => {
@@ -484,15 +498,6 @@ const handleConfirmBooking = () => {
     }
   };
 
-  const fetchAccountBankData = async () => {
-    try {
-          const response = await axios.get('/api/booking/uploadPayment');
-          console.log(response);
-          setPreviewImgBanking(response.data);
-    } catch (error) {
-      console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
-    }
-  };
 
     return (
         <MainLayout>
@@ -639,7 +644,7 @@ const handleConfirmBooking = () => {
                       </li>
                     ))} */}
               </ul>
-
+                    
               <div className="flex justify-center items-center mt-4">
               <img src={previewImgBanking? previewImgBanking : undefined } alt="Uploaded Payment" className="mt-4 max-w-full h-auto" />
               </div>
@@ -652,9 +657,9 @@ const handleConfirmBooking = () => {
                 {/* <button onClick={handleSubmit}>ส่งไฟล์</button> */}
                   
             <div className="flex justify-end space-x-4">
-                <button onClick={handleSubmit}
+                <button onClick={handleSubmit}    
                       className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                  ยืนยันการชำระเงิน
+                  ยืนยันการชำระเงิน      
                 </button>
                 <button onClick={closePayment} className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">
                   ยกเลิก

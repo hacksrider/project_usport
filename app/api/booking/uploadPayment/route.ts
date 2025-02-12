@@ -34,7 +34,6 @@
 // }
 
 
-
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
     fs.writeFileSync(filePath, buffer);
 
     // บันทึก path ของไฟล์ลงในฐานข้อมูลด้วย Prisma
-    const updatedOrder = await prisma.orders.update({
+    const updatedOrder = await prisma.order_Bookings.update({
       where: {
         order_ID: order_ID, // ใช้ orderId เพื่อค้นหา record ที่ต้องการอัปเดต
       },

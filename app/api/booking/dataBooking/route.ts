@@ -38,7 +38,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-
   export async function POST(req: Request) {
     try {
       // รับข้อมูลจาก request

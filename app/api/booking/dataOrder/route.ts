@@ -2,8 +2,9 @@ import prisma from "@/lib/db";
 export async function POST(req: Request) {
     try {
         const data = await req.json();
+        console.log(data)
         if(data){
-            const insertOderTB = await  prisma.orders.create({
+            const insertOderTB = await  prisma.order_Bookings.create({
               data:{
                 totalprice:data.totalprice,
                 payment_confirmation:data.payment_confirmation,
