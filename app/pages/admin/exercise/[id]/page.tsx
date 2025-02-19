@@ -79,7 +79,7 @@ export default function EditService() {
     }));
 
 
-    console.log({ service_name, capacity_of_room, Status, detail }); // Debug ข้อมูลที่ส่งไป
+    // console.log({ service_name, capacity_of_room, Status, detail }); // Debug ข้อมูลที่ส่งไป
 
     try {
       const response = await axios.put(`/api/services/${params.id}`, {

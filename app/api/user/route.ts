@@ -10,7 +10,7 @@ async function writeImageToPublic(fileName: string, imageBuffer: Buffer) {
   try {
     fs.mkdirSync(path.dirname(filePath), { recursive: true }); // สร้างโฟลเดอร์
     fs.writeFileSync(filePath, imageBuffer); // เขียนไฟล์
-    console.log("Image written successfully");
+    // console.log("Image written successfully");
   } catch (err) {
     console.error("Error writing image:", err);
     throw new Error("Unable to write image");
@@ -164,8 +164,8 @@ export async function PUT(request: Request) {
       data.user_profile_picture = filePath3;
     }
 
-    console.log("=========================");
-    console.log(data);
+    // console.log("=========================");
+    // console.log(data);
 
     const updateUser = await prisma.users.update({
       where: { user_ID },

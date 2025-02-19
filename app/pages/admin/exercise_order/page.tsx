@@ -42,7 +42,7 @@ export default function ExerciseOrder() {
         } catch (error) {
             console.error("Error rejecting order:", error);
         }
-        console.log("rejectOrder");
+        // console.log("rejectOrder");
     };
     return (
         <MainLayoutAdmin>
@@ -80,9 +80,9 @@ export default function ExerciseOrder() {
                                             <button onClick={() => { router.push(`/pages/admin/exercise_order/${order.buying_ID}`) }} className="bg-yellow-500 text-white px-3 py-1 rounded mr-2 hover:bg-yellow-600">ดูคำสั่งซื้อ</button>
                                             {
                                                 order.buying_status ? (
-                                                    ""
+                                                    <button onClick={() => { rejectOrder(order.buying_ID) }} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">ลบ</button>
                                                 ) : (
-                                            <button onClick={() => { rejectOrder(order.buying_ID) }} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">ปฏิเสธ</button>
+                                                    <button onClick={() => { rejectOrder(order.buying_ID) }} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">ปฏิเสธ</button>
                                                 )
                                             }
                                         </td>

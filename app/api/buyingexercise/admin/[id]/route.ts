@@ -18,7 +18,7 @@ export async function GET(
     const par = await params;
     const buying = await prisma.buying_exercise.findUnique({
       where: { buying_ID: parseInt(par.id) },
-      include: { orders: true, users: true },
+      include: { orders_exercise: true, users: true },
     });
 
     return NextResponse.json({ data: buying, msg: "success", status: 200 });
@@ -45,7 +45,7 @@ export async function PUT(
 
     const buying = await prisma.buying_exercise.findUnique({
       where: { buying_ID: parseInt(par.id) },
-      include: { orders: true, users: true },
+      include: { orders_exercise: true, users: true },
     });
 
     if (!buying || !buyingUpdate) {
@@ -53,15 +53,15 @@ export async function PUT(
     }
 
     const currentDate = new Date();
-    const shouldBeMember = buying.orders.some(
+    const shouldBeMember = buying.orders_exercise.some(
       (order) =>{
-        console.log(order)
+        // console.log(order)
         return new Date(order.desired_start_date) <= currentDate &&
         currentDate <= new Date(order.expire_date)}
     );
 
     if (shouldBeMember) {
-      await prisma.orders.updateMany({
+      await prisma.orders_exercise.updateMany({
         where: { buying_ID: parseInt(par.id) },
         data: { status_order: 1 },
       });

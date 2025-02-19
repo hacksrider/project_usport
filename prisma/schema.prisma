@@ -39,14 +39,14 @@ model buying_exercise {
   // Relationships
   employees           employees?            @relation(fields: [emp_ID], references: [emp_ID], map: "Buying_Exercise_emp_ID_fkey")
   users               users                 @relation(fields: [user_ID], references: [user_ID], map: "Buying_Exercise_user_ID_fkey")
-  orders              orders[]
+  orders_exercise     orders_exercise[]
   service_of_exercise service_of_exercise[]
 
   @@index([emp_ID], map: "Buying_Exercise_emp_ID_fkey")
   @@index([user_ID], map: "Buying_Exercise_user_ID_fkey")
 }
 
-model orders {
+model orders_exercise {
   order_ID           Int      @id @default(autoincrement())
   buying_ID          Int
   service_ID         Int
@@ -146,7 +146,7 @@ model service_of_exercise {
   price_exercise   price_exercise[]
   reviews          reviews[]
 
-  order orders[] @relation(map: "Order_Service_ID_fkey")
+  orders_exercise orders_exercise[] @relation(map: "Order_Service_ID_fkey")
 }
 
 model time_of_service {
@@ -175,3 +175,28 @@ model users {
   buying_exercise          buying_exercise[]
   reviews                  reviews[]
 }
+
+model page_about {
+  page_about_id  Int    @id @default(autoincrement())
+  title          String @db.VarChar(50)
+  detail         String @db.VarChar(255)
+  banner         String @db.VarChar(255)
+  detail_usport1 String @db.VarChar(255)
+  detail_usport2 String @db.VarChar(255)
+  video          String @db.VarChar(255)
+
+  exercise_about exercise_about[]
+}
+
+model exercise_about {
+  exercise_about_id Int    @id @default(autoincrement())
+  title             String @db.VarChar(50)
+  detail            String @db.VarChar(255)
+
+  page_about_id Int
+  page_about    page_about @relation(fields: [page_about_id], references: [page_about_id], map: "Order_Page_About_fkey", onDelete: Cascade)
+
+  @@index([exercise_about_id], map: "Order_Buying_Exercise_fkey")
+}
+
+//npx prisma migrate dev --name init

@@ -59,8 +59,8 @@ export default function Payment() {
 
             if (res.data.status === 200) {
                 alert("การชำระเงินสำเร็จ! ระบบจะดำเนินการต่อ");
-                router.push("/pages/user/exercise/order_summary");
-                console.log("Success:", res.data);
+                router.push("/pages/user/purchase_order");
+                // console.log("Success:", res.data);
             } else {
                 console.error("Error:", res.data);
             }

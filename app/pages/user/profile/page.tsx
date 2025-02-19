@@ -78,7 +78,7 @@ export default function Profile() {
       </MainLayout>
     );
   }
-  console.log("----------------", userData)
+  // console.log("----------------", userData)
   const dateOfBirth = userData.user_date_of_birth || "";
   const formattedDate = dateOfBirth ? formatDateThai(dateOfBirth) : "N/A";
   const age = dateOfBirth ? calculateAge(dateOfBirth) : "N/A";

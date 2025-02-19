@@ -14,7 +14,7 @@ export const updateOrderStatus = async () => {
                 status_order: 2
             }
         })
-        console.log(orderUpdate)
+        // console.log(orderUpdate)
     }
     catch(e){
         console.error(e.message)

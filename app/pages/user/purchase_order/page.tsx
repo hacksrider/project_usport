@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { UserInterface } from "@/app/interface/user";
 import { BuyingService } from "@/app/interface/buyingExercise";
 import React from "react";
+import { useRouter } from "next/navigation";
 // import Image from "next/image";
 // import { useSearchParams } from "next/navigation";
 
@@ -21,6 +22,7 @@ const statusOrderColor = [
 ]
 
 export default function PurchaseOrder() {
+    const router = useRouter();
     const [buyingService, setBuyingService] = useState<BuyingService[]>([]);
     // const [orders, setOrders] = useState<Orders[]>([]);
     // const order_ID = useSearchParams()?.get("order_ID");
@@ -63,29 +65,32 @@ export default function PurchaseOrder() {
                                         <th className="border p-2">No.</th>
                                         <th className="border p-2">ชื่อบริการ</th>
                                         <th className="border p-2">วันที่ซื้อบริการ</th>
-                                        <th className="border p-2">จำนวน</th>
+                                        {/* <th className="border p-2">จำนวน</th>
                                         <th className="border p-2">หน่วย</th>
-                                        <th className="border p-2">ราคา (บาท)</th>
+                                        <th className="border p-2">ราคา (บาท)</th> */}
                                         <th className="border p-2">สถานะการใช้บริการ</th>
+                                        <th className="border p-2">รีวิว</th>
                                         <th className="border p-2">สถานะคำสั่งซื้อ</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    {buyingService.map((order, i) => {console.log(order); 
+                                    {buyingService.map((order, i) => { 
                                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                                     // @ts-expect-error
-                                    return <React.Fragment key={i}>{order.orders.map((od, j) => {
+                                    // console.log(order)
+                                    return <React.Fragment key={i}>{order.orders_exercise.map((od, j) => {
                                         return(
-                                            <tr key={j} className={"text-center " + (j == order.orders.length - 1 ? "border border-b-2 border-gray-400" : "")}>
-                                                {j == 0 ? <td rowSpan={order.orders.length} className="border p-2">{i + 1}</td> : ''}
+                                            <tr key={j} className={"text-center " + (j == order.orders_exercise.length - 1 ? "border border-b-2 border-gray-400" : "")}>
+                                                {j == 0 ? <td rowSpan={order.orders_exercise.length} className="border p-2">{i + 1}</td> : ''}
                                                 <td className="border p-2">{od.service_name}</td>
                                                 <td className="border p-2">{formatDateToThai(order.buying_date)}</td>
-                                                <td className="border p-2">{od.amount_of_time}</td>
+                                                {/* <td className="border p-2">{od.amount_of_time}</td>
                                                 <td className="border p-2">{od.units}</td>
-                                                <td className="border p-2">{od.Price}</td>
+                                                <td className="border p-2">{od.Price}</td> */}
                                                 <td className={"border p-2 " + statusOrderColor[od.status_order]}>{statusOrderText[od.status_order] || "error"}</td>
-                                                {j == 0 ? (order.buying_status ? <td rowSpan={order.orders.length} className="border p-2 text-green-500">ยืนยันแล้ว</td> : <td rowSpan={order.orders.length} className="border p-2 text-yellow-500">รอตรวจสอบ</td>) : ''}
+                                                {od.status_order ? <td className="border p-2"><button onClick={() => router.push(`/pages/user/exercise/${od.service_ID}`)} className="hover:text-blue-600">กดรีวิว</button></td> : <td className="border p-2">-</td>}
+                                                {j == 0 ? (order.buying_status ? <td rowSpan={order.orders_exercise.length} className="border p-2 text-green-500">ยืนยันแล้ว</td> : <td rowSpan={order.orders_exercise.length} className="border p-2 text-yellow-500">รอตรวจสอบ</td>) : ''}
                                             </tr>
                                         )
                                         

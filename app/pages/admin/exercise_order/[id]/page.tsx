@@ -51,7 +51,7 @@ export default function ExerciseData() {
         } catch (error) {
             console.error("Error rejecting order:", error);
         }
-        console.log("rejectOrder");
+        // console.log("rejectOrder");
     };
 
     return (
@@ -76,7 +76,7 @@ export default function ExerciseData() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {buyingService.orders.map((order: any, index: number) => (
+                                {buyingService.orders_exercise.map((order: any, index: number) => (
                                     <tr key={index}>
                                         <td className="border p-2 text-center">{index + 1}</td>
                                         <td className="border p-2">{order.service_name}</td>

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log("Created buying_exercise:", createdBuying);
+    // console.log("Created buying_exercise:", createdBuying);
 
     const buying_ID = createdBuying.buying_ID;
 
@@ -72,10 +72,10 @@ export async function POST(request: Request) {
       Price: parseFloat(entry.Price),
     }));
 
-    console.log("Orders to create:", ordersData);
+    // console.log("Orders to create:", ordersData);
 
     // บันทึกข้อมูลลงตาราง order
-    const createdOrders = await prisma.orders.createMany({
+    const createdOrders = await prisma.orders_exercise.createMany({
       data: ordersData,
     });
 
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  console.log("GET /api/buyingexercise called");
+  // console.log("GET /api/buyingexercise called");
   try {
     const session = await getServerSession(authOption);
     // @ts-expect-error
@@ -105,7 +105,7 @@ export async function GET() {
         // @ts-expect-error
         user_ID: Number(session.user.id),
       },
-      include: { orders: true, users: true },
+      include: { orders_exercise: true, users: true },
     });
     return NextResponse.json({ data: buying, msg: "success", status: 200 });
   } catch (error) {

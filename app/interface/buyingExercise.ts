@@ -18,8 +18,7 @@ export interface buyingExerciseInterface {
 }
 
 export interface BuyingService {
-  [x: string]: any;
-  orders: any;
+  orders_exercise: any;
   users: any;
   
   buying_ID: number

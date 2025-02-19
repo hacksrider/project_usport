@@ -90,7 +90,7 @@ export default function Calculate_price() {
           service_ID: i.service_ID
         };
       });
-      console.log('tempService', tempService);
+      // console.log('tempService', tempService);
       sessionStorage.setItem("serviceToSave2", JSON.stringify(tempService));
       setSelectedActivities(tempService); // อัปเดต state ของ selectedActivities
     };

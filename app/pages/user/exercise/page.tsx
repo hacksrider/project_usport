@@ -61,7 +61,7 @@ export default function Exercise() {
 
       return updatedPrices;
     });
-    console.log("find price", findPrice);
+    // console.log("find price", findPrice);
     setTimeAndUnit((prev) => {
       const updatedTimes = [...prev];
       const timeIndex = updatedTimes.findIndex(
@@ -120,7 +120,7 @@ export default function Exercise() {
     try {
       const response = await axios.get("/api/services");
       const data: ServicesInterface = await response.data;
-      console.log('----====--=-=-=-=> ', data.data);
+      // console.log('----====--=-=-=-=> ', data.data);
       setServices(data.data);
     } catch (error) {
       console.error("Error fetching services:", error);
@@ -163,10 +163,11 @@ export default function Exercise() {
         units: timeAndUnitForId.unit,
         desired_start_date: dateForId,
         Price: priceForId,
+        buying_date: today
       };
     });
   
-    console.log("timeAndUnitForId toSet---> ", toSet);
+    // console.log("timeAndUnitForId toSet---> ", toSet);
 
     setServiceToSave(toSet);
   
