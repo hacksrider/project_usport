@@ -5,68 +5,114 @@
 import MainLayout from "@/app/components/mainLayout";
 import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-// import axios from "axios";
+import { ServiceToSave } from "@/app/interface/buyingExercise";
+import axios from "axios";
+import { UserInterface } from "@/app/interface/user";
 import { useSession } from "next-auth/react";
+// import axios from "axios";
+// import { useSession } from "next-auth/react";
 
 export default function Payment() {
     const router = useRouter();
+
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("bankTransfer");
     const [slipFile, setSlipFile] = useState<File | null>(null);
-    const [totalAmount, setTotalAmount] = useState<number>(100); // Default value
-    const [timeLeft, setTimeLeft] = useState<string>("");
+    const [totalAmount, setTotalAmount] = useState<number>(0); // Default value
+    // const [timeLeft, setTimeLeft] = useState<string>("");
+    const [selectedActivities, setSelectedActivities] = useState<ServiceToSave[]>([]);
+    const { data } = useSession();
+    const userData = data as UserInterface;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // const [userData, setUserData] = useState<any>(null); // แก้ไขตามโครงสร้างข้อมูล API ของคุณ
-    const { data: session } = useSession();
-    const [selectedActivities, setSelectedActivities] = useState<
-        { name: string; price: number; duration: number; dateStart: string; dateEnd: string }[]
-    >([]);
-    
+    // const { data: session } = useSession();
+    // const [selectedActivities, setSelectedActivities] = useState<
+    //     { name: string; price: number; duration: number; dateStart: string; dateEnd: string }[]
+    // >([]);
+
+    const handleSubmitToSave = async () => {
+        if ((selectedPaymentMethod === "bankTransfer" || selectedPaymentMethod === "qr_code") && !slipFile) {
+            alert("กรุณาแนบสลิปการโอนเงิน");
+            return;
+        }
+        try {
+            const fData = new FormData();
+            if (slipFile) {
+                fData.append("payment_confirmation", slipFile);
+            }
+
+            if (!userData.user?.id) {
+                throw new Error("User ID is missing");
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // const filteredActivities = selectedActivities.map(({ service_name, ...rest }) => rest); // ลบ service_name ออกจากแต่ละ object
+
+            fData.append("user_ID", userData.user.id.toString());
+            fData.append("buying_date", new Date().toISOString());
+            fData.append("dataToCreate", JSON.stringify(selectedActivities));
+
+            const res = await axios.post("/api/buyingexercise", fData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            if (res.data.status === 200) {
+                alert("การชำระเงินสำเร็จ! ระบบจะดำเนินการต่อ");
+                router.push("/pages/user/exercise/order_summary");
+                console.log("Success:", res.data);
+            } else {
+                console.error("Error:", res.data);
+            }
+        } catch (error) {
+            console.error("Error during form submission:", error);
+        }
+    };
 
     useEffect(() => {
+        const activitiesData = sessionStorage.getItem("serviceToSave2");
+
         const storedTotal = sessionStorage.getItem("totalAll");
         if (storedTotal) {
             setTotalAmount(parseFloat(storedTotal));
         }
-    }, []);
-
-    useEffect(() => {
-        const activitiesData = sessionStorage.getItem("selectedActivities");
         if (activitiesData) {
-          console.log("Selected Activities:", JSON.parse(activitiesData)); // ตรวจสอบข้อมูล
+            setSelectedActivities(JSON.parse(activitiesData));
         }
     }, []);
 
-    useEffect(() => {
-        const countdownKey = "paymentCountdown";
-        const now = new Date().getTime();
-        const storedEndTime = sessionStorage.getItem(countdownKey);
 
-        let endTime;
-        if (storedEndTime) {
-            endTime = parseInt(storedEndTime, 10);
-        } else {
-            endTime = now + 10 * 60 * 1000; // Set 10 minutes countdown
-            sessionStorage.setItem(countdownKey, endTime.toString());
-        }
+    // useEffect(() => {
+    //     const countdownKey = "paymentCountdown";
+    //     const now = new Date().getTime();
+    //     const storedEndTime = sessionStorage.getItem(countdownKey);
 
-        const countdownInterval = setInterval(() => {
-            const currentTime = new Date().getTime();
-            const timeDifference = endTime - currentTime;
+    //     let endTime;
+    //     if (storedEndTime) {
+    //         endTime = parseInt(storedEndTime, 10);
+    //     } else {
+    //         endTime = now + 10 * 60 * 1000; // Set 10 minutes countdown
+    //         sessionStorage.setItem(countdownKey, endTime.toString());
+    //     }
 
-            if (timeDifference <= 0) {
-                clearInterval(countdownInterval);
-                sessionStorage.removeItem(countdownKey);
-                alert("ครบเวลาการชำระเงิน");
-                router.push("../exercise/calculate_price");
-            } else {
-                const minutes = Math.floor(timeDifference / (1000 * 60));
-                const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-                setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-            }
-        }, 1000);
+    //     const countdownInterval = setInterval(() => {
+    //         const currentTime = new Date().getTime();
+    //         const timeDifference = endTime - currentTime;
 
-        return () => clearInterval(countdownInterval);
-    }, [router]);
+    //         if (timeDifference <= 0) {
+    //             clearInterval(countdownInterval);
+    //             sessionStorage.removeItem(countdownKey);
+    //             alert("ครบเวลาการชำระเงิน");
+    //             router.push("../exercise");
+    //         } else {
+    //             const minutes = Math.floor(timeDifference / (1000 * 60));
+    //             const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+    //             setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    //         }
+    //     }, 1000);
+
+    //     return () => clearInterval(countdownInterval);
+    // }, [router]);
 
     const handlePaymentChange = (method: string) => {
         setSelectedPaymentMethod(method);
@@ -87,87 +133,6 @@ export default function Payment() {
         }
     };
 
-    const handleSubmit = () => {
-        if ((selectedPaymentMethod === "bankTransfer" || selectedPaymentMethod === "qr_code") && !slipFile) {
-            alert("กรุณาแนบสลิปการโอนเงิน");
-            return;
-        }
-
-        alert("การชำระเงินสำเร็จ! ระบบจะดำเนินการต่อ");
-        router.push("/pages/user/exercise/order_summary");
-    };
-
-
-
-    useEffect(() => {
-    
-        // const fetchUserData = async () => {
-        //   try {
-        //     // @ts-expect-error
-        //     const userId = session?.user?.id;
-        //     if (userId) {
-        //       const response = await axios.get(`/api/user/${userId}`);
-        //       if (response.status === 200) {
-        //         setUserData(response.data);
-        //       }
-        //     }
-        //   } catch (error) {
-        //     console.error("Error fetching user data:", error);
-        //   } 
-        // //   finally {
-        // //     setIsLoading(false);
-        // //   }
-        // };
-    
-        const loadSelectedServices = () => {
-          const tempData = sessionStorage.getItem("selectServices");
-          const temp = tempData ? JSON.parse(tempData) : [];
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const tempService = temp.map((i: any) => {
-            const duration = i.quantity_of_days || i.time?.Time_Of_Service?.quantity_of_days || 0;
-            const dateStart = i.date || "";
-            let dateEnd = "";
-    
-            if (dateStart) {
-              const startDate = new Date(dateStart);
-              switch (i.unit) {
-                case "วัน":
-                  dateEnd = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-                  break;
-                case "สัปดาห์":
-                  dateEnd = new Date(startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-                  break;
-                case "เดือน":
-                  startDate.setMonth(startDate.getMonth() + duration);
-                  dateEnd = startDate.toISOString().split("T")[0];
-                  break;
-                case "ปี":
-                  startDate.setFullYear(startDate.getFullYear() + duration);
-                  dateEnd = startDate.toISOString().split("T")[0];
-                  break;
-                default:
-                  dateEnd = "";
-              }
-            }
-    
-            return {
-              name: i.detail.service_name,
-              duration,
-              unit: i.unit, // เพิ่มการดึง unit จากข้อมูล
-              price: i.price || 0,
-              dateStart,
-              dateEnd,
-            };
-          });
-    
-          setSelectedActivities(tempService);
-        };
-    
-        // fetchUserData();
-        loadSelectedServices();
-      }, [session]);
-      {console.log("selectedActivities", selectedActivities)}
-
     return (
         <MainLayout>
             <div className="w-[800px] p-8 mx-auto">
@@ -179,8 +144,8 @@ export default function Payment() {
                     {/* Payment Method Section */}
                     <div className="mb-10">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">ยอดที่ต้องชำระเงิน</h2>
-                        <div className="text-2xl font-bold text-green-500 mb-4">฿ {totalAmount.toFixed(2)} <span className="text-black">บาท</span></div>
-                        <p className="text-xl font-bold text-gray-500 mb-4">** กรุณาชำระเงินภายใน <span className="text-red-500">{timeLeft}</span> นาที **</p>
+                        <div className="text-2xl font-bold text-green-500 mb-4">฿ {totalAmount} <span className="text-black">บาท</span></div>
+                        {/* <p className="text-xl font-bold text-gray-500 mb-4">** กรุณาชำระเงินภายใน <span className="text-red-500">{timeLeft}</span> นาที **</p> */}
                         <h2 className="text-2xl font-bold text-gray-800 mb-6">เลือกวิธีการชำระเงิน</h2>
                         <div className="grid gap-6">
                             <label className="flex items-center bg-gray-100 p-4 rounded-lg shadow-md cursor-pointer">
@@ -274,13 +239,13 @@ export default function Payment() {
                     <div className="mt-10 flex gap-6">
                         <button
                             className="w-full bg-gray-200 text-gray-800 py-4 rounded-xl font-bold hover:bg-gray-300 transition-colors"
-                            onClick={() => router.push("../exercise/calculate_price")}
+                            onClick={() => router.push("../exercise")}
                         >
-                            แก้ไขรายการ
+                            ยกเลิก
                         </button>
 
                         <button
-                            onClick={handleSubmit}
+                            onClick={handleSubmitToSave}
                             className="w-full bg-gradient-to-br from-green-500 to-teal-500 text-white py-4 rounded-xl font-bold hover:from-green-600 hover:to-teal-600 transition-transform hover:scale-105">
                             ยืนยันการสั่งซื้อ
                         </button>

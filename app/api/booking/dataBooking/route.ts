@@ -7,15 +7,12 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url); // สร้าง URL จาก req.url
     const field_ID = url.searchParams.get('field_ID');  // ดึงค่าจาก query parameter 'field_ID'
 
-    // ตรวจสอบว่า field_ID มีค่าและไม่เป็น undefined
     if (field_ID === null || field_ID === undefined) {
       return NextResponse.json({ error: 'field_ID is required' }); // ถ้าไม่มีค่า field_ID ส่งข้อความผิดพลาด
     }
 
-    // แปลงค่า field_ID เป็นตัวเลข
     const fieldIdNumber = Number(field_ID);
 
-    // ตรวจสอบว่า fieldIdNumber เป็นตัวเลขที่ถูกต้อง
     if (isNaN(fieldIdNumber)) {
       return NextResponse.json({ error: 'Invalid field_ID' }); // ถ้าแปลงไม่ได้ให้ส่งข้อความผิดพลาด
     }
@@ -54,15 +51,9 @@ export async function GET(req: NextRequest) {
   
       for (const booking of bookingData) {
         if (
-          !booking.user_ID ||
-          !booking.field_ID ||
-          !booking.booking_date ||
-          !booking.desired_booking_date ||
-          !booking.Price ||
-          !booking.end_Time ||
-          !booking.start_Time ||
-          !booking.booking_status ||
-          !booking.order_ID
+          booking.user_ID === 0  ||
+          booking.field_ID === 0 ||
+          booking.order_ID === 0
         ) {
           return new Response(
             JSON.stringify({ message: "Missing required fields." }),
@@ -92,8 +83,28 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  export async function PUT(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const order_ID = searchParams.get('order_ID');
+    const status = searchParams.get('status');
 
-
+    if (!order_ID) {
+      return NextResponse.json({ error: 'Missing order_ID' }, { status: 400 });
+    }
+    try {
+      const updateBooking = await prisma.bookings.updateMany({
+        where: {
+          order_ID: Number(order_ID),
+        },
+        data: {
+          booking_status: status?.toString(),
+        },
+      });
+      return NextResponse.json("อัปเดตแล้วจ้าาาา ข้อมูล : "+ updateBooking.count);
+    } catch (error) {
+      return NextResponse.json({ error: 'Error fetching booking' }, { status: 500 });
+    }
+  }
 
   // export async function POST(req: Request) {
   //   try {
@@ -108,9 +119,6 @@ export async function GET(req: NextRequest) {
   //     return Response.json({ message: "Error", error }, { status: 500 });
   //   }
   // }
-
-
-
 
   // export default async function handler(
   //   req: NextApiRequest,

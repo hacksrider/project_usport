@@ -23,17 +23,6 @@ export default function OrderSummary() {
     const [selectedActivities, setSelectedActivities] = useState<
         { name: string; price: number; duration: number; dateStart: string; dateEnd: string }[]
     >([]);
-    // const [totalAll, setTotalAll] = useState<number>(0);
-
-    // useEffect(() => {
-    //     const activitiesData = sessionStorage.getItem("selectedActivities");
-    //     setSelectedActivities(activitiesData ? JSON.parse(activitiesData) : []);
-
-    //     const slipFile = sessionStorage.getItem("uploadedSlip");
-    //     if (slipFile) {
-    //         setSlipFile(slipFile); // Directly set the base64 string
-    //     }
-    // }, []);
 
     useEffect(() => {
         const activitiesData = sessionStorage.getItem("selectedActivities");

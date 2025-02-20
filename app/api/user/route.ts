@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     const user_password = formData.get("user_password")?.toString();
     const sex = formData.get("sex")?.toString();
     const status_of_VIP = formData.get("status_of_VIP")?.toString();
+    const status_of_Member = formData.get("status_of_Member")?.toString();
 
     const ID_card_photo = formData.get("ID_card_photo") as File | null;
     const accom_rent_contrac_photo = formData.get("accom_rent_contrac_photo") as File | null;
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
         user_username,
         user_password: hashedPassword,
         status_of_VIP: status_of_VIP === "true",
+        status_of_Member: status_of_Member === "false",
         user_email,
         sex,
         ID_card_photo: filePath,

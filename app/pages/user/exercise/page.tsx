@@ -3,11 +3,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import MainLayout from "@/app/components/mainLayout";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ServiceAll, ServicesInterface } from "@/app/interface/services";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { ServiceToSave } from "@/app/interface/buyingExercise";
 
 export default function Exercise() {
   const { data, status } = useSession();
@@ -16,37 +17,68 @@ export default function Exercise() {
   const [selectedRadio, setSelectedRadio] = useState<{ [key: string]: string | number }>({});
   const [otherSelected, setOtherSelected] = useState<{ [key: string]: boolean }>({});
   const [otherValues, setOtherValues] = useState<{ [key: string]: number }>({});
-  const [selectServices, setSelectServices] = useState<any[]>([]);
   const [dates, setDates] = useState<{ [key: string]: string }>({});
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
-
   const router = useRouter();
 
-  useEffect(() => {
-    console.log(selectServices);
-    checkSubmitEligibility();
-  }, [selectServices]);
+  const [serviceToSave,setServiceToSave] = useState<ServiceToSave[]>([]);
 
-  const addService = (index: number, e: React.ChangeEvent<HTMLInputElement>, service: ServiceAll) => {
-    const minPrice = service.price_exercise.reduce((min, p) => Math.min(min, p.price), Infinity);
-    const price =
-      service.price_exercise.find((p) => p.time_ID === selectedRadio[service.service_name])?.price || 0;
+  const [serviceId, setServiceId] = useState<{ id: number; name: string, index: number }[]>([]);
+  const [timeAndUnit, setTimeAndUnit] = useState<{ time_id: number; time: number; unit: string, index: number }[]>([]);
+  const [dateStart, setDateStart] = useState<{ [key: string]: string }>({});
+  const [price, setPrice] = useState<{ price: number; index: number }[]>([]);
 
-    let temp = [...selectServices];
+
+  const handleCheckboxChangeID = (e: React.ChangeEvent<HTMLInputElement>, id: number, index: number, name: string) => {
     if (e.target.checked) {
-      temp.push({
-        detail: service,
-        time: null,
-        unit: "",
-        date: dates[service.service_name] || "",
-        price,
-      });
+      setServiceId((prev) => [...prev, { id, name, index }]);
     } else {
-      temp = temp.filter((t) => t.detail.service_ID !== service.service_ID);
+      setServiceId((prev) => prev.filter((s) => s.id !== id));
     }
-    setSelectServices(temp);
     handleClick(index);
   };
+
+  const handleSetTimeAndUnit = (e: React.ChangeEvent<HTMLInputElement>, time_id: number, time: number, unit: string,
+    index: number, id: number, serviceName: string,) => {
+    setSelectedRadio((prev) => ({
+      ...prev,
+      [serviceName]: Number(e.target.value),
+    }));
+
+    const findPrice =
+      services
+        .find((s) => s.service_ID === id)
+        ?.price_exercise.find((p) => p.time_ID === time_id)?.price || 0;
+    setPrice((prev) => {
+      const updatedPrices = [...prev];
+      const priceIndex = updatedPrices.findIndex((p) => p.index === index);
+
+      if (priceIndex > -1) {
+        updatedPrices[priceIndex].price = findPrice;
+      } else {
+        updatedPrices.push({ price: findPrice, index });
+      }
+
+      return updatedPrices;
+    });
+    console.log("find price", findPrice);
+    setTimeAndUnit((prev) => {
+      const updatedTimes = [...prev];
+      const timeIndex = updatedTimes.findIndex(
+        (t) => t.index === index
+      );
+
+      if (timeIndex > -1) {
+        updatedTimes[timeIndex] = { time_id, time, unit, index };
+      } else {
+        updatedTimes.push({ time_id, time, unit, index });
+      }
+      return updatedTimes;
+    });
+  };
+
+
+
 
   const handleClick = (index: number) => {
     const serviceName = services[index].service_name;
@@ -77,67 +109,75 @@ export default function Exercise() {
     });
   };
 
-  const handleRadioChange = (
-    serviceName: string,
-    e: React.ChangeEvent<HTMLInputElement>,
-    service: ServiceAll,
-    timeOption: any
-  ) => {
-    const price = timeOption.price || 0;
-
-    const temp = selectServices.map((t) => {
-      if (t.detail.service_ID === service.service_ID) {
-        sessionStorage.setItem(`${serviceName}_unit`, timeOption.time_of_service.unit);
-        return { ...t, time: timeOption, price, unit: timeOption.time_of_service.unit };
-      }
-      return t;
-    });
-
-    setSelectServices(temp);
-    setSelectedRadio((prev) => ({
+  const handleDateChange = (value: string, serviceName: string) => {
+    setDateStart((prev) => ({
       ...prev,
-      [serviceName]: Number(e.target.value),
+      [serviceName]: value, // อัปเดตวันที่ใหม่สำหรับ serviceName
     }));
-  };
-
-  const handleDateChange = (serviceName: string, value: string) => {
-    setDates((prev) => ({
-      ...prev,
-      [serviceName]: value,
-    }));
-
-    setSelectServices((temp) =>
-      temp.map((t) => {
-        if (t.detail.service_name === serviceName) {
-          return { ...t, date: value };
-        }
-        return t;
-      })
-    );
   };
 
   const fetchServices = async () => {
     try {
       const response = await axios.get("/api/services");
       const data: ServicesInterface = await response.data;
+      console.log('----====--=-=-=-=> ', data.data);
       setServices(data.data);
     } catch (error) {
       console.error("Error fetching services:", error);
     }
   };
 
-  const checkSubmitEligibility = () => {
-    const isEligible =
-      selectServices.length > 0 &&
-      selectServices.every((service) => service.time && service.date);
+  const checkSubmitEligibility = useCallback(() => {
+    const isServiceIdFilled = serviceId.length > 0;
+    const isTimeAndUnitFilled = timeAndUnit.length > 0;
+    const isDateStartFilled = Object.keys(dateStart).length > 0;
+    const isPriceFilled = price.length > 0;
+
+    const isEligible = isServiceIdFilled && isTimeAndUnitFilled && isDateStartFilled && isPriceFilled;
+
     setIsSubmitEnabled(isEligible);
-  };
+  }, [serviceId, timeAndUnit, dateStart, price]);
 
   useEffect(() => {
     fetchServices();
+    console.log(services);
   }, []);
 
+  useEffect(() => {
+    checkSubmitEligibility();
+  }, [checkSubmitEligibility]);
+
   const today = new Date().toISOString().split("T")[0];
+
+  const addServices = async () => {
+    const toSet: ServiceToSave[] = serviceId.map((id) => {
+      const priceForId = price.find((p) => p.index ===  id.index )?.price || 0;
+      const dateForId = dateStart[id.name] || ""; // ดึงวันที่ตาม service_name
+      const timeAndUnitForId = timeAndUnit.find((tu) => tu.index === id.index) || {
+        time: 0,
+        unit: "",
+      };
+      return {
+        service_name: id.name,
+        service_ID: id.id,
+        amount_of_time: timeAndUnitForId.time,
+        units: timeAndUnitForId.unit,
+        desired_start_date: dateForId,
+        Price: priceForId,
+        buying_date: today
+      };
+    });
+  
+    console.log("timeAndUnitForId toSet---> ", toSet);
+
+    setServiceToSave(toSet);
+  
+    // เก็บข้อมูลใน sessionStorage
+    sessionStorage.setItem("serviceToSave", JSON.stringify(toSet));
+  
+    // นำทางไปหน้าอื่น
+    router.push("/pages/user/exercise/calculate_price");
+  };
 
   return (
     <MainLayout>
@@ -148,7 +188,7 @@ export default function Exercise() {
             alt="Banner 1"
             className="w-full h-72 object-cover brightness-90 scale-110 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-30 bg-opacity-50 transition-all duration-500 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50 transition-all duration-500 flex items-center justify-center">
             <p className="text-white text-3xl font-bold opacity-100 transition-opacity duration-500">
               เลือกรายการออกกำลังกาย
             </p>
@@ -165,6 +205,8 @@ export default function Exercise() {
                 (a, b) => a.time_of_service.quantity_of_days - b.time_of_service.quantity_of_days
               );
 
+
+
               return (
                 <div
                   key={index}
@@ -174,7 +216,7 @@ export default function Exercise() {
                     <input
                       type="checkbox"
                       id={`fitness-${index}`}
-                      onChange={(e) => addService(index, e, service)}
+                      onChange={(e) => handleCheckboxChangeID(e, service.service_ID, index, service.service_name)}
                       name="activity"
                       className="mr-4 h-7 w-7 text-blue-500 focus:ring-blue-500 focus:ring-2 rounded-full"
                     />
@@ -193,11 +235,25 @@ export default function Exercise() {
                             type="radio"
                             name={`duration-${index}`}
                             value={timeOption.time_of_service.time_ID}
-                            checked={Number(selectedRadio[service.service_name]) === timeOption.time_of_service.time_ID}
-                            onChange={(e) => handleRadioChange(service.service_name, e, service, timeOption)}
+                            checked={
+                              Number(selectedRadio[service.service_name]) ===
+                              timeOption.time_of_service.time_ID
+                            }
+                            onChange={(e) =>
+                              handleSetTimeAndUnit(
+                                e,
+                                timeOption.time_of_service.time_ID,
+                                timeOption.time_of_service.quantity_of_days,
+                                timeOption.time_of_service.unit,
+                                index,
+                                service.service_ID,
+                                service.service_name
+                              )
+                            }
                             className="mr-3 h-6 w-6"
                           />
-                          {timeOption.time_of_service.quantity_of_days} {timeOption.time_of_service.unit}
+                          {timeOption.time_of_service.quantity_of_days}{" "}
+                          {timeOption.time_of_service.unit}
                         </label>
                       ))}
                     </div>
@@ -207,14 +263,16 @@ export default function Exercise() {
                     <input
                       className="w-1/2 p-2 border border-gray-300 rounded-md text-gray-800"
                       type="date"
-                      value={dates[service.service_name] || ""}
-                      onChange={(e) => { handleDateChange(service.service_name, e.target.value); }}
+                      value={dateStart[service.service_name] || ""} // ดึงค่าจาก dateStart โดยใช้ service_name เป็น key
+                      onChange={(e) => {
+                        handleDateChange(e.target.value, service.service_name); // ส่ง value และ service_name
+                      }}
                       min={today}
                       disabled={!isSelect.includes(service.service_name)}
                     />
                   </div>
                   <div className="ml-auto text-gray-600 text-sm font-medium mt-1 mb-4 flex items-center justify-end gap-2">
-                    ราคา <p className="font-bold text-blue-500 text-lg flex items-center">{selectServices.find(t => t.detail.service_ID === service.service_ID)?.price || 0}</p> บาท
+                    ราคา <p className="font-bold text-blue-500 text-lg flex items-center">{price.find((p) => p.index === index)?.price || 0}</p> บาท
                   </div>
                 </div>
               );
@@ -226,8 +284,8 @@ export default function Exercise() {
                 alert("กรุณาเข้าสู่ระบบ");
                 // router.push("/pages/user/AAA/login");
               } else {
-                sessionStorage.setItem("selectServices", JSON.stringify(selectServices));
-                router.push("/pages/user/exercise/calculate_price");
+                // sessionStorage.setItem("selectServices", JSON.stringify(selectServices));
+                addServices();
               }
             }}
             disabled={!isSubmitEnabled}

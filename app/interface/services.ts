@@ -34,6 +34,8 @@ export interface ServicesInterface {
 }
 
 export interface ServiceAll {
+  id: string
+  serviceName: any
   price: any
   service_ID: number
   service_name: string

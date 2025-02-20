@@ -1,4 +1,41 @@
 import prisma from "@/lib/db";
+
+export async function GET() {
+  try{
+    const fetchdataOrder = await prisma.order_Bookings.findMany({
+      include: {
+        bookings: {
+          select: {
+            booking_ID: true, // ระบุให้คืนค่า booking_ID
+            users: {
+              select: {
+                user_ID:true,
+                user_name: true,
+                user_lastname: true,
+                type_of_user: true,
+              },
+            },
+            fields: {
+              select: {
+                field_name: true,
+              },
+            },
+            booking_date: true,
+            desired_booking_date: true,
+            end_Time: true,
+            start_Time: true,
+            booking_status: true,
+            Price: true,
+          },
+        },
+      },
+    });
+        return Response.json(fetchdataOrder);
+  }catch{
+    return Response.json("เกิดข้อผิดพลาดในการดึงข้อมูลการจองสนาม");
+  }
+}
+
 export async function POST(req: Request) {
     try {
         const data = await req.json();

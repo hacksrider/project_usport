@@ -68,18 +68,6 @@ const Booking : React.FC = () => {
       
   }, []);  
 
-  useEffect(()=>{
-    const fetchAccountBankData = async () => {
-      try {
-            const response = await axios.get('/api/booking/uploadPayment');
-            console.log(response);
-            setPreviewImgBanking(response.data);
-      } catch (error) {
-        console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
-      }
-    };
-    fetchAccountBankData();
-  },[])
 
   useEffect(() => {
     const generateWeekSlots = (startDate: string, dataBooking: dataBookingFromAPI[]): Slots => {
@@ -440,13 +428,13 @@ const handleConfirmBooking = () => {
 
   const openPayment = () => {
     setIsPaymantPageOpen(true);
+    fetchAccountBankData();
   };
 
   const closePayment = () => {
     setIsPaymantPageOpen(false);
     window.location.reload();
   };
-
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -463,7 +451,6 @@ const handleConfirmBooking = () => {
         alert("ไฟล์ต้องมีขนาดไม่เกิน 5MB");
         return;
       }
-  
       setSelectedFile(file);
     }
   };
@@ -495,6 +482,16 @@ const handleConfirmBooking = () => {
     } catch (error) {
       console.error("เกิดข้อผิดพลาด:", error);
       alert("เกิดข้อผิดพลาดในการอัปโหลด");
+    }
+  };
+
+  const fetchAccountBankData = async () => {
+    try {
+          const response = await axios.get('/api/booking/uploadPayment');
+          console.log(response);
+          setPreviewImgBanking(response.data);
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
     }
   };
 
@@ -548,12 +545,12 @@ const handleConfirmBooking = () => {
                                                         ? 'bg-gray-500 cursor-not-allowed'  // ถ้าเป็นเวลา 9:00 - 13:00 ของวันนี้ ให้เป็นสีเทา 
                                                         : slot.status === 'booked'
                                                         ? 'bg-red-500 cursor-not-allowed'
-                                                        : slot.status === 'inspecting'
+                                                        : slot.status === 'inspecting' 
                                                         ? 'bg-yellow-500 cursor-not-allowed' 
                                                         : selectedSlots.find((selectedSlot) => selectedSlot.time === slot.time && selectedSlot.date === date)
                                                         ? 'bg-blue-500'  
                                                         : slot.status === 'available' 
-                                                        ? 'bg-green-500' : ''
+                                                        ? 'bg-green-500' : 'bg-green-500'
                                                     }
                                                 `}
                                                 onClick={() => {
@@ -605,9 +602,9 @@ const handleConfirmBooking = () => {
             <h2 className="text-xl font-semibold mb-4">ยืนยันการจอง</h2>
             <p className="mb-4">คุณต้องการยืนยันการจองเวลาเหล่านี้หรือไม่?</p>
             <ul className="mb-4">
-              {selectedSlots.map((slot, index) => (
+              {dataForSend.map((slot, index) => (
                 <li key={index} className="text-gray-700">
-                            {dayjs(slot.date).format('DD-MM-YYYY')} {slot.time}
+                      รายการที่ {index+1+' :'} {dayjs.utc(slot.desired_booking_date).format('DD-MM-YYYY')} {slot.start_Time.toString().split(' ')[4].split(':').slice(0,2).join(':')} - {slot.end_Time.toString().split(' ')[4].split(':').slice(0,2).join(':')}
                     </li>
                   )
                 )

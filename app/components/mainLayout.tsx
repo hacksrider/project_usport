@@ -2,8 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useRef, useEffect } from 'react';
-import { FaFacebook, FaTwitter, FaInstagram, FaBars, FaTimes, FaChevronRight } from 'react-icons/fa';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaInstagram, FaBars, FaTimes, FaChevronDown } from 'react-icons/fa';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -184,7 +183,7 @@ export default function MainLayout({ children }: mainLayoutProp) {
                         </li>
                         <li>
                           <button
-                            onClick={() => router.push('/pages/user/profile')}
+                            onClick={() => router.push('/pages/user/purchase_order')}
                             role="button"
                             className="w-full flex items-center justify-between px-4 py-2 text-gray-700 hover:bg-gray-100"
                           >
@@ -285,24 +284,22 @@ export default function MainLayout({ children }: mainLayoutProp) {
                 <div className="relative">
                   <button
                     onClick={toggleServicesMenu}
-                    className="block text-black text-lg flex items-center"
+                    className="text-black text-lg flex items-center"
                   >
                     บริการ
                     <FaChevronDown className="ml-2" />
                   </button>
                   {servicesMenuOpen && (
                     <ul className="mt-2 space-y-2">
-                      <li>
-                        <a
+                      <li
                           onClick={() => {
                             router.push('/pages/user/exercise');
                             toggleMobileMenu();
                           }}
                           role="button"
-                          className="block text-black text-lg flex items-center"
-                        >
-                          <FaChevronRight className="ml-2 mr-1" /> บริการออกกำลังกาย
-                        </a>
+                          className="block text-black text-[16px] ml-5"
+                        > 
+                        บริการออกกำลังกาย
                       </li>
                       <li>
                         <a
@@ -311,9 +308,9 @@ export default function MainLayout({ children }: mainLayoutProp) {
                             toggleMobileMenu();
                           }}
                           role="button"
-                          className="block text-black text-lg flex items-center"
+                          className="block text-black text-lg text-[16px] ml-5"
                         >
-                          <FaChevronRight className="ml-2 mr-1" /> สนามฟุตบอล
+                        สนามฟุตบอล
                         </a>
                       </li>
                     </ul>
