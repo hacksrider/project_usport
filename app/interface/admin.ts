@@ -40,6 +40,7 @@ export interface AdminInterface {
 }
 
 export interface Admin {
+  id: number;
   emp_ID: number;
   emp_name: string;
   emp_lastname: string;

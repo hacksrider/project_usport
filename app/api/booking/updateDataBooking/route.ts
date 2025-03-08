@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-//import { Request, Response } from 'express';
-
 import prisma from '@/lib/db'; 
-import { get } from 'http';
-import e from 'express';
+
 
 // export async function get(req :Request){
 //     try{
@@ -73,7 +70,6 @@ export async function DELETE(req :Request){
               },
             }),
           ]);
-          // ส่งข้อความตอบกลับว่าได้ลบข้อมูลเรียบร้อยแล้ว
           return new Response('ลบข้อมูลเรียบร้อยแล้ว', { status: 200 });
     } catch (error) {
         console.error('Error deleting data:', error);
@@ -85,7 +81,8 @@ export async function PUT(req: Request) {
   try{
          const getdata = await req.json();
          const caseWork = getdata[0].case_type;
-         const  count = getdata.length ;
+         const count = getdata.length ;
+         
       if (caseWork === 'c1') {
            for (let i = 0; i < count; i++) {
             await prisma.bookings.update({
@@ -94,7 +91,7 @@ export async function PUT(req: Request) {
               },
               data:{
                     Price: getdata[i].Price,
-                    booking_status: 'chenged',
+                    booking_status: 'รอการตรวจสอบ',
                     desired_booking_date: getdata[i].desired_booking_date,
                     end_Time: getdata[i].end_Time,
                     start_Time: getdata[i].start_Time,
@@ -108,24 +105,75 @@ export async function PUT(req: Request) {
               order_ID: getdata[0].order_ID,
             },
             data:{
-              totalprice: getdata[0].totalPriceForOrder
+              totalprice: getdata[0].totalPriceForOrder,
+              emp_ID: Number(getdata[0].emp_ID)
             }
            })
-    } else if(caseWork === 'c3'){
-      const upStatusBooking = await prisma.bookings.updateMany({
-        where :{
-          order_ID : getdata[0].order_ID,
-        },
-        data :{
-          booking_status: 'chenged',
+        return Response.json({ message: 'update data is successfully "C1"' });
+
+    } else if(caseWork === 'c2'){
+      const upStatusBooking = await prisma.$transaction([
+        prisma.bookings.updateMany({
+          where :{
+            order_ID : getdata[0].order_ID,
+          },
+          data :{
+            field_ID: getdata[0].field_ID,
+            desired_booking_date:getdata[0].desired_booking_date,
+            start_Time:getdata[0].start_Time,
+            end_Time:getdata[0].end_Time,
+            booking_status: 'จองสำเร็จ',
+          }
+        }),
+        prisma.order_Bookings.update({
+          where:{
+            order_ID : getdata[0].order_ID,
+          },
+          data:{
+            emp_ID: Number(getdata[0].emp_ID),
+          }
+        })
+      ])
+      return Response.json({ message: 'update data is successfully "C2"',upStatusBooking});
+
+    }else if (caseWork === 'c3') {
+      const deletebooking = await prisma.bookings.deleteMany({
+        where:{
+          order_ID:getdata[0].order_ID
         }
       })
-      // const result = await prisma.bookings.createMany({
-      //   data: getdata,
-      //   skipDuplicates: true, // ข้ามข้อมูลที่ซ้ำ ถ้ามี
-      // });
+      if(deletebooking.count !== 0){
+        let results=[] ;
+        for (let i = 0; i < getdata.length; i++) {
+          const createdBooking = await prisma.bookings.create({
+            data: {
+              field_ID: getdata[i].field_ID,
+              booking_date: getdata[i].booking_date,
+              booking_status: getdata[i].booking_status,
+              start_Time: getdata[i].start_Time,
+              end_Time: getdata[i].end_Time,
+              user_ID: getdata[i].user_ID,
+              order_ID: getdata[i].order_ID,
+              desired_booking_date: getdata[i].desired_booking_date,
+              Price: getdata[i].Price,
+            }
+          });
+          results.push(createdBooking); // เก็บผลลัพธ์แต่ละรายการ
+        }
+        const updatePrice = await prisma.order_Bookings.update({
+          where : {
+            order_ID: getdata[0].order_ID,
+          },
+          data:{
+            totalprice: getdata[0].totalPriceForOrder,
+            emp_ID: Number(getdata[0].emp_ID)
+          }
+         })
+         return Response.json({ message: 'update data is successfully "C3"',results,updatePrice});
+      }else {
+        return Response.json({ message: 'No bookings to delete for "C3"' });
+       }
     }
-    return Response.json({ message: 'update data is successfully' });
   } catch (error) {
     console.error('Error updating bookings:', error);
     return Response.json({ error: 'Internal Server Error' });

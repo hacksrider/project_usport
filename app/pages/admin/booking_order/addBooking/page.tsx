@@ -10,8 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import MainLayout from '@/app/components/mainLayout';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import Index from '@/app/page';
-import { join } from 'path';
+
 
 dayjs.extend(utc);
 
@@ -65,7 +64,7 @@ export default function AddBooking(){
                 const data = response.data;
                 console.log(data);
                 const updatedData = data.map((booking: dataBookingFromAPI) => {
-                    const date = dayjs(booking.desired_booking_date).format('YYYY-MM-DD');
+                    const date = dayjs.utc(booking.desired_booking_date).format('YYYY-MM-DD');
                     const str = `${booking.start_Time.split("T")[1].split(':')[0]}`;
                     const end = `${booking.end_Time.split("T")[1].split(':')[0]}`;
                     const status = booking.booking_status;
@@ -99,20 +98,16 @@ export default function AddBooking(){
     fetchFeildData();
   }, [IDF]);  
   
-
-
   useEffect(() => {
     const generateWeekSlots = (startDate: string, dataBooking: dataBookingFromAPI[]): Slots => {
         const slots: Slots = {};
 
         for (let i = 0; i < 7; i++) {
-            const date = dayjs(startDate).add(i, 'day').format('YYYY-MM-DD');  // วันที่ของ slot แต่ละวัน
+            const date = dayjs.utc(startDate).add(i, 'day').format('YYYY-MM-DD');  // วันที่ของ slot แต่ละวัน
             slots[date] = Array.from({ length: 15 }, (_, index) => {
                 let STAhour = 9 + index;
                 let ENDhour = 10 + index;
-                if (ENDhour === 24) {
-                    ENDhour = 0;
-                }
+                
                 const time = `${STAhour}:00 - ${ENDhour}:00`;
 
                 // เริ่มต้นสถานะเป็น 'available'
@@ -125,7 +120,6 @@ export default function AddBooking(){
                     const str = parseInt(booking.start_Time);
                     const end =parseInt(booking.end_Time);
 
-                    
                     if (bookingDate === date) {
                           // console.log("เวลาเริ่ม",STAhour);
                           // console.log("เวลาเริ่มตัวเปรียบเทียบ",str);
@@ -155,15 +149,15 @@ const handleDateSearch = (date: string) => {
       setCurrentStartDate(date);
 };
 
-    const handleSlotClick = ( ID: string, date: string, time: string, status: string) => {
-        if (status === 'booked') return;
+const handleSlotClick = ( ID: string, date: string, time: string, status: string) => {
+      if (status === 'booked') return;
         const isSelected = selectedSlots.find((slot) => slot.date === date && slot.time === time);
-        if (isSelected) {                                                                                                 //ถ้ามีข้อมูลในอาเรย์            
+      if (isSelected) {                                                                                                 //ถ้ามีข้อมูลในอาเรย์            
             setSelectedSlots(selectedSlots.filter((slot) => !(slot.date === date && slot.time === time)));                  //ทำการลบข้อมูลออกจากอาเรย์ 
-          } else if(isSelected == undefined || selectedSlots.length === 0) {                                                 //ถ้าไม่มี หรือว่า อาเรย์ว่างเปล่า
+      } else if(isSelected == undefined || selectedSlots.length === 0) {                                                 //ถ้าไม่มี หรือว่า อาเรย์ว่างเปล่า
             setSelectedSlots([...selectedSlots, {ID ,date,time }]);   
-        }
-    };
+      }
+};
 
     interface sepDate {
       date: string;
@@ -187,10 +181,42 @@ const handleDateSearch = (date: string) => {
     const [totalPriceBooking, setTotalPriceBooking] = useState(0);
 
     
-    const pricePer1_1 = 800;
-    const pricePer1_2 = 1000;
-    const pricePer2_1 = 1200;
-    const pricePer2_2 = 1500;
+    type PriceData = {
+      field_ID: number;
+      period_ID: number;
+      price_ID: number;
+      price_for_2h: number;
+      price_per_1h: number;
+    };
+
+    const [price1hForPeriod1, setPrice1hForPeriod1] = useState(0);
+    const [price1hForPeriod2, setPrice1hForPeriod2] = useState(0);
+    const [price2hForPeriod1, setPrice2hForPeriod1] = useState(0);
+    const [price2hForPeriod2, setPrice2hForPeriod2] = useState(0);
+
+    useEffect(()=>{
+      const fetchPrice = async() =>{
+          try{
+            const dataPrice = await axios.get(`/api/booking/dataPrice?field_ID=${IDF}`);
+            const PricefromAPI: PriceData[] = dataPrice.data;
+            const period1 = PricefromAPI.find(item => item.period_ID === 1);
+            const period2 = PricefromAPI.find(item => item.period_ID === 2);
+
+            if (period1) {
+              setPrice1hForPeriod1(period1.price_per_1h);
+              setPrice2hForPeriod1(period1.price_for_2h);
+            }
+            if (period2) {
+              setPrice1hForPeriod2(period2.price_per_1h);
+              setPrice2hForPeriod2(period2.price_for_2h);
+            }
+
+          }catch(error){
+            console.log("ไม่สามารถดึงข้อมูลราคาได้");
+          }
+      } 
+      fetchPrice();
+    },[IDF])
     
     const handleProcessingBooking = () => {
       let countPrice = 0;
@@ -217,10 +243,10 @@ const handleDateSearch = (date: string) => {
             const consecutiveData = {
               user_ID: userID,
               field_ID: IDF,  // field_ID ที่เกี่ยวข้อง
-              booking_date: dayjs().toDate(),  // แปลงเป็น DateTime
-              desired_booking_date: dayjs(slot.date).toDate(),  // แปลงเป็น DateTime
+              booking_date: dayjs.utc().toDate(),  // แปลงเป็น DateTime
+              desired_booking_date: dayjs.utc(slot.date).toDate(),  // แปลงเป็น DateTime
               Price: consecutive[index].price,
-              booking_status: "inspecting",  // ตั้งสถานะการจองเป็น inspecting หรือสถานะอื่นๆ
+              booking_status: "รอการตรวจสอบ",  // ตั้งสถานะการจองเป็น inspecting หรือสถานะอื่นๆ
               end_Time: dayjs.utc(`${slot.date} ${e.details[lastIndex].value.split(" - ")[1]}`, 'YYYY-MM-DD HH:mm:ss').toDate(),
               start_Time: dayjs.utc(`${slot.date} ${e.details[0].value.split(" - ")[0]}`, 'YYYY-MM-DD HH:mm:ss').toDate(),  // เวลาการเริ่มต้น
             };
@@ -232,12 +258,12 @@ const handleDateSearch = (date: string) => {
             const nonConsecutiveData = {
               user_ID: userID,
               field_ID: IDF,  // field_ID ที่เกี่ยวข้อง
-              booking_date: dayjs().toDate(),  // แปลงเป็น DateTime
-              desired_booking_date: dayjs(slot.date).toDate(),  // แปลงเป็น DateTime
+              booking_date: dayjs.utc().toDate(),  // แปลงเป็น DateTime
+              desired_booking_date: dayjs.utc(slot.date).toDate(),  // แปลงเป็น DateTime
               Price: nonConsecutive[index].price,
-              booking_status: "inspecting",  // ตั้งสถานะการจองเป็น inspecting หรือสถานะอื่นๆ
-              end_Time: dayjs.utc(slot.date).add(1, 'hour').toDate(),  // เวลาสิ้นสุด เช่น เพิ่มเวลาอีก 1 ชั่วโมง
-              start_Time: dayjs.utc(slot.date).toDate(),  // เวลาการเริ่มต้นจาก slot
+              booking_status: "รอการตรวจสอบ",  // ตั้งสถานะการจองเป็น inspecting หรือสถานะอื่นๆ
+              end_Time: dayjs.utc(`${slot.date} ${e.details[0].value.split(" - ")[1]}`, 'YYYY-MM-DD HH:mm:ss').toDate(),  // เวลาสิ้นสุด เช่น เพิ่มเวลาอีก 1 ชั่วโมง
+              start_Time: dayjs.utc(`${slot.date} ${e.details[0].value.split(" - ")[0]}`, 'YYYY-MM-DD HH:mm:ss').toDate(),
             };
             newDataForSend.push(nonConsecutiveData); // Add non-consecutive booking to newDataForSend
             acc.push({ date: slot.date, time: timesForDate, detalis: nonConsecutiveData });
@@ -261,44 +287,100 @@ function countConsecutive(
   
     // ฟังก์ชันสำหรับคำนวณราคา
     const calculatePrice = (times: { ID: string, value: string }[]): number => {
-        let totalPrice = 0;
+      let totalPrice = 0;
 
-        if (times.length === 1) {
-            const time = times[0].value;
-            const firstHour = parseInt(time.split(":")[0]); // แยกชั่วโมงจากเวลา (เช่น "10:00" -> 10)
-            if (firstHour >= 9 && firstHour < 16) {
-                totalPrice = pricePer1_1; // ใช้ = แทน ===
-            }else if(firstHour >= 16 && firstHour < 24) {
-                totalPrice = pricePer1_2; // ใช้ = แทน ===
-            }
-        } else {
-            const quantityHour = times.length;
-            const firstTime = times[0].value;
-            const lastTime = times[times.length - 1].value;
-            const firstHour = parseInt(firstTime.split(":")[0]);                                                                      // แยกชั่วโมงจากเวลา (เช่น "10:00" -> 10)
-            const lastHour = parseInt(lastTime.split(" - ")[1].split(":")[0]);                                                        // แยกชั่วโมงจากเวลา (เช่น "10:00" -> 10)
-            
-                if (quantityHour === 2) {
-                    if(firstHour >= 15 && firstHour <= 21){
-                        totalPrice = pricePer2_2;                    console.log("AAAAAAA")
-                    } else totalPrice = pricePer2_1;                 console.log("bbbbbbbb")
-                }else{
-                    const evenNum = Math.trunc(quantityHour / 2); 
-                    const oddNum = quantityHour%2 ;                                                                                    
-                    if (firstHour >= 9 && firstHour <=13 ) {                                                                           //1_1 = 800 
-                        totalPrice = ( pricePer2_1 * evenNum ) + ( pricePer1_1 * oddNum ); console.log("1111111")                      //1_2 = 1000                                      
-                    }else if(firstHour === 14 || firstHour === 21){                                                                    //2_1 = 1200
-                        totalPrice = ( pricePer2_1 * evenNum ) + ( pricePer1_2 * oddNum ); console.log("2222222")                      //2_2 = 1500
-                    }                                                                                                                                                                                                                                                                  
-                    if (firstHour === 15 || firstHour === 20) {
-                        totalPrice = ( pricePer2_2 * evenNum ) + ( pricePer1_1 * oddNum ); console.log("3333333")
-                    }else if(firstHour >= 16 && lastHour < 22) {
-                        totalPrice = ( pricePer2_2 * evenNum ) + ( pricePer1_2 * oddNum ); console.log("4444444")
-                    }
+      if (times.length === 1) {
+          const time = times[0].value;
+          const firstHour = parseInt(time.split(":")[0]); // แยกชั่วโมงจากเวลา (เช่น "10:00" -> 10)
+          if (firstHour >= 9 && firstHour < 16) {
+              totalPrice = price1hForPeriod1; // ใช้ = แทน ===
+          }else if(firstHour >= 16 && firstHour < 24) {
+              totalPrice = price1hForPeriod2; // ใช้ = แทน ===
+          }
+      } else {
+          const quantityHour = times.length;
+          const firstTime = times[0].value;
+          const lastTime = times[times.length - 1].value;
+          const firstHour = parseInt(firstTime.split(":")[0]);                                                                      // แยกชั่วโมงจากเวลา (เช่น "10:00" -> 10)
+          const lastHour = parseInt(lastTime.split(" - ")[1].split(":")[0]);                                                        // แยกชั่วโมงจากเวลา (เช่น "10:00" -> 10)
+          
+              if (quantityHour === 2) {
+                  if(firstHour >= 15 && firstHour <= 21){
+                      totalPrice = price2hForPeriod2;                    console.log("AAAAAAA")
+                  } else totalPrice = price2hForPeriod1;                 console.log("bbbbbbbb")
+              }else{
+                  const evenNum = Math.trunc(quantityHour / 2); 
+                  const oddNum = quantityHour%2 ; 
+                  
+                  if (firstHour < 16 && lastHour > 22) {
+                    // แบ่งการจองออกเป็น 3 ส่วน: ก่อน 16:00, ระหว่าง 16:00-22:00, และหลัง 22:00
+                    const hoursBefore16 = 16 - firstHour;
+                    const hoursBetween16And22 = 22 - 16;
+                    const hoursAfter22 = lastHour - 22;
+    
+                    // คำนวณราคาสำหรับส่วนก่อน 16:00
+                    const priceBefore16 = (Math.trunc(hoursBefore16 / 2) * price2hForPeriod1 + ((hoursBefore16 % 2) * price1hForPeriod1));
+    
+                    // คำนวณราคาสำหรับส่วนระหว่าง 16:00-22:00
+                    const priceBetween16And22 = (Math.trunc(hoursBetween16And22 / 2) * price2hForPeriod2) + ((hoursBetween16And22 % 2) * price1hForPeriod2);
+    
+                    // คำนวณราคาสำหรับส่วนหลัง 22:00
+                    const priceAfter22 = (Math.trunc(hoursAfter22 / 2) * price2hForPeriod1) + ((hoursAfter22 % 2) * price1hForPeriod1);
+    
+                    // รวมราคาทั้งสามส่วน
+                    totalPrice = priceBefore16 + priceBetween16And22 + priceAfter22;
+                    console.log("คร่อมหลายช่วงเวลา:", totalPrice);
+                } else if (firstHour < 16 && lastHour <= 22) {
+                    // กรณีจองคร่อมช่วงเวลา ก่อน 16:00 และหลัง 16:00 แต่ไม่เกิน 22:00
+                    const hoursBefore16 = 16 - firstHour;
+                    const hoursAfter16 = lastHour - 16;
+    
+                    // คำนวณราคาสำหรับส่วนก่อน 16:00
+                    const priceBefore16 = (Math.trunc(hoursBefore16 / 2) * price2hForPeriod1) + ((hoursBefore16 % 2) * price1hForPeriod1);
+    
+                    // คำนวณราคาสำหรับส่วนหลัง 16:00
+                    const priceAfter16 = (Math.trunc(hoursAfter16 / 2) * price2hForPeriod2) + ((hoursAfter16 % 2) * price1hForPeriod2);
+    
+                    // รวมราคาทั้งสองส่วน
+                    totalPrice = priceBefore16 + priceAfter16;
+                    console.log("คร่อมช่วงเวลา 16:00:", totalPrice);
+
+                } else if (firstHour >= 16 && lastHour > 22) {
+                    // กรณีจองคร่อมช่วงเวลา หลัง 16:00 และหลัง 22:00
+                    const hoursBefore22 = 22 - firstHour;
+                    const hoursAfter22 = lastHour - 22;
+    
+                    // คำนวณราคาสำหรับส่วนก่อน 22:00
+                    const priceBefore22 = (Math.trunc(hoursBefore22 / 2) * price2hForPeriod2) + ((hoursBefore22 % 2) * price1hForPeriod2);
+    
+                    // คำนวณราคาสำหรับส่วนหลัง 22:00
+                    const priceAfter22 = (Math.trunc(hoursAfter22 / 2) * price2hForPeriod1) + ((hoursAfter22 % 2) * price1hForPeriod1);
+    
+                    // รวมราคาทั้งสองส่วน
+                    totalPrice = priceBefore22 + priceAfter22;
+                    console.log("คร่อมช่วงเวลา 22:00:", totalPrice);
                 } 
-        }
-         return totalPrice;
-      };
+                if (firstHour >= 9 && lastHour <= 16) {
+                    // กรณีจองทั้งหมดก่อน 16:00
+                    totalPrice = (price2hForPeriod1 * evenNum) + (price1hForPeriod1 * oddNum);
+                    console.log("1111111");
+                } else if (firstHour >= 16 && lastHour <= 22) {
+                    // กรณีจองทั้งหมดระหว่าง 16:00-22:00
+                    totalPrice = (price2hForPeriod2 * evenNum) + (price1hForPeriod2 * oddNum);
+                    console.log("2222222");
+                } else if (firstHour >= 22 && lastHour <= 24) {
+                    // กรณีจองทั้งหมดหลัง 22:00
+                    totalPrice = (price2hForPeriod1 * evenNum) + (price1hForPeriod1 * oddNum);
+                    console.log("3333333");
+                }
+               
+            }
+            console.log(firstHour)  
+            console.log(lastHour)
+            console.log(times)
+      }
+       return totalPrice;
+    };
   
     let totalPrice = 0;                                                                                                                                     // สร้างตัวแปรเพื่อเก็บราคาทั้งหมด
   
@@ -385,13 +467,13 @@ const handleExternalTel = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
 useEffect(() => {
   console.log(dataForSend);
+  //console.log(selectedSlots)
     }, [dateSeparate,dataForSend,slots,dataBooking,selectedSlots,]);   
 
 
 const checkHasUserID = async (userid : number ,event: React.FormEvent) => {
-  
   event.preventDefault();
-         console.log(userid)
+        console.log(userid)
         const response = await fetch(`/api/user/${userid}`);
         const data = await response.json();
           if (response.ok) {
@@ -677,6 +759,8 @@ const openModalA = (event: React.FormEvent) => {
                     {dayjs(date).format('DD MMM YYYY')}
                   </td>
                   {slots[date]?.map((slot) => {
+                    const currenttime = parseInt(dayjs().format('HH')) ;
+                    const slotTime = parseInt(slot.ID) + 8 ;
                     return (
                       <td
                         key={`${slot.time}`}
@@ -686,11 +770,13 @@ const openModalA = (event: React.FormEvent) => {
                             (slot.time.includes('9:00 - 10:00') ||
                               slot.time.includes('10:00 - 11:00') ||
                               slot.time.includes('11:00 - 12:00') ||
-                              slot.time.includes('12:00 - 13:00'))
+                              slot.time.includes('12:00 - 13:00') ||
+                              slotTime <=  currenttime 
+                            ) || dayjs().isAfter(date, 'day') 
                               ? 'bg-gray-500 cursor-not-allowed'
-                              : slot.status === 'booked'
+                              : slot.status === 'จองสำเร็จ'
                               ? 'bg-red-500 cursor-not-allowed'
-                              : slot.status === 'inspecting'
+                              : slot.status === 'รอการตรวจสอบ'
                               ? 'bg-yellow-500 cursor-not-allowed'
                               : selectedSlots.find(
                                   (selectedSlot) =>
@@ -759,7 +845,7 @@ const openModalA = (event: React.FormEvent) => {
                     {selectedForm === 'A' && (
                       <form className="mb-6" onSubmit={(e)=>openModalA(e)}>
                         <div className="mb-4">
-                          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
+                          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">ชื่อ</label>
                           <input
                             type="text"
                             id="firstName"
@@ -772,7 +858,7 @@ const openModalA = (event: React.FormEvent) => {
                         </div>
 
                         <div className="mb-4">
-                          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
+                          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">นามสกุล</label>
                           <input
                             type="text"
                             id="lastName"
@@ -785,7 +871,7 @@ const openModalA = (event: React.FormEvent) => {
                         </div>
 
                         <div className="mb-4">
-                          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
+                          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
                           <input
                             type="tel"
                             id="phone"
@@ -822,7 +908,7 @@ const openModalA = (event: React.FormEvent) => {
                     {selectedForm === 'B' && (
                       <form className="mb-6 " onSubmit={(e)=>checkHasUserID(userID,e)}>
                         <div className="mb-4">
-                          <label htmlFor="firstNameB" className="block text-sm font-medium text-gray-700">User ID</label>
+                          <label htmlFor="firstNameB" className="block text-sm font-medium text-gray-700">รหัสสมาชิก</label>
                           <input
                             type="text"
                             id="firstNameB"
@@ -865,7 +951,9 @@ const openModalA = (event: React.FormEvent) => {
             <ul className="mb-4">
               {dataForSend.map((slot, index) => (
                 <li key={index} className="text-gray-700">
-                  รายการที่ {index+1+' :'} {dayjs(slot.desired_booking_date).format('DD-MM-YYYY')} {slot.start_Time.toString().split(' ')[4].split(':').slice(0,2).join(':')} - {slot.end_Time.toString().split(' ')[4].split(':').slice(0,2).join(':')}
+                  รายการที่ {index+1+' :'} {dayjs.utc(slot.desired_booking_date).format('DD-MM-YYYY')+'  '} 
+                                        {dayjs.utc(slot.start_Time).format('HH:mm')+' - '} 
+                                        {dayjs.utc(slot.end_Time).format('HH:mm')}
                 </li>
               ))}
               {totalPriceBooking}
@@ -896,7 +984,10 @@ const openModalA = (event: React.FormEvent) => {
                   <ul className="mb-4">
                     {dataForSend.map((slot, index) => (
                       <li key={index} className="text-gray-700">
-                         รายการที่ {index+1+' :'} {dayjs(slot.desired_booking_date).format('DD-MM-YYYY')} {slot.start_Time.toString().split(' ')[4].split(':').slice(0,2).join(':')} - {slot.end_Time.toString().split(' ')[4].split(':').slice(0,2).join(':')}
+                         รายการที่ {index+1+' :'} 
+                                {dayjs(slot.desired_booking_date).format('DD-MMMM-YYYY')+' '}
+                                {dayjs.utc(slot.start_Time).format('HH:mm')+'-'}
+                                {dayjs.utc(slot.end_Time).format('HH:mm') }
                       </li>
                     ))}
                      ราคารวม {totalPriceBooking}

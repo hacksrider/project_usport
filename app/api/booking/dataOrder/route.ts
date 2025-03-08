@@ -1,15 +1,15 @@
 import prisma from "@/lib/db";
 
 export async function GET() {
-  try{
+  try {
     const fetchdataOrder = await prisma.order_Bookings.findMany({
       include: {
         bookings: {
           select: {
-            booking_ID: true, // ระบุให้คืนค่า booking_ID
+            booking_ID: true,
             users: {
               select: {
-                user_ID:true,
+                user_ID: true,
                 user_name: true,
                 user_lastname: true,
                 type_of_user: true,
@@ -17,6 +17,7 @@ export async function GET() {
             },
             fields: {
               select: {
+                field_ID:true,
                 field_name: true,
               },
             },
@@ -30,13 +31,42 @@ export async function GET() {
         },
       },
     });
-        return Response.json(fetchdataOrder);
-  }catch{
+
+    // เรียงลำดับข้อมูล
+    const sortedData = fetchdataOrder.sort((a, b) => {
+      const statusA = a.bookings[0]?.booking_status; // เข้าถึง booking_status ของ bookings ตัวแรก
+      const statusB = b.bookings[0]?.booking_status; // เข้าถึง booking_status ของ bookings ตัวแรก
+    
+      // กำหนดลำดับของสถานะ
+      const statusOrder = {
+        "รอการตรวจสอบ": 1,
+        "ถูกเปลี่ยนแปลง": 2,
+        "เกินกำหนดจ่ายเงิน": 3,
+        "จองสำเร็จ": 4,
+        "ไม่อนุมัติ": 5,
+      };
+    
+      // ตรวจสอบว่า statusA และ statusB เป็น key ของ statusOrder
+      if (statusA && statusB && statusOrder[statusA as keyof typeof statusOrder] < statusOrder[statusB as keyof typeof statusOrder]) {
+        return -1; // statusA มาก่อน statusB
+      } else if (statusA && statusB && statusOrder[statusA as keyof typeof statusOrder] > statusOrder[statusB as keyof typeof statusOrder]) {
+        return 1; // statusB มาก่อน statusA
+      } else {
+        // ถ้าสถานะเดียวกัน ให้เรียงตาม booking_ID จากน้อยไปมาก
+        // return a.bookings[0]?.booking_ID - b.bookings[0]?.booking_ID ;
+        return b.order_ID - a.order_ID   ;
+      }
+    });
+
+    return Response.json(sortedData);
+  } catch (error) {
     return Response.json("เกิดข้อผิดพลาดในการดึงข้อมูลการจองสนาม");
   }
 }
 
-export async function POST(req: Request) {
+
+
+export async function POST(req: Request) { 
     try {
         const data = await req.json();
         console.log(data)

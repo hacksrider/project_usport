@@ -44,7 +44,7 @@ export default function Feild() {
         return feildData.map((field, index) => (
             <Card
                 key={index}
-                className='text-white mb-5 w-[35rem] h-[5rem] hover:scale-105 hover:border-2 hover:border-red-700'
+                className={`text-white mb-5 w-[35rem] h-[5rem] hover:scale-105 hover:border-2 hover:border-red-700 ${JSON.parse(field.status) === false ? 'pointer-events-none opacity-50' : ''}`}
                 style={
                         {
                         backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/user/img/football-2.jpg')`,
@@ -52,7 +52,7 @@ export default function Feild() {
                         backgroundPosition: 'center',
                         }
                 }
-                onClick={() => showVal(field.field_ID)}
+                onClick={() => JSON.parse(field.status) !== false && showVal(field.field_ID)}
             >
                 <CardHeader className='text-2xl text-center'>
                     <CardTitle> สนาม {field.field_name}</CardTitle> 

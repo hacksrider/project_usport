@@ -18,11 +18,9 @@ model bookings {
   start_Time           DateTime    
   booking_status       String    @db.VarChar(255)
   order_ID             Int       @default(0)
-
   fields               fields    @relation(fields: [field_ID], references: [field_ID], map: "Bookings_field_ID_fkey")
   users                users     @relation(fields: [user_ID], references: [user_ID], map: "Bookings_user_ID_fkey")
   order                order_Bookings    @relation(fields: [order_ID], references: [order_ID], map: "Bookings_order_ID_fkey") // ใช้ `order_id` จากโมเดล `oders`
-
   @@index([field_ID], map: "Bookings_field_ID_fkey")
   @@index([user_ID], map: "Bookings_user_ID_fkey")
   @@index([order_ID], map: "Bookings_oder_ID_fkey") // เปลี่ยนชื่อ index ให้ตรงกับฟิลด์ `oder_ID`
@@ -33,7 +31,6 @@ model order_Bookings {
   totalprice            Int
   payment_confirmation  String        @db.VarChar(255)
   emp_ID                Int
-  
   employee              employees     @relation(fields: [emp_ID], references: [emp_ID])
   bookings              bookings[]    // ความสัมพันธ์ 1-to-many
 }

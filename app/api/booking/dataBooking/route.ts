@@ -1,5 +1,4 @@
 import prisma from "@/lib/db";
-import { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -86,21 +85,33 @@ export async function GET(req: NextRequest) {
   export async function PUT(req: Request) {
     const { searchParams } = new URL(req.url);
     const order_ID = searchParams.get('order_ID');
+    const emp_ID = searchParams.get('emp_ID');
     const status = searchParams.get('status');
 
     if (!order_ID) {
       return NextResponse.json({ error: 'Missing order_ID' }, { status: 400 });
     }
     try {
-      const updateBooking = await prisma.bookings.updateMany({
-        where: {
-          order_ID: Number(order_ID),
-        },
-        data: {
-          booking_status: status?.toString(),
-        },
-      });
-      return NextResponse.json("อัปเดตแล้วจ้าาาา ข้อมูล : "+ updateBooking.count);
+      const updateBooking = await prisma.$transaction([
+        prisma.bookings.updateMany({
+          where: {
+            order_ID: Number(order_ID),
+          },
+          data: {
+            booking_status: status?.toString(),
+          },
+        }),
+        prisma.order_Bookings.update({
+          where:{
+            order_ID: Number(order_ID),
+          },
+          data:{
+            emp_ID: Number(emp_ID)
+          }
+        })
+      ]);
+      
+      return NextResponse.json("อัปเดตแล้วจ้าาาา ข้อมูล : "+ updateBooking);
     } catch (error) {
       return NextResponse.json({ error: 'Error fetching booking' }, { status: 500 });
     }
