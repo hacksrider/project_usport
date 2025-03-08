@@ -15,9 +15,9 @@ export default function Login() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
-    
+
     useEffect(() => {
-        if(status === 'authenticated') {
+        if (status === 'authenticated') {
             router.push(callbackUrl)
         }
     })
@@ -69,18 +69,18 @@ export default function Login() {
                                 className="w-full p-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
                             />
                         </div>
-                        <a onClick={() => router.push('/pages/user/AAA/forgot-pass')} className="pt-2 mt-2 text-sm text-blue-500 hover:underline">ลืมรหัสผ่าน?</a>
+                        <button onClick={() => router.push('/pages/user/AAA/forgot-pass')} className="pt-2 mt-2 text-sm text-blue-500 hover:underline">ลืมรหัสผ่าน?</button>
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
                     <button
-                        onClick={onSubmit} 
+                        onClick={onSubmit}
                         type="button" className="w-full py-2 mt-6 font-bold text-white bg-black rounded-md hover:bg-gray-800">เข้าสู่ระบบ</button>
 
                     <div className="text-center mt-6">
-                        <p className="text-sm text-gray-600">
-                            Dont have an account?{' '}
+                        <button className="text-sm text-gray-600">
+                            มีบัญชีแล้วใช่มั้ย?{' '}
                             <a onClick={() => router.push('/pages/user/AAA/register')} className="text-blue-500 hover:underline">สร้างบัญชี</a>
-                        </p>
+                        </button>
                     </div>
                 </div>
             </div>

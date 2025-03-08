@@ -5,11 +5,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
+import { useSession } from "next-auth/react";
 
 export default function EditMember() {
   const router = useRouter();
   const params = useParams();
   const userId = params.id;
+  const { update } = useSession();
 
   const [formData, setFormData] = useState({
     user_name: "",
@@ -97,7 +99,7 @@ export default function EditMember() {
     e.preventDefault();
     try {
       const form = new FormData();
-  
+
       Object.entries(formData).forEach(([key, value]) => {
         if (typeof value === "boolean") {
           form.append(key, value ? "true" : "false");
@@ -107,23 +109,26 @@ export default function EditMember() {
           form.append(key, value || ""); // ใช้ "" สำหรับค่าที่เป็น null
         }
       });
-  
+
       // ระบุสถานะการลบรูปภาพ
       form.append("isAccomPhotoDeleted", formData.accom_rent_contrac_photo === null ? "true" : "false");
-  
-      await axios.put(`/api/user/${userId}`, form, {
+
+      const res = await axios.put(`/api/user/${userId}`, form, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      alert("บันทึกข้อมูลสำเร็จ!");
-      router.push("/pages/admin/member");
+      if(res.status === 200){
+        update(res.data);
+        alert("บันทึกข้อมูลเรียบร้อย");
+        router.push("/pages/admin/member");
+      }
     } catch (error) {
       console.error("Error updating user:", error);
       alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
     }
   };
-  
+
 
   return (
     <MainLayoutAdmin>
@@ -211,7 +216,7 @@ export default function EditMember() {
           <div className="col-span-1">
             <label className="block text-sm font-semibold text-gray-700">รูปบัตรประชาชน</label>
             <div className="flex items-center gap-4">
-            <img
+              <img
                 src={previewImages.ID_card_photo}
                 alt="ID Card Preview"
                 className="w-16 h-16 rounded-md border border-gray-800 object-cover cursor-pointer"
@@ -230,7 +235,7 @@ export default function EditMember() {
           <div className="col-span-1">
             <label className="block text-sm font-semibold text-gray-700">รูปหลักฐานที่พักอาศัย</label>
             <div className="flex items-center gap-4">
-            <img
+              <img
                 src={previewImages.accom_rent_contrac_photo}
                 alt="Accommodation Proof Preview"
                 className="w-16 h-16 rounded-md border border-gray-800 object-cover cursor-pointer"
@@ -256,7 +261,7 @@ export default function EditMember() {
           <div className="col-span-1">
             <label className="block text-sm font-semibold text-gray-700">รูปโปรไฟล์</label>
             <div className="flex items-center gap-4">
-            <img
+              <img
                 src={previewImages.user_profile_picture}
                 alt="Profile Picture Preview"
                 className="w-16 h-16 rounded-full border border-gray-800 object-cover cursor-pointer"
@@ -270,7 +275,7 @@ export default function EditMember() {
               />
             </div>
           </div>
-          
+
           {/* Status of VIP */}
           <div className="col-span-3 flex items-center gap-4">
             <label className="block text-sm font-semibold text-gray-700">สถานะ VIP</label>

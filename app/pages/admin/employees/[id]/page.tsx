@@ -2,77 +2,89 @@
 "use client";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 export default function EditService() {
-  const params = useParams()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [data, setData] = useState();
-  const [emp_name, setEmp_Name] = useState("");
-  const [emp_lastname, setEmp_Lastname] = useState("");
-  const [emp_sex, setEmp_Sex] = useState("");
-  const [emp_tel, setEmp_Tel] = useState("");
-  const [emp_username, setEmp_Username] = useState("");
-  const [emp_password, setEmp_Password] = useState("");
-  // const [Status, setStatus] = useState(false);
-   const [showPassword, setShowPassword] = useState(false);
-   const [loading, setLoading] = useState(false);
+    const params = useParams()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { data, status, update } = useSession();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [data2, setData] = useState();
+    const [emp_name, setEmp_Name] = useState("");
+    const [emp_lastname, setEmp_Lastname] = useState("");
+    const [emp_sex, setEmp_Sex] = useState("");
+    const [emp_tel, setEmp_Tel] = useState("");
+    const [emp_email, setEmp_Email] = useState("");
+    const [emp_job, setEmp_Job] = useState(false);
+    const [emp_username, setEmp_Username] = useState("");
+    const [emp_password, setEmp_Password] = useState("");
+    // const [Status, setStatus] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
 
 
 
-  useEffect(() => {
-    getEmployeesID()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    useEffect(() => {
+        getEmployeesID()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
-  const getEmployeesID = () => {
-    axios.get(`/api/admin/${params.id}`).then((response) => {
-      setData(response.data.data);
-      // setservice_name(response.data.data.service_name);
-      setEmp_Name(response.data.data.emp_name);
-      setEmp_Lastname(response.data.data.emp_lastname);
-      setEmp_Sex(response.data.data.emp_sex);
-      setEmp_Tel(response.data.data.emp_tel);
-      setEmp_Username(response.data.data.emp_username);
-      setEmp_Password(response.data.data.emp_password);
+    const getEmployeesID = () => {
+        axios.get(`/api/admin/${params.id}`).then((response) => {
+            setData(response.data.data);
+            // setservice_name(response.data.data.service_name);
+            setEmp_Name(response.data.emp_name);
+            setEmp_Lastname(response.data.emp_lastname);
+            setEmp_Sex(response.data.emp_sex);
+            setEmp_Tel(response.data.emp_tel);
+            setEmp_Email(response.data.emp_email);
+            setEmp_Job(response.data.emp_job);
+            setEmp_Username(response.data.emp_username);
+            setEmp_Password(response.data.emp_password);
 
-      // setStatus(response.data.data.Status);
-    });
-  };
+            // setStatus(response.data.data.Status);
+        });
+    };
 
 
 
 
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
 
-  try {
-    const response = await axios.put(`/api/admin/${params.id}`, {
-      emp_name,
-      emp_lastname,
-      emp_sex,
-      emp_tel,
-      emp_username,
-      emp_password,
-    });
+        try {
+            const response = await axios.put(`/api/admin/${params.id}`, {
+                emp_name,
+                emp_lastname,
+                emp_sex,
+                emp_tel,
+                emp_job,
+                emp_email,
+                emp_username,
+                emp_password,
+            });
 
-    if (response.status === 200) {
-      toast.success("บันทึกข้อมูลเรียบร้อย!");
-      window.location.href = "/pages/admin/employees";
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-  } finally {
-    setLoading(false);
-  }
-};
+            if (response.status === 200) {
+                update(response.data.res);
+                alert("บันทึกข้อมูลเรียบร้อย!");
+                router.push("/pages/admin/employees");
+                // window.location.href = "/pages/admin/employees";
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     return (
@@ -119,7 +131,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                                 <option value="ไม่ระบุ">ไม่ระบุ</option>
                                 <option value="ชาย">ชาย</option>
                                 <option value="หญิง">หญิง</option>
-                                <option value="LGBTQS+">LGBTQS+</option>
+                                <option value="LGBTQ">LGBTQ</option>
                             </select>
                         </div>
                         <div>
@@ -137,7 +149,33 @@ const handleSubmit = async (e: React.FormEvent) => {
 
                     <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="emp_username" className="block text-sm font-medium text-gray-700">Username</label>
+                            <label htmlFor="emp_email" className="block text-sm font-medium text-gray-700">อีเมล</label>
+                            <input
+                                type="email"
+                                id="emp_email"
+                                value={emp_email}
+                                onChange={(e) => setEmp_Email(e.target.value)}
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="อีเมล"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="emp_job" className="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
+                            <select
+                                id="emp_job"
+                                value={emp_job ? "true" : "false"}
+                                onChange={(e) => setEmp_Job(e.target.value === "true")}
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="true">ผู้จัดการ</option>
+                                <option value="false">พนักงาน</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="emp_username" className="block text-sm font-medium text-gray-700">ชื่อผู้ใช้</label>
                             <input
                                 type="text"
                                 id="emp_username"
@@ -149,7 +187,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                             />
                         </div>
                         <div className="relative">
-                            <label htmlFor="emp_password" className="block text-sm font-medium text-gray-700">Password</label>
+                            <label htmlFor="emp_password" className="block text-sm font-medium text-gray-700">รหัสผ่าน</label>
                             <input
                                 type={showPassword ? "text" : "password"}
                                 id="emp_password"
@@ -157,7 +195,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                                 onChange={(e) => setEmp_Password(e.target.value)}
                                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Password"
-                                disabled // Disable password editing in this example
                             />
                             <span
                                 onClick={() => setShowPassword(!showPassword)}

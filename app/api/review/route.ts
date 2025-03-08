@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+// import prisma from "@/lib/db";
 import { authOption } from "../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth/next";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 
 export async function POST(request: Request) {
   try {
@@ -65,12 +69,23 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const service_ID = searchParams.get("service_ID");
 
-    const data = await prisma.reviews.findMany({
+    if (service_ID && isNaN(Number(service_ID))) {
+      return NextResponse.json(
+        { error: "Invalid service_ID" },
+        { status: 400 }
+      );
+    }
+
+    const reviewCount = await prisma.reviews.count({
       where: service_ID ? { service_ID: Number(service_ID) } : {},
-      include: { users:true, service_of_exercise:true }
     });
 
-    return NextResponse.json({ data, msg: "success", status: 200 });
+    const data = await prisma.reviews.findMany({
+      where: service_ID ? { service_ID: Number(service_ID) } : {},
+      include: { users: true, service_of_exercise: true },
+    });
+
+    return NextResponse.json({ data: { reviewCount, data }, msg: "success", status: 200 });
   } catch (error) {
     console.error("Error in GET /reviews:", error);
     return NextResponse.json(

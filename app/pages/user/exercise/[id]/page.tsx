@@ -42,7 +42,7 @@ export default function Review() {
             <div className="w-[800px] p-8 mx-auto">
                 <div className="bg-white shadow-2xl rounded-3xl p-12 relative">
                     <h1 className="text-center text-4xl font-extrabold mb-10 text-gray-900 tracking-wide">
-                        สั่งซื้อสำเร็จ
+                        เขียนความคิดเห็นของคุณ
                     </h1>
 
                     {/* Review Section */}

@@ -30,6 +30,7 @@ export default function Employees() {
       adminApi(); // Refresh data after deletion
     } catch (error) {
       console.error("Error deleting admin:", error);
+      alert("ไม่สามารถลบได้");
     }
   };
 
@@ -37,22 +38,22 @@ export default function Employees() {
     adminApi();
   }, []);
 
-   const { data } = useSession();
-   const userData = data as AdminInterface;
+  const { data } = useSession();
+  const userData = data as AdminInterface;
 
   useEffect(() => {
     if (userData) {
-      if(userData.user.emp_job == false){
+      if (userData.user.emp_job == false) {
         router.push("/pages/admin/dashboard");
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <MainLayoutAdmin>
-      <h1 className="text-2xl font-semibold mb-3 text-black ml-20">พนักงาน</h1>
-      <div className="w-[1100px] bg-gray-300 ml-2 mb-10 p-6 rounded-lg shadow-md relative absolute left-[75px] ">
+      {/* <h1 className="text-2xl font-semibold mb-3 text-black ml-20">พนักงาน</h1> */}
+      <div className="w-[1150px] bg-gray-300 ml-2 mb-10 mt-6 p-6 rounded-lg shadow-md relative left-[45px] ">
         <span className="absolute top-4 left-4 text-black font-semibold text-3xl mt-4 ml-[35px]">
           รายชื่อพนักงาน
         </span>
@@ -79,45 +80,56 @@ export default function Employees() {
 
         <div className="flex justify-center">
           <div className="p-4 mt-16">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {dataAdmin
-                .filter((admin) => !admin.emp_job) // กรองเฉพาะ admin ที่ emp_job = false
+                .sort((a, b) =>
+                  a.emp_username === userData.user.emp_username
+                    ? -1
+                    : b.emp_username === userData.user.emp_username
+                      ? 1
+                      : 0
+                )
                 .map((admin, index) => (
                   <div
                     key={index}
-                    className="w-[300px] bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 mx-auto"
+                    className={`w-[350px] p-6 rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 mx-auto ${admin.emp_username === userData.user.emp_username ? "bg-yellow-100" : "bg-white"
+                      }`}
                   >
-                    <div className="flex items-center mb-4 justify-center">
+                    <div className="flex items-center mb-4 justify-stretch">
                       <img
                         src={
                           admin.emp_sex === "ชาย"
                             ? "/user/img/adminM.png"
                             : admin.emp_sex === "หญิง"
-                            ? "/user/img/adminF.png"
-                            : "/user/img/adminAll.png"
+                              ? "/user/img/adminF.png"
+                              : "/user/img/adminAll.png"
                         }
                         alt="Admin"
-                        className="w-20 h-20 rounded-full mr-4 border border-gray-300"
+                        className="w-25 h-25 rounded-full mr-4 border border-gray-300"
                       />
                       <div>
                         <h3 className="text-[18px] font-semibold text-gray-800">
                           {admin.emp_name} {admin.emp_lastname}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          <span className="text-black font-semibold">ตำแหน่ง:</span>{" "}
-                          {admin.emp_job ? "ผู้จัดการ" : "พนักงาน"}
-                        </p>
-                        <p className="text-sm text-gray-600">
                           <span className="text-black font-semibold">ชื่อผู้ใช้:</span>{" "}
                           {admin.emp_username || "N/A"}
                         </p>
                         <p className="text-sm text-gray-600">
+                          <span className="text-black font-semibold">อีเมล:</span>{" "}
+                          {admin.emp_email || "ไม่ระบุ"}
+                        </p>
+                        {/* <p className="text-sm text-gray-600">
                           <span className="text-black font-semibold">เพศ:</span>{" "}
                           {admin.emp_sex || "ไม่ระบุ"}
-                        </p>
+                          </p> */}
                         <p className="text-sm text-gray-600">
                           <span className="text-black font-semibold">เบอร์โทร:</span>{" "}
                           {admin.emp_tel || "ไม่ระบุ"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <span className="text-black font-semibold">ตำแหน่ง:</span>{" "}
+                          {admin.emp_job ? "ผู้จัดการ" : "พนักงาน"}
                         </p>
                       </div>
                     </div>
@@ -128,18 +140,24 @@ export default function Employees() {
                       >
                         ✏️ แก้ไข
                       </button>
-                      <button
-                        onClick={() => {
-                          setShowPopup(true);
-                          setSelectedAdmin(`${admin.emp_ID}`);
-                        }}
-                        className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
-                      >
-                        🗑️ ลบ
-                      </button>
+                      {admin.emp_username === userData.user.emp_username ? (
+                        ""
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setShowPopup(true);
+                            setSelectedAdmin(`${admin.emp_ID}`);
+                          }}
+                          className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+                        >
+                          🗑️ ลบ
+                        </button>
+                      )}
+
                     </div>
                   </div>
-                ))}
+                ))
+              }
             </div>
           </div>
         </div>

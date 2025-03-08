@@ -248,7 +248,6 @@
 // }
 
 'use client';
-// import { FaBeer } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Import FontAwesomeIcon
 import { faDumbbell, faFutbol, faHouse, faAddressCard, faSquarePollHorizontal } from '@fortawesome/free-solid-svg-icons';
 import React, { useEffect, useState } from 'react';
@@ -266,8 +265,6 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
     const adminData = data as AdminInterface;
     const router = useRouter();
     const pathName = usePathname();
-    // console.log("=================================", data);
-    // console.log("+++++++++++++++++++++++++++++++++", adminData);
 
     const [dropdownVisible, setDropdownVisible] = useState(false); // Manage dropdown visibility
     const [activeMenu, setActiveMenu] = useState(''); // Default active item
@@ -372,6 +369,19 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                         </li>
 
                                         <li
+                                            className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'report' ? 'bg-gray-500' : ''
+                                                }`}
+                                            onClick={() => handleMenuClick('report', '/pages/admin/report')}
+                                        >
+                                            <span className="mr-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                                </svg>
+                                            </span>
+                                            รายงาน
+                                        </li>
+
+                                        <li
                                             className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'exercise_order' ? 'bg-gray-500' : ''
                                                 }`}
                                             onClick={() => handleMenuClick('exercise_order', '/pages/admin/exercise_order')}
@@ -456,7 +466,7 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                             className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'home_page' ? 'bg-gray-500' : ''}`}
                                             onClick={() => {
                                                 setActiveMenu('home_page');
-                                                router.push('#');
+                                                router.push('/pages/admin/pages');
                                             }}
                                         >
                                             <span className="mr-3"><FontAwesomeIcon icon={faHouse} /></span>หน้าแรก
@@ -465,7 +475,7 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                             className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'about_page' ? 'bg-gray-500' : ''}`}
                                             onClick={() => {
                                                 setActiveMenu('about_page');
-                                                router.push('#');
+                                                router.push('/pages/admin/pages/aboutus');
                                             }}
                                         >
                                             <span className="mr-3"><FontAwesomeIcon icon={faAddressCard} /></span>หน้าเกี่ยวกับเรา
@@ -474,16 +484,16 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                             className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'service_page' ? 'bg-gray-500' : ''}`}
                                             onClick={() => {
                                                 setActiveMenu('service_page');
-                                                router.push('#');
+                                                router.push('/pages/admin/pages/exercise');
                                             }}
                                         >
-                                            <span className="mr-3"><FontAwesomeIcon icon={faSquarePollHorizontal} className='text-[18px]' /></span>หน้าบริการ
+                                            <span className="mr-3"><FontAwesomeIcon icon={faSquarePollHorizontal} className='text-[18px]' /></span>หน้าบริการออกกำลังกาย
                                         </li>
                                         <li
                                             className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'contact_page' ? 'bg-gray-500' : ''}`}
                                             onClick={() => {
                                                 setActiveMenu('contact_page');
-                                                router.push('#');
+                                                router.push('/pages/admin/pages/contact');
                                             }}
                                         >
                                             <span className="mr-3"><FontAwesomeIcon icon={faAddressCard} /></span>หน้าติดต่อเรา
