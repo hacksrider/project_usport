@@ -37,6 +37,49 @@ export default function Calculate_price() {
           const response = await axios.get(`/api/user/${userId}`);
           if (response.status === 200) {
             setUserData(response.data);
+            const data = sessionStorage.getItem("serviceToSave"); // ดึงข้อมูล serviceToSave จาก sessionStorage
+            const temp = data ? JSON.parse(data) : []; // แปลงข้อมูลเป็น JSON
+            const tempService = temp.map((i: any) => {
+              const duration = i.amount_of_time || 0; // ใช้ amount_of_time แทน quantity_of_days
+              const dateStart = i.desired_start_date || ""; // ใช้ desired_start_date แทน date
+              let dateEnd = "";
+
+              if (dateStart) {
+                const startDate = new Date(dateStart);
+                switch (i.units) {
+                  case "วัน":
+                    dateEnd = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+                    break;
+                  case "สัปดาห์":
+                    dateEnd = new Date(startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+                    break;
+                  case "เดือน":
+                    startDate.setMonth(startDate.getMonth() + duration);
+                    dateEnd = startDate.toISOString().split("T")[0];
+                    break;
+                  case "ปี":
+                    startDate.setFullYear(startDate.getFullYear() + duration);
+                    dateEnd = startDate.toISOString().split("T")[0];
+                    break;
+                  default:
+                    dateEnd = "";
+                }
+              }
+
+              return {
+                service_name: i.service_name, // ใช้ service_name จาก serviceToSave
+                amount_of_time: duration,
+                units: i.units, // ใช้ units แทน unit
+                Price: response.data.status_of_VIP && i.units == 'เดือน'? (i.Price * 0.5) : i.Price || 0, // ใช้ Price แทน price
+                priceToShow: i.Price || 0,
+                desired_start_date: dateStart,
+                expire_date: dateEnd,
+                service_ID: i.service_ID
+              };
+            });
+            // console.log('tempService', tempService);
+            sessionStorage.setItem("serviceToSave2", JSON.stringify(tempService));
+            setSelectedActivities(tempService); // อัปเดต state ของ selectedActivities
           }
         }
       } catch (error) {
@@ -50,53 +93,7 @@ export default function Calculate_price() {
     //   setReceivedData(JSON.parse(data));
     //   console.log("Received Data:", JSON.parse(data));
     // }
-    const loadSelectedServices = () => {
-      const data = sessionStorage.getItem("serviceToSave"); // ดึงข้อมูล serviceToSave จาก sessionStorage
-      const temp = data ? JSON.parse(data) : []; // แปลงข้อมูลเป็น JSON
-      const tempService = temp.map((i: any) => {
-        const duration = i.amount_of_time || 0; // ใช้ amount_of_time แทน quantity_of_days
-        const dateStart = i.desired_start_date || ""; // ใช้ desired_start_date แทน date
-        let dateEnd = "";
-
-        if (dateStart) {
-          const startDate = new Date(dateStart);
-          switch (i.units) {
-            case "วัน":
-              dateEnd = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-              break;
-            case "สัปดาห์":
-              dateEnd = new Date(startDate.getTime() + duration * 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-              break;
-            case "เดือน":
-              startDate.setMonth(startDate.getMonth() + duration);
-              dateEnd = startDate.toISOString().split("T")[0];
-              break;
-            case "ปี":
-              startDate.setFullYear(startDate.getFullYear() + duration);
-              dateEnd = startDate.toISOString().split("T")[0];
-              break;
-            default:
-              dateEnd = "";
-          }
-        }
-
-        return {
-          service_name: i.service_name, // ใช้ service_name จาก serviceToSave
-          amount_of_time: duration,
-          units: i.units, // ใช้ units แทน unit
-          Price: i.Price || 0, // ใช้ Price แทน price
-          desired_start_date: dateStart,
-          expire_date: dateEnd,
-          service_ID: i.service_ID
-        };
-      });
-      console.log('tempService', tempService);
-      sessionStorage.setItem("serviceToSave2", JSON.stringify(tempService));
-      setSelectedActivities(tempService); // อัปเดต state ของ selectedActivities
-    };
-
     fetchUserData();
-    loadSelectedServices();
   }, [session]);
 
   if (isLoading) {
@@ -117,11 +114,14 @@ export default function Calculate_price() {
   };
 
   const totalCost = selectedActivities.reduce((sum, activity) => {
-    return sum + activity.Price;
+    return sum + activity.priceToShow!;
   }, 0);
 
-  const total50 = +totalCost * 0.5;
-  const totalAll = totalCost - total50;
+  const offPrice = selectedActivities.reduce((sum, activity) => {
+    return sum + activity.Price!;
+  }, 0)
+  const offSell =  totalCost - offPrice;
+  const totalAll = totalCost - offSell;
 
   const handleConfirmPurchase = () => {
     if (userData.status_of_VIP) {
@@ -157,7 +157,7 @@ export default function Calculate_price() {
                 </div>
                 <div>
                   <span className="text-lg font-bold text-blue-600">
-                    ฿{activity.Price}
+                    ฿{activity.priceToShow}
                   </span>
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function Calculate_price() {
                 </div>
                 <div className="flex justify-between items-center mb-1">
                   <p className="text-lg text-gray-900">ส่วนลดลูกค้า VIP</p>
-                  <p className="text-lg text-blue-500">฿{total50}</p>
+                  <p className="text-lg text-blue-500">฿{offSell}</p>
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-2xl font-extrabold text-gray-900">รวมสุทธิ</p>

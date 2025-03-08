@@ -154,7 +154,11 @@ export default function Member() {
                                             }
                                         </td>
                                         <td className="px-4 py-0 text-center border-r">
-                                            <label className="text-green-500 ">active</label>
+                                            {row.status_of_Member ? (
+                                                <label className="text-green-500 ">active</label>
+                                            ) : (
+                                                <label className="text-red-500 ">inactive</label>
+                                            )}
                                         </td>
                                         <td className="px-4 py-0 text-center border-r">
                                             <button

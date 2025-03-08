@@ -1,97 +1,6 @@
-// import { NextResponse } from "next/server";
-// import { Prisma, PrismaClient } from "@prisma/client";
-
-// const prisma = new PrismaClient();
-
-// // GET: ดึงข้อมูลพนักงานตาม emp_ID
-// export async function GET(req: Request, context: { params: { id: string } }) {
-//   try {
-//     const emp_ID = parseInt(context.params.id);
-
-//     const employee = await prisma.employees.findUnique({
-//       where: { emp_ID },
-//     });
-
-//     if (!employee) {
-//       return NextResponse.json({ error: "Employee not found" }, { status: 404 });
-//     }
-
-//     return NextResponse.json(employee);
-//   } catch (error) {
-//     console.error("Error fetching employee:", error);
-//     return NextResponse.json({ error: "Error fetching employee" }, { status: 500 });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }
-
-
-
-// // PUT: อัปเดตข้อมูลพนักงานตาม emp_ID
-// export async function PUT(req: Request, { params }: { params: { id: string } }) {
-//   try {
-//     const emp_ID = parseInt(params.id);
-//     const body = await req.json();
-
-//     const updatedEmployee = await prisma.employees.update({
-//       where: { emp_ID },
-//       data: body,
-//     });
-
-//     return NextResponse.json(updatedEmployee);
-//   } catch (error) {
-//     console.error("Error updating employee:", error);
-//     return NextResponse.json({ error: "Error updating employee" }, { status: 500 });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }
-
-
-// export async function DELETE(
-//   request: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const id = await parseInt(params.id); //parseInt(params.id)
-//     const employees = await prisma.employees.delete({
-//       where: {
-//         emp_ID: id,
-//       },
-//     });
-//     return NextResponse.json({ msg: "delete employee: " + employees.emp_ID });
-//   } catch (e) {
-//     if (e instanceof Prisma.PrismaClientKnownRequestError) {
-//       console.log(e.code);
-//       console.log(e.message);
-//     }
-//     return NextResponse.json(
-//       { error: "Something went wrong" },
-//       { status: 500 }
-//     );
-//   }
-// }
-// // export async function DELETE(req: Request, context: { params: { id: string } }) {
-// //   try {
-// //     // ใช้ context.params เพื่อเข้าถึงค่า id
-// //     const { id } = context.params; // ดึง id จาก context.params
-// //     const emp_ID = parseInt(id); // แปลง id เป็นตัวเลข
-
-// //     await prisma.employees.delete({
-// //       where: { emp_ID },
-// //     });
-
-// //     return NextResponse.json({ message: "Employee deleted successfully" });
-// //   } catch (error) {
-// //     console.error("Error deleting employee:", error);
-// //     return NextResponse.json({ error: "Error deleting employee" }, { status: 500 });
-// //   } finally {
-// //     await prisma.$disconnect();
-// //   }
-// // }
-
 import prisma from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -99,12 +8,30 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id); // No await needed
+    const id = parseInt(await params.id); // No await needed
+
+    // ตรวจสอบจำนวนแถวที่ emp_job = true หรือ emp_job = 1
+    const employeesWithJob = await prisma.employees.findMany({
+      where: {
+        emp_job: true, // หรือ emp_job: 1 ขึ้นอยู่กับการเก็บข้อมูล
+      },
+    });
+
+    // ถ้าผลลัพธ์เหลือเพียง 1 แถว และกำลังจะลบแถวนั้น ไม่ให้ลบ
+    if (employeesWithJob.length === 1 && employeesWithJob[0].emp_ID === id) {
+      return NextResponse.json(
+        { error: "Cannot delete the last employee with emp_job = true" },
+        { status: 400 }
+      );
+    }
+
+    // ดำเนินการลบข้อมูล
     const admin = await prisma.employees.delete({
       where: {
         emp_ID: id,
       },
     });
+
     return NextResponse.json({ msg: "delete service: " + admin.emp_ID });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -117,37 +44,67 @@ export async function DELETE(
     );
   }
 }
-
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id); // No await needed
-    const data = await prisma.employees.findUnique({
-      where: {
-        emp_ID: id,
-      },
-      include: {
-        buying_exercise: true,
-        bookings: true,
-      },
+    // Await the params object to extract the ID
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json({ error: "admin ID is missing" }, { status: 400 });
+    }
+
+    const adminId = parseInt(id);
+    if (isNaN(adminId)) {
+      return NextResponse.json({ error: "Invalid admin ID" }, { status: 400 });
+    }
+
+    const admin = await prisma.employees.findUnique({
+      where: { emp_ID: adminId },
     });
-    return NextResponse.json({ data: data, msg: "success", status: 200 });
+
+    if (!admin) {
+      return NextResponse.json({ error: "admin not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(admin, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Something went wrong: " + error },
-      { status: 500 }
-    );
+    console.error("Error fetching admin data:", error);
+    return NextResponse.json({ error: "Failed to fetch admin data" }, { status: 500 });
   }
 }
+
+// export async function GET(
+//   request: Request,
+//   { params }: { params: { id: string } }
+// ) {
+//   try {
+//     const parm = await params;
+//     const id = parseInt(parm.id); // No await needed
+//     const data = await prisma.employees.findUnique({
+//       where: {
+//         emp_ID: id,
+//       },
+//       include: {
+//         buying_exercise: true,
+//         bookings: true,
+//       },
+//     });
+//     return NextResponse.json({ data: data, msg: "success", status: 200 });
+//   } catch (error) {
+//     return NextResponse.json(
+//       { error: "Something went wrong: " + error },
+//       { status: 500 }
+//     );
+//   }
+// }
 
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id); // No await needed
+    const parm = await params;
+    const id = parseInt(parm.id); 
 
     if (isNaN(id)) {
       return NextResponse.json(
@@ -156,14 +113,15 @@ export async function PUT(
       );
     }
 
-    const { emp_name, emp_lastname, emp_sex, emp_tel, emp_username, emp_password } = await request.json();
+    const { emp_name, emp_lastname, emp_sex, emp_tel, emp_username, emp_password, emp_email, emp_job } = await request.json();
 
-    if (!emp_name || !emp_lastname || emp_sex == null || !emp_tel || !emp_username || !emp_password) {
+    if (!emp_name || !emp_lastname || !emp_username || !emp_password || !emp_email) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }
       );
     }
+    const hashedPassword = await bcrypt.hash(emp_password, 10);
 
     const updatedAdmin = await prisma.employees.update({
       where: { emp_ID: id },
@@ -172,14 +130,16 @@ export async function PUT(
         emp_lastname,
         emp_sex,
         emp_tel,
+        emp_email,
+        emp_job,
         emp_username,
-        emp_password,
+        emp_password: hashedPassword,
       },
     });
 
-    return NextResponse.json({ updatedAdmin }, { status: 200 });
+    return NextResponse.json({res: updatedAdmin }, { status: 200 });
   } catch (error) {
-    console.error("Error:", error);
+    // console.error("Error:", error.message);
     return NextResponse.json(
       { error: "Something went wrong: " + error },
       { status: 500 }

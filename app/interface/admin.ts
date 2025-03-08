@@ -46,6 +46,7 @@ export interface Admin {
   emp_lastname: string;
   emp_sex: string;
   emp_username: string;
+  emp_email: string;
   emp_password: string;
   emp_tel: string;
   emp_job: boolean;
@@ -62,6 +63,7 @@ export interface ResDataAdmin {
   emp_sex: string;
   emp_username: string;
   emp_password: string;
+  emp_email: string;
   emp_tel: string;
   emp_job: boolean;
 }

@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const brandData: BRAND[] = [
   {
-    logo: "/images/brand/brand-01.svg",
+    logo: "/user/img/user.jpeg",
     name: "Google",
     visitors: 3.5,
     revenues: "5,768",
@@ -11,7 +11,7 @@ const brandData: BRAND[] = [
     conversion: 4.8,
   },
   {
-    logo: "/images/brand/brand-02.svg",
+    logo: "/user/img/user.jpeg",
     name: "X.com",
     visitors: 2.2,
     revenues: "4,635",
@@ -19,7 +19,7 @@ const brandData: BRAND[] = [
     conversion: 4.3,
   },
   {
-    logo: "/images/brand/brand-03.svg",
+    logo: "/user/img/user.jpeg",
     name: "Github",
     visitors: 2.1,
     revenues: "4,290",
@@ -27,7 +27,7 @@ const brandData: BRAND[] = [
     conversion: 3.7,
   },
   {
-    logo: "/images/brand/brand-04.svg",
+    logo: "/user/img/user.jpeg",
     name: "Vimeo",
     visitors: 1.5,
     revenues: "3,580",
@@ -35,7 +35,7 @@ const brandData: BRAND[] = [
     conversion: 2.5,
   },
   {
-    logo: "/images/brand/brand-05.svg",
+    logo: "/user/img/user.jpeg",
     name: "Facebook",
     visitors: 1.2,
     revenues: "2,740",
@@ -48,10 +48,10 @@ const TableOne = () => {
   return (
     <div className="rounded-[10px] bg-white px-7.5 pb-4 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card p-3">
       <h4 className="mb-5.5 text-body-2xlg font-bold text-dark dark:text-white">
-        Top Channels
+        ลูกค้าดีเด่น
       </h4>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col mt-4">
         <div className="grid grid-cols-3 sm:grid-cols-5">
           <div className="px-2 pb-3.5">
             <h5 className="text-sm font-medium uppercase xsm:text-base">
@@ -90,7 +90,7 @@ const TableOne = () => {
             key={key}
           >
             <div className="flex items-center gap-3.5 px-2 py-4">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 border border-stroke dark:border-dark-3 rounded-full">
                 <Image src={brand.logo} alt="Brand" width={48} height={48} />
               </div>
               <p className="hidden font-medium text-dark dark:text-white sm:block">

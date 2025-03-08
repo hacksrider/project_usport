@@ -7,6 +7,7 @@ export interface ServiceToSave {
   desired_start_date: string;
   buying_date: string
   Price: number;
+  priceToShow?: number;
   expire_date?: string;
 }
 
@@ -18,8 +19,8 @@ export interface buyingExerciseInterface {
 }
 
 export interface BuyingService {
-  [x: string]: any;
-  orders: any;
+  employees: any;
+  orders_exercise: any;
   users: any;
   
   buying_ID: number
@@ -42,5 +43,6 @@ export interface Orders {
   units: string
   desired_start_date: string
   expire_date: string
+  order_status: boolean
   Price: number
 }

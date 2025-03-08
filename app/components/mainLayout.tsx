@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { UserInterface } from '../interface/user';
+import { RiVipFill } from "react-icons/ri";
 
 interface mainLayoutProp {
   children: React.ReactNode;
@@ -56,8 +57,13 @@ export default function MainLayout({ children }: mainLayoutProp) {
   }, []);
 
   if (status === 'loading') {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
   }
+  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -158,6 +164,7 @@ export default function MainLayout({ children }: mainLayoutProp) {
                     className="flex items-center text-white font-bold hover:text-gray-300 focus:outline-none"
                     onClick={toggleDropdown}
                   >
+                    {userData.user.status_of_VIP ? <RiVipFill className='w-7 h-7 mr-3 text-yellow-500'/> : ""}
                     <div className="mr-2 w-6 h-6 rounded-full overflow-hidden">
                       <img src={userData.user.user_profile_picture ? `/${userData.user.user_profile_picture}` : "/user/img/user.jpeg"} alt="user" />
                     </div>

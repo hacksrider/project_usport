@@ -78,7 +78,7 @@ export default function Profile() {
       </MainLayout>
     );
   }
-  console.log("----------------", userData)
+  // console.log("----------------", userData)
   const dateOfBirth = userData.user_date_of_birth || "";
   const formattedDate = dateOfBirth ? formatDateThai(dateOfBirth) : "N/A";
   const age = dateOfBirth ? calculateAge(dateOfBirth) : "N/A";
@@ -95,7 +95,7 @@ export default function Profile() {
             />
             <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60 rounded-tl-[10px] rounded-tr-[10px]"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <h1 className="text-white text-[60px] font-bold">PROFILE</h1>
+              <h1 className="text-white text-[60px] font-bold">ข้อมูลส่วนตัว</h1>
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export default function Profile() {
               <p className="font-medium">{userData.user_email || "N/A"}</p>
               <div className="mx-auto max-w-[720px]">
                 <div className="col-span-2 p-6">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-6">ข้อมูลส่วนตัว</h3>
+                  {/* <h3 className="text-xl font-semibold text-gray-700 mb-6">ข้อมูลส่วนตัว</h3> */}
                   <table className="table-auto w-full text-left border-collapse border border-gray-300">
                     <tbody>
                       <tr>

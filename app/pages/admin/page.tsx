@@ -50,7 +50,7 @@ export default function LoginAdmin() {
             setError(result.error);
             return false
         } else {
-            console.log("pass")
+            // console.log("pass")
             router.push(callbackUrl);
         }
     } catch (err) { console.log('error from user login ====>>>> ', err, ' <<<<====') }

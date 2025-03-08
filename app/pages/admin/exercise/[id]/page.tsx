@@ -6,55 +6,20 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function EditService() {
-  const params = useParams()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [data, setData] = useState();
+  const params = useParams();
   const [service_name, setservice_name] = useState("");
   const [capacity_of_room, setcapacity_of_room] = useState("");
   const [Status, setStatus] = useState(false);
-  const [daylyRates, setdaylyRates] = useState<{
-    price_ID?: string | null;
-    time_ID?: string | null;
-    quantity_of_days: string;
-    price: string;
-    unit: string;
-  }[]>([
-    { price_ID: null, time_ID: null, quantity_of_days: "", price: "", unit: "" }
+  const [daylyRates, setdaylyRates] = useState([
+    { quantity_of_days: "", price: "", unit: "", isPromo: false }, // เพิ่ม isPromo
   ]);
 
   const handleAdddaylyRate = () => {
     setdaylyRates([
       ...daylyRates,
-      { price_ID: null, time_ID: null, quantity_of_days: "", price: "", unit: "" } // เพิ่มรายการใหม่โดยไม่มี ID
+      { quantity_of_days: "", price: "", unit: "", isPromo: true }, // กำหนด isPromo เป็น true
     ]);
   };
-
-
-
-  useEffect(() => {
-    getServiceID()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const getServiceID = () => {
-    axios.get(`/api/services/${params.id}`).then((response) => {
-      setData(response.data.data);
-      setservice_name(response.data.data.service_name);
-      setcapacity_of_room(response.data.data.capacity_of_room);
-
-      const temp = response.data.data.Price_Exercise.map((item: any) => ({
-        price_ID: item.price_ID || null,
-        time_ID: item.time_ID || null,
-        quantity_of_days: item.Time_Of_Service.quantity_of_days.toString(),
-        price: item.price.toString(),
-        unit: item.Time_Of_Service.unit
-      }));
-
-      setdaylyRates(temp);
-      setStatus(response.data.data.Status);
-    });
-  };
-
 
   const handleRemovedaylyRate = (index: number) => {
     setdaylyRates(daylyRates.filter((_, i) => i !== index));
@@ -67,19 +32,44 @@ export default function EditService() {
     setdaylyRates(updatedRates);
   };
 
+  useEffect(() => {
+    getServiceID();
+  }, []);
+
+  const getServiceID = () => {
+    axios.get(`/api/services/${params.id}`).then((response) => {
+      if (!response.data.data) {
+        console.error("Error: Data not found");
+        return;
+      }
+
+      setservice_name(response.data.data.service_name || "");
+      setcapacity_of_room(response.data.data.capacity_of_room || "");
+      setStatus(response.data.data.Status);
+
+      const temp =
+        response.data.data.time_and_price?.map((item: any, index: number) => ({
+          quantity_of_days: item.quantity_of_days.toString(),
+          price: item.price,
+          unit: item.unit,
+          isPromo: index === 0 ? false : true,  // กำหนด isPromo ให้ index 0 เป็น false
+        })) || [];
+
+      setdaylyRates(temp);
+    }).catch((error) => {
+      console.error("Error fetching service data:", error);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const detail = daylyRates.map((rate) => ({
-      price_ID: rate.price_ID || null, // ต้องส่ง null หากไม่มี
-      time_ID: rate.time_ID || null, // ต้องส่ง null หากไม่มี
       quantity_of_days: rate.quantity_of_days,
       price: rate.price,
       unit: rate.unit,
+      isPromo: rate.isPromo,
     }));
-
-
-    console.log({ service_name, capacity_of_room, Status, detail }); // Debug ข้อมูลที่ส่งไป
 
     try {
       const response = await axios.put(`/api/services/${params.id}`, {
@@ -99,18 +89,16 @@ export default function EditService() {
     }
   };
 
-
-
-
-
   return (
     <MainLayoutAdmin>
       <h1 className="text-2xl font-semibold mb-3 text-black flex items-center gap-2">
-        <div className="hover:underline cursor-pointer hover:text-blue-800"><button onClick={() => window.history.back()}>บริการการออกกำลังกาย</button></div> - <div>แก้ไขบริการ</div>
+        <div className="hover:underline cursor-pointer hover:text-blue-800">
+          <button onClick={() => window.history.back()}>บริการการออกกำลังกาย</button>
+        </div>
+        - <div>แก้ไขบริการ</div>
       </h1>
       <div className="w-full bg-gray-300 p-6 mb-6 rounded shadow-md">
-        {/* ฟอร์มการเพิ่มบริการ */}
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-black font-medium mb-2">ชื่อบริการ</label>
             <input
@@ -133,21 +121,39 @@ export default function EditService() {
             />
           </div>
 
-
           <div className="mb-4">
-            <label className="block text-black font-medium mb-2">กำหนดราคา (รายวัน)</label>
+            <label className="block text-black font-medium mb-2">กำหนดราคา</label>
             {daylyRates.map((rate, index) => (
-              <div key={index} className="grid grid-cols-12 gap-4 mb-2 items-center border border-gray-400 rounded p-2 bg-green-200">
+              <div
+                key={index}
+                className={`grid grid-cols-12 gap-4 mb-2 items-center border border-gray-400 rounded p-2 ${rate.isPromo ? "bg-yellow-200" : "bg-green-200"}`}
+              >
+                {rate.isPromo && (
+                  <div className="col-span-12 text-center font-bold text-red-600">
+                    <span className="border-b-2 border-red-600">โปรโมชั่น {index + 0}</span>
+                  </div>
+                )}
                 <div className="col-span-4">
                   <label className="block text-sm text-black mb-1">จำนวน</label>
                   <input
                     type="number"
                     min={1}
                     value={rate.quantity_of_days}
-                    onChange={(e) => handledaylyRateChange(index, "quantity_of_days", e.target.value)}
-                    className="w-full p-2 border border-gray-400 rounded"
-                    placeholder="ใส่จำนวนวัน"
+                    onChange={(e) => rate.isPromo && handledaylyRateChange(index, "quantity_of_days", e.target.value)}
+                    className={`w-full p-2 border border-gray-400 rounded ${rate.isPromo ? 'bg-white' : 'bg-gray-200'}`}
+                    placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
+                    disabled={!rate.isPromo}
                   />
+                  {/* <input
+                    type="number"
+                    min={1}
+                    value={rate.isPromo ? rate.quantity_of_days : 1}
+                    onChange={(e) => rate.isPromo && handledaylyRateChange(index, "quantity_of_days", e.target.value)}
+                    // onChange={(e) => handledaylyRateChange(index, "quantity_of_days", e.target.value)}
+                    className={`w-full p-2 border border-gray-400 rounded ${rate.isPromo ? 'bg-white' : 'bg-gray-200'}`}
+                    placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
+                    disabled={!rate.isPromo}
+                  /> */}
                 </div>
                 <div className="col-span-3">
                   <label className="block text-sm text-black mb-1">หน่วย</label>
@@ -156,7 +162,7 @@ export default function EditService() {
                     onChange={(e) => handledaylyRateChange(index, "unit", e.target.value)}
                     className="w-full p-2 border border-gray-400 rounded"
                   >
-                    <option value="เลือกหน่วย">เลือกหน่วย</option>
+                    <option value="">เลือกหน่วย</option>
                     <option value="วัน">วัน</option>
                     <option value="สัปดาห์">สัปดาห์</option>
                     <option value="เดือน">เดือน</option>
@@ -174,14 +180,16 @@ export default function EditService() {
                     placeholder="กำหนดราคา (บาท)"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemovedaylyRate(index)}
-                  className="text-black col-span-1 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded p-2 h-full"
-                >
-                  ลบ
-                </button>
 
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovedaylyRate(index)}
+                    className="text-black col-span-1 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded p-2 h-full"
+                  >
+                    ลบ
+                  </button>
+                )}
               </div>
             ))}
             <button
@@ -189,15 +197,13 @@ export default function EditService() {
               onClick={handleAdddaylyRate}
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
             >
-              + เพิ่มจำนวนเดือนและราคา
+              + เพิ่มโปรโมชั่น
             </button>
           </div>
 
           <div className="flex justify-end items-center gap-10 mt-4 xsm:mt-0">
-            <label
-              htmlFor="toggle3"
-              className="flex cursor-pointer select-none items-center"
-            ><h1 className="pr-2 text-xl">สถานะการให้บริการ</h1>
+            <label htmlFor="toggle3" className="flex cursor-pointer select-none items-center">
+              <h1 className="pr-2 text-xl">สถานะการให้บริการ</h1>
               <div className="relative">
                 <input
                   type="checkbox"
@@ -209,8 +215,7 @@ export default function EditService() {
                 />
                 <div className="block h-8 w-14 rounded-full bg-gray-400"></div>
                 <div
-                  className={`dot absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-switch-1 transition ${Status && "!right-1 !translate-x-full !bg-green-600"
-                    }`}
+                  className={`dot absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-switch-1 transition ${Status && "!right-1 !translate-x-full !bg-green-600"}`}
                 >
                   <span className={`hidden ${Status && "!block"}`}>
                     <svg
@@ -257,7 +262,6 @@ export default function EditService() {
               </div>
             </label>
 
-
             <div className="flex justify-end">
               <button
                 onClick={handleSubmit}
@@ -272,5 +276,3 @@ export default function EditService() {
     </MainLayoutAdmin>
   );
 };
-
-

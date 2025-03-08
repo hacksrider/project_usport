@@ -83,6 +83,7 @@ declare module "next-auth" {
       emp_lastname?: string;
       emp_sex?: string;
       emp_username?: string;
+      emp_email: string | undefined;
       emp_tel?: string;
       emp_job?: boolean;
     };
@@ -103,11 +104,12 @@ declare module "next-auth/jwt" {
     accom_rent_contrac_photo: string;
     user_profile_picture: string;
     status_of_VIP: boolean;
-
+    
     emp_name?: string;
     emp_lastname?: string;
     emp_sex?: string;
     emp_username?: string;
+    emp_email?: string;
     emp_tel?: string;
     emp_job?: boolean;
     type?: string;

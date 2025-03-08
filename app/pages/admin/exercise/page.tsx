@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect } from 'react';
 import MainLayoutAdmin from '@/app/components/mainLayoutAdmin';
 import { useRouter } from 'next/navigation';
@@ -23,9 +22,15 @@ export default function AdminExercise() {
 
     const handleDelete = async (serviceId: number) => {
         try {
-            await axios.delete(`/api/services/${serviceId}`);
-            alert('ลบสำเร็จ');
-            fetchServices();
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            await axios.delete(`/api/services/${serviceId}`).then(r => {
+                alert('ลบสำเร็จ');
+                fetchServices();
+            }).catch(e => {
+                if (e.response.data.error == "P2003") {
+                    alert("มีการใช้อยู่")
+                }
+            });
         } catch (error) {
             console.error('Error deleting service:', error);
         }
@@ -96,7 +101,7 @@ export default function AdminExercise() {
                                                 <p className="text-dark dark:text-white">
                                                     <a
                                                         className='hover:underline dark:text-white dark:hover:text-white hover:text-blue-500 cursor-pointer'
-                                                        onClick={() => { router.push(`/pages/admin/exercise/edit_service/${v.service_ID}`); }}
+                                                        onClick={() => { router.push(`/pages/admin/exercise/${v.service_ID}`); }}
                                                     >{v.service_name}</a>
                                                 </p>
                                             </td>

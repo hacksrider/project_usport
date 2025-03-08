@@ -1,304 +1,317 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-"use client";
+'use client';
 import MainLayout from "@/app/components/mainLayout";
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ServiceAll, ServicesInterface } from "@/app/interface/services";
+import { GetDataExercise, GetAllExercise } from "@/app/interface/pages/exercise/exercise";
+import { GetReview, ResGetAllReview } from "@/app/interface/review";
 import axios from "axios";
-import { useSession } from "next-auth/react";
-import { ServiceToSave } from "@/app/interface/buyingExercise";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
-export default function Exercise() {
-  const { data, status } = useSession();
-  const [services, setServices] = useState<ServiceAll[]>([]);
-  const [isSelect, setIsSelect] = useState<string[]>([]);
-  const [selectedRadio, setSelectedRadio] = useState<{ [key: string]: string | number }>({});
-  const [otherSelected, setOtherSelected] = useState<{ [key: string]: boolean }>({});
-  const [otherValues, setOtherValues] = useState<{ [key: string]: number }>({});
-  const [dates, setDates] = useState<{ [key: string]: string }>({});
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
-  const router = useRouter();
-
-  const [serviceToSave,setServiceToSave] = useState<ServiceToSave[]>([]);
-
-  const [serviceId, setServiceId] = useState<{ id: number; name: string, index: number }[]>([]);
-  const [timeAndUnit, setTimeAndUnit] = useState<{ time_id: number; time: number; unit: string, index: number }[]>([]);
-  const [dateStart, setDateStart] = useState<{ [key: string]: string }>({});
-  const [price, setPrice] = useState<{ price: number; index: number }[]>([]);
+export default function PageExercise() {
+    const router = useRouter();
+    const [dataReview, setDataReview] = useState<GetReview[]>([]);
+    const [currentReviews, setCurrentReviews] = useState<GetReview[]>([]); // Initialize as empty array
+    const [reviewCount, setReviewCount] = useState<number | null>(null);
+    const [showAll, setShowAll] = useState(false);
+    const [dataExercise, setDataExercise] = useState<GetDataExercise[]>([]);
 
 
-  const handleCheckboxChangeID = (e: React.ChangeEvent<HTMLInputElement>, id: number, index: number, name: string) => {
-    if (e.target.checked) {
-      setServiceId((prev) => [...prev, { id, name, index }]);
-    } else {
-      setServiceId((prev) => prev.filter((s) => s.id !== id));
-    }
-    handleClick(index);
-  };
+    // const properties = [
+    //     { id: 1, location: "New York 295", price: "$3995", rating: 4.5, image: "/user/img/fitness-1.jpg" },
+    //     { id: 2, location: "London 120", price: "$2360", rating: 4.5, image: "/user/img/fitness-2.jpg" },
+    //     { id: 3, location: "Paris 529", price: "$4730", rating: 4.5, image: "/user/img/fitness-3.jpg" }
+    // ];
 
-  const handleSetTimeAndUnit = (e: React.ChangeEvent<HTMLInputElement>, time_id: number, time: number, unit: string,
-    index: number, id: number, serviceName: string,) => {
-    setSelectedRadio((prev) => ({
-      ...prev,
-      [serviceName]: Number(e.target.value),
-    }));
+    const reviewApi = async () => {
+        try {
+            const res = await axios.get<ResGetAllReview>("/api/review");
+            // @ts-expect-error
+            setDataReview(res.data.data.data);
+            // @ts-expect-error
+            setReviewCount(res.data.data.reviewCount); // ดึงจำนวนรีวิวทั้งหมด
+        } catch (error) {
+            console.error("Error fetching Review:", error);
+        }
+    };
+    useEffect(() => {
+        reviewApi();
+    }, []);
 
-    const findPrice =
-      services
-        .find((s) => s.service_ID === id)
-        ?.price_exercise.find((p) => p.time_ID === time_id)?.price || 0;
-    setPrice((prev) => {
-      const updatedPrices = [...prev];
-      const priceIndex = updatedPrices.findIndex((p) => p.index === index);
+    const ExercisePageAPI = async () => {
+        try {
+            const response = await axios.get<GetAllExercise>("/api/pages/exercisepage");
+            setDataExercise(response.data);
+            console.log(response.data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
 
-      if (priceIndex > -1) {
-        updatedPrices[priceIndex].price = findPrice;
-      } else {
-        updatedPrices.push({ price: findPrice, index });
-      }
-
-      return updatedPrices;
-    });
-    console.log("find price", findPrice);
-    setTimeAndUnit((prev) => {
-      const updatedTimes = [...prev];
-      const timeIndex = updatedTimes.findIndex(
-        (t) => t.index === index
-      );
-
-      if (timeIndex > -1) {
-        updatedTimes[timeIndex] = { time_id, time, unit, index };
-      } else {
-        updatedTimes.push({ time_id, time, unit, index });
-      }
-      return updatedTimes;
-    });
-  };
+    useEffect(() => {
+        ExercisePageAPI();
+    }, []);
 
 
 
-
-  const handleClick = (index: number) => {
-    const serviceName = services[index].service_name;
-    setIsSelect((prev) => {
-      const updatedSelection = prev.includes(serviceName)
-        ? prev.filter((name) => name !== serviceName)
-        : [...prev, serviceName];
-
-      if (prev.includes(serviceName)) {
-        setSelectedRadio((radioPrev) => {
-          const { [serviceName]: _, ...rest } = radioPrev;
-          return rest;
-        });
-        setOtherSelected((otherPrev) => {
-          const { [serviceName]: _, ...rest } = otherPrev;
-          return rest;
-        });
-        setOtherValues((values) => {
-          const { [serviceName]: _, ...rest } = values;
-          return rest;
-        });
-        setDates((datesPrev) => {
-          const { [serviceName]: _, ...rest } = datesPrev;
-          return rest;
-        });
-      }
-      return updatedSelection;
-    });
-  };
-
-  const handleDateChange = (value: string, serviceName: string) => {
-    setDateStart((prev) => ({
-      ...prev,
-      [serviceName]: value, // อัปเดตวันที่ใหม่สำหรับ serviceName
-    }));
-  };
-
-  const fetchServices = async () => {
-    try {
-      const response = await axios.get("/api/services");
-      const data: ServicesInterface = await response.data;
-      console.log('----====--=-=-=-=> ', data.data);
-      setServices(data.data);
-    } catch (error) {
-      console.error("Error fetching services:", error);
-    }
-  };
-
-  const checkSubmitEligibility = useCallback(() => {
-    const isServiceIdFilled = serviceId.length > 0;
-    const isTimeAndUnitFilled = timeAndUnit.length > 0;
-    const isDateStartFilled = Object.keys(dateStart).length > 0;
-    const isPriceFilled = price.length > 0;
-
-    const isEligible = isServiceIdFilled && isTimeAndUnitFilled && isDateStartFilled && isPriceFilled;
-
-    setIsSubmitEnabled(isEligible);
-  }, [serviceId, timeAndUnit, dateStart, price]);
-
-  useEffect(() => {
-    fetchServices();
-    console.log(services);
-  }, []);
-
-  useEffect(() => {
-    checkSubmitEligibility();
-  }, [checkSubmitEligibility]);
-
-  const today = new Date().toISOString().split("T")[0];
-
-  const addServices = async () => {
-    const toSet: ServiceToSave[] = serviceId.map((id) => {
-      const priceForId = price.find((p) => p.index ===  id.index )?.price || 0;
-      const dateForId = dateStart[id.name] || ""; // ดึงวันที่ตาม service_name
-      const timeAndUnitForId = timeAndUnit.find((tu) => tu.index === id.index) || {
-        time: 0,
-        unit: "",
-      };
-      return {
-        service_name: id.name,
-        service_ID: id.id,
-        amount_of_time: timeAndUnitForId.time,
-        units: timeAndUnitForId.unit,
-        desired_start_date: dateForId,
-        Price: priceForId,
-        buying_date: today
-      };
-    });
-  
-    console.log("timeAndUnitForId toSet---> ", toSet);
-
-    setServiceToSave(toSet);
-  
-    // เก็บข้อมูลใน sessionStorage
-    sessionStorage.setItem("serviceToSave", JSON.stringify(toSet));
-  
-    // นำทางไปหน้าอื่น
-    router.push("/pages/user/exercise/calculate_price");
-  };
-
-  return (
-    <MainLayout>
-      <div className="w-[800px] p-8 mx-auto">
-        <div className="relative rounded-lg overflow-hidden shadow-2xl mb-8 group mx-auto">
-          <img
-            src="/user/img/fitness-1.jpg"
-            alt="Banner 1"
-            className="w-full h-72 object-cover brightness-90 scale-110 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-50 transition-all duration-500 flex items-center justify-center">
-            <p className="text-white text-3xl font-bold opacity-100 transition-opacity duration-500">
-              เลือกรายการออกกำลังกาย
-            </p>
-          </div>
-        </div>
-
-        <div className="w-full max-w-[900px] bg-white shadow-2xl rounded-3xl p-12 relative">
-          <h1 className="text-center text-4xl font-extrabold mb-10 text-gray-900 tracking-wide">โปรดเลือก</h1>
-
-          {services
-            .filter((service) => service.Status !== false)
-            .map((service, index) => {
-              const sortedPriceExercise = [...service.price_exercise].sort(
-                (a, b) => a.time_of_service.quantity_of_days - b.time_of_service.quantity_of_days
-              );
+    useEffect(() => {
+        // เมื่อได้รับข้อมูล review แล้วคัดกรองข้อมูลที่มี Text_review
+        if (dataReview && Array.isArray(dataReview) && dataReview.length > 0) {
+            const validReviews = dataReview.filter(review => review && review.Text_review);
+            // ถ้ามีมากกว่า 3 ให้ slice เอา 3 อันแรก ถ้าน้อยกว่าหรือเท่ากับ 3 ก็ใช้ข้อมูลทั้งหมด
+            setCurrentReviews(validReviews.length > 3 ? validReviews.slice(0, 3) : validReviews);
+        }
+    }, [dataReview]);
 
 
+    useEffect(() => {
+        if (dataReview.length > 3) { // เฉพาะเมื่อ review มากกว่า 3 เท่านั้น
+            const interval = setInterval(() => {
+                setCurrentReviews(prev => {
+                    // หา index ของรีวิวสุดท้ายใน currentReviews ใน dataReview
+                    const lastReviewIndex = dataReview.findIndex(r => r.re_ID === prev[2].re_ID);
+                    const nextIndex = (lastReviewIndex + 1) % dataReview.length;
+                    // เลื่อนรีวิว โดยเอา review ที่ 2 กับ 3 จาก prev แล้วเติมรีวิวใหม่ที่ได้จากการคำนวณ
+                    return [prev[1], prev[2], dataReview[nextIndex]];
+                });
+            }, 5000);
 
-              return (
-                <div
-                  key={index}
-                  className="bg-gradient-to-tr from-gray-100 to-gray-200 px-8 pt-6 rounded-2xl mb-10 border border-gray-300 shadow-xl hover:shadow-2xl transition-shadow duration-300"
-                >
-                  <div className="flex items-center mb-6">
-                    <input
-                      type="checkbox"
-                      id={`fitness-${index}`}
-                      onChange={(e) => handleCheckboxChangeID(e, service.service_ID, index, service.service_name)}
-                      name="activity"
-                      className="mr-4 h-7 w-7 text-blue-500 focus:ring-blue-500 focus:ring-2 rounded-full"
-                    />
-                    <label htmlFor={`fitness-${index}`} className="font-bold text-lg text-gray-800">
-                      {service.service_name}
-                    </label>
-                    <div className="ml-auto text-gray-600 text-sm mt-1 ">ความจุ : <div className="font-bold text-green-500">0/{service.capacity_of_room}</div></div>
-                  </div>
-                  <div className="mb-8">
-                    <span className="block font-medium mb-4 text-gray-700 text-lg">เลือกระยะเวลา</span>
-                    <div className="grid grid-cols-2 gap-6">
-                      {sortedPriceExercise.map((timeOption, index2) => (
-                        <label key={index2} className="flex items-center text-gray-700">
-                          <input
-                            disabled={!isSelect.includes(service.service_name)}
-                            type="radio"
-                            name={`duration-${index}`}
-                            value={timeOption.time_of_service.time_ID}
-                            checked={
-                              Number(selectedRadio[service.service_name]) ===
-                              timeOption.time_of_service.time_ID
-                            }
-                            onChange={(e) =>
-                              handleSetTimeAndUnit(
-                                e,
-                                timeOption.time_of_service.time_ID,
-                                timeOption.time_of_service.quantity_of_days,
-                                timeOption.time_of_service.unit,
-                                index,
-                                service.service_ID,
-                                service.service_name
-                              )
-                            }
-                            className="mr-3 h-6 w-6"
-                          />
-                          {timeOption.time_of_service.quantity_of_days}{" "}
-                          {timeOption.time_of_service.unit}
-                        </label>
-                      ))}
+            return () => clearInterval(interval);
+        }
+    }, [dataReview]);
+
+    return (
+        <MainLayout>
+            <div className="max-w-7xl mx-auto p-6">
+                {/* 🏆 Banner Section */}
+                {dataExercise.map((item) => (
+                    <motion.div
+                        key={item.page_exercise_ID}
+                        className="relative w-full h-[350px] md:h-[450px] bg-cover bg-center rounded-lg overflow-hidden shadow-lg"
+                        style={{ backgroundImage: `url(http://localhost:3000/${item.banner})` }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
+                    >
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center text-center p-4">
+                            <motion.h1
+                                className="text-white text-4xl md:text-6xl font-bold"
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.5, duration: 1 }}
+                            >
+                                {item.title}
+                            </motion.h1>
+                            <motion.p
+                                className="text-gray-300 text-lg mt-2 max-w-2xl"
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.8, duration: 1 }}
+                            >
+                                {item.subtitle}
+                            </motion.p>
+                            <motion.button
+                                onClick={() => router.push('/pages/user/exercise/pageExercise')}
+                                className="mt-6 px-6 py-3 bg-yellow-500 text-white text-lg font-bold rounded-lg shadow-md hover:bg-yellow-600"
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 1, duration: 0.5 }}
+                            >
+                                สมัครสมาชิกเลย!
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                ))}
+
+                {/* ⭐ บริการออกกำลังกาย */}
+                <section className="mt-14 text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-gray-100">🏡 บริการออกกำลังกาย 🏡</h2>
+                    {/* <p className="text-gray-600 mt-2">Choose the best place for your stay</p> */}
+                    {dataExercise.map((property) => {
+                        console.log("==>", property); return (
+                            <div key={property.page_exercise_ID} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+                                {property.exercise_data.map((item, index) => (
+                                    <motion.div
+                                    key={item.exercise_data_ID}
+                                    className="p-4 border rounded-lg shadow-md bg-white hover:shadow-xl transition overflow-hidden"
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: index * 0.3 }}
+                                >
+                                    {/* <img src="/user/img/fitness-1.jpg" alt="olll" className="w-full h-48 object-cover rounded-t-lg" /> */}
+                                    <img src={`http://localhost:3000/${item.banner}`} alt={item.name} className="w-full h-48 object-cover rounded-t-lg" />
+                                    <div className="p-4 flex items-end justify-between">
+                                        <div className="flex flex-col">
+                                            <h3 className="text-lg font-bold">{item.name}</h3>
+                                            <p className="text-gray-600 text-left">ราคาเริ่มต้น</p>
+                                        </div>
+                                        <p className="text-green-500 text-xl font-semibold">{item.price}</p>
+                                    </div>
+                                </motion.div>
+                                ))}
+                            </div>
+                        )
+                    })}
+                </section>
+
+                {/* ⭐ จุดเด่นของเรา */}
+                <section className="mt-14 text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-gray-100">🔥 จุดเด่นของเรา 🔥</h2>
+                    {/* <p className="text-gray-600 mt-2">เหตุผลที่คุณควรเลือกเรา</p> */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+                        {[
+                            { icon: "🏋️‍♂️", title: "ฟิตเนสทันสมัย", desc: "เครื่องออกกำลังกายใหม่ล่าสุด พร้อมอุปกรณ์ครบครัน" },
+                            { icon: "🏊‍♀️", title: "สระว่ายน้ำสะอาด", desc: "สระน้ำมาตรฐาน พร้อมระบบกรองน้ำคุณภาพสูง" },
+                            { icon: "🧘‍♀️", title: "คลาสโยคะ", desc: "คลาสโยคะสำหรับทุกระดับ พร้อมเทรนเนอร์มืออาชีพ" },
+                        ].map((feature, index) => (
+                            <motion.div
+                                key={index}
+                                className="p-6 border rounded-lg shadow-md bg-white hover:shadow-xl transition"
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: index * 0.3 }}
+                            >
+                                <h3 className="text-3xl">{feature.icon}</h3>
+                                <h3 className="text-lg font-bold mt-2">{feature.title}</h3>
+                                <p className="text-gray-600">{feature.desc}</p>
+                            </motion.div>
+                        ))}
                     </div>
-                  </div>
-                  <div className="mb-8 flex items-center gap-4 text-gray-700 text-lg mt-1">
-                    <span className="text-gray-700 text-lg flex items-center">เลือกวันที่</span>
-                    <input
-                      className="w-1/2 p-2 border border-gray-300 rounded-md text-gray-800"
-                      type="date"
-                      value={dateStart[service.service_name] || ""} // ดึงค่าจาก dateStart โดยใช้ service_name เป็น key
-                      onChange={(e) => {
-                        handleDateChange(e.target.value, service.service_name); // ส่ง value และ service_name
-                      }}
-                      min={today}
-                      disabled={!isSelect.includes(service.service_name)}
-                    />
-                  </div>
-                  <div className="ml-auto text-gray-600 text-sm font-medium mt-1 mb-4 flex items-center justify-end gap-2">
-                    ราคา <p className="font-bold text-blue-500 text-lg flex items-center">{price.find((p) => p.index === index)?.price || 0}</p> บาท
-                  </div>
-                </div>
-              );
-            })}
+                </section>
 
-          <button
-            onClick={() => {
-              if (status === "unauthenticated") {
-                alert("กรุณาเข้าสู่ระบบ");
-                // router.push("/pages/user/AAA/login");
-              } else {
-                // sessionStorage.setItem("selectServices", JSON.stringify(selectServices));
-                addServices();
-              }
-            }}
-            disabled={!isSubmitEnabled}
+                {/* รีวิวจากลูกค้าของเรา */}
+                <section className="mt-14">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-gray-300 text-center">
+                        รีวิวบริการทั้งหมด <button className="hover:text-blue-500" onClick={() => setShowAll(true)}>({reviewCount || 0})</button>
+                    </h2>
+                    <div className="flex flex-col items-center space-y-6 mt-6">
+                        <div className="flex justify-center space-x-8">
+                            {currentReviews.length > 0 ? (
+                                currentReviews.map((review, index) => (
+                                    <motion.div key={review?.re_ID}
+                                        className="p-6 border rounded-lg shadow-md bg-white w-[400px]"
+                                        initial={{ opacity: 0, x: 50 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -50 }}
+                                        transition={{ delay: index * 0.3 }}>
+                                        <div className="flex items-center space-x-4">
+                                            <img src={review.users.user_profile_picture ? `/${review.users.user_profile_picture}` : "/user/img/user.jpeg"}
+                                                alt={review.users.user_username}
+                                                className="w-12 h-12 rounded-full object-cover border-2" />
+                                            <div>
+                                                <h3 className="text-lg font-bold">{review.users.user_name} {review.users.user_lastname}</h3>
+                                                <p className="text-gray-500">บริการที่ซื้อ : {review.service_of_exercise.service_name}</p>
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-600 mt-4">&ldquo;{review?.Text_review} &ldquo;</p>
+                                        <div className="mt-2 flex">
+                                            <p className="mr-2">คะแนน : {review.score}/5</p>
+                                            {[...Array(review?.score)].map((_, i) => (
+                                                <span key={i} className="text-yellow-500">★</span>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">Loading reviews...</p>
+                            )}
+                        </div>
+                        
+                        {showAll && ( 
+                            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                                <div className="relative bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-[80vh] overflow-y-auto">
+                                    <div className="sticky top-0 bg-blue-200 p-4 z-10 shadow-md">
+                                        <button onClick={() => setShowAll(false)} className="absolute top-2 right-2 text-gray-700 text-lg">✕</button>
+                                        <h4 className="text-body-2xlg font-bold text-dark">รีวิวทั้งหมด ({reviewCount || 0})</h4>
+                                    </div>
+                                    {dataReview.map((review, key) => (
+                                        <div className="flex items-center gap-4.5 px-7.5 py-1 hover:bg-gray-1 dark:hover:bg-dark-2 border-t-2" key={key}>
+                                            <div className="relative h-8 w-8 border-2 mr-4 border-gray-300 rounded-full">
+                                                <img
+                                                    width={32}
+                                                    height={32}
+                                                    src={review.users.user_profile_picture ? `/${review.users.user_profile_picture}` : "/user/img/user.jpeg"}
+                                                    alt={review.users.user_name}
+                                                />
+                                            </div>
+                                            <div className="w-full">
+                                                <div>
+                                                    <div className="flex items-center justify-between">
+                                                        <h5 className="font-medium text-[12px] mt-1 leading-[8px] text-dark dark:text-white">
+                                                            {review.users.user_name} {review.users.user_lastname} {" "}
+                                                            {[...Array(5)].map((_, index) => (
+                                                                <span key={index} className={`${index < review.score ? "text-yellow-400" : "text-gray-300"} text-sm`}>
+                                                                    ★
+                                                                </span>
+                                                            ))}
+                                                        </h5>
+                                                        <span className="text-[12px] leading-[8px] text-green-600">
+                                                            {review.service_of_exercise.service_name}
+                                                        </span>
+                                                    </div>
+                                                    <p>
+                                                        <span className="text-[12px] leading-[8px] text-gray-600">
+                                                            {review.Text_review}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-            className={`w-full py-4 rounded-2xl font-extrabold shadow-xl text-lg transition-transform hover:scale-105 ${isSubmitEnabled
-              ? "bg-gradient-to-br from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-          >
-            สั่งซื้อ
-          </button>
-        </div>
-      </div>
-    </MainLayout>
-  );
+                </section>
+
+                {/* 📌 ตารางราคา */}
+                <section className="mt-14 text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-gray-300">💰 ตารางราคา</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
+                        {[
+                            { plan: "รายวัน", price: "150฿", features: ["เข้าใช้บริการ 1 วัน", "ฟิตเนส + สระว่ายน้ำ"] },
+                            { plan: "รายเดือน", price: "1,200฿", features: ["เข้าใช้บริการ 30 วัน", "คลาสโยคะ + ฟิตเนส + สระว่ายน้ำ"] },
+                            { plan: "รายปี", price: "9,900฿", features: ["เข้าใช้บริการ 365 วัน", "ทุกคลาส + ส่วนลดพิเศษ"] },
+                        ].map((item, index) => (
+                            <motion.div
+                                key={index}
+                                className="p-6 border rounded-lg shadow-md bg-white hover:shadow-xl transition"
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: index * 0.3 }}
+                            >
+                                <h3 className="text-xl font-bold">{item.plan}</h3>
+                                <p className="text-2xl font-semibold text-blue-600">{item.price}</p>
+                                <ul className="text-gray-600 mt-2">
+                                    {item.features.map((f, i) => <li key={i}>✔ {f}</li>)}
+                                </ul>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* 🎭 แกลเลอรีรูปภาพ */}
+                <section className="mt-14">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-gray-300 text-center">📸 บรรยากาศภายใน</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        {["fitness-1.jpg", "fitness-2.jpg", "member_card.jpg"].map((img, index) => (
+                            <motion.div
+                                key={index}
+                                className="rounded-lg overflow-hidden shadow-md"
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: index * 0.3 }}
+                            >
+                                <img src={`/user/img/${img}`} alt="Gallery" className="w-full h-64 object-cover" />
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+            </div>
+        </MainLayout>
+    );
 }
+
+

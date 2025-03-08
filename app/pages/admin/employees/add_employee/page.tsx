@@ -29,6 +29,8 @@ export default function AddEmployees() {
     const [emp_username, setEmpUsername] = useState("");
     const [emp_password, setEmpPassword] = useState("");
     const [emp_tel, setEmpTel] = useState("");
+    const [emp_email, setEmpEmail] = useState("");
+    const [emp_job, setEmpJob] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -41,9 +43,10 @@ export default function AddEmployees() {
             emp_lastname,
             emp_sex,
             emp_username,
+            emp_email,
             emp_password,
             emp_tel,
-            emp_job: false, // Always set emp_job to false (0 in database)
+            emp_job,
         };
 
         try {
@@ -56,8 +59,10 @@ export default function AddEmployees() {
                 setEmpLastname("");
                 setEmpSex("ไม่ระบุ");
                 setEmpUsername("");
+                setEmpEmail("");
                 setEmpPassword("");
                 setEmpTel("");
+                setEmpJob(false);
 
             }
         } catch (err) {
@@ -71,7 +76,7 @@ export default function AddEmployees() {
 
     return (
         <MainLayoutAdmin>
-            <h1 className="text-3xl font-bold mb-6 text-black ml-2">จัดการพนักงาน</h1>
+            <h1 className="text-3xl font-bold mb-6 text-black ml-2">เพิ่มการพนักงาน</h1>
             <div className="w-full bg-gray-300 ml-2 p-8 rounded-lg shadow-lg relative">
                 <form className="grid grid-cols-1 gap-6" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-2 gap-6">
@@ -113,7 +118,7 @@ export default function AddEmployees() {
                                 <option value="ไม่ระบุ">ไม่ระบุ</option>
                                 <option value="ชาย">ชาย</option>
                                 <option value="หญิง">หญิง</option>
-                                <option value="LGBTQS+">LGBTQS+</option>
+                                <option value="LGBTQS+">LGBTQ</option>
                             </select>
                         </div>
                         <div>
@@ -131,7 +136,33 @@ export default function AddEmployees() {
 
                     <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="emp_username" className="block text-sm font-medium text-gray-700">Username</label>
+                            <label htmlFor="emp_email" className="block text-sm font-medium text-gray-700">อีเมล</label>
+                            <input
+                                type="email"
+                                id="emp_email"
+                                value={emp_email}
+                                onChange={(e) => setEmpEmail(e.target.value)}
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="เบอร์โทร"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="emp_job" className="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
+                            <select
+                                id="emp_job"
+                                value={emp_job ? "true" : "false"}
+                                onChange={(e) => setEmpJob(e.target.value === "true")}
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="true">ผู้จัดการ</option>
+                                <option value="false">พนักงาน</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="emp_username" className="block text-sm font-medium text-gray-700">ชื่อผู้ใช้</label>
                             <input
                                 type="text"
                                 id="emp_username"
@@ -139,11 +170,11 @@ export default function AddEmployees() {
                                 required
                                 onChange={(e) => setEmpUsername(e.target.value)}
                                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Username"
+                                placeholder="ชื่อผู้ใช้"
                             />
                         </div>
                         <div className="relative">
-                            <label htmlFor="emp_password" className="block text-sm font-medium text-gray-700">Password</label>
+                            <label htmlFor="emp_password" className="block text-sm font-medium text-gray-700">รหัสผ่าน</label>
                             <input
                                 type={showPassword ? "text" : "password"} // เปลี่ยน type ตาม state
                                 id="emp_password"
@@ -151,7 +182,7 @@ export default function AddEmployees() {
                                 required
                                 onChange={(e) => setEmpPassword(e.target.value)}
                                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Password"
+                                placeholder="รหัสผ่าน"
                             />
                             {/* Icon toggle */}
                             <span

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserInterface } from "@/app/interface/user";
+import { fetchData } from "next-auth/client/_utils";
 
 const EditProfileForm: React.FC = () => {
   const { data, update } = useSession();
@@ -54,7 +55,7 @@ const EditProfileForm: React.FC = () => {
       };
       fetchData();
     }
-  }, [formData, formData.user_ID]);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -72,7 +73,7 @@ const EditProfileForm: React.FC = () => {
         ...formData,
         [name]: file,
         isCardChange: name == "ID_card_photo" ? true : formData.isCardChange,
-        isProfileChange: name == "user_profile_picture" ? true : formData.isCardChange,
+        isProfileChange: name == "user_profile_picture" ? true : formData.isProfileChange,
       });
       if (name === "user_profile_picture") {
         setPreviewImage(URL.createObjectURL(file));
@@ -148,6 +149,7 @@ const EditProfileForm: React.FC = () => {
             type="file"
             id="user_profile_picture"
             name="user_profile_picture"
+            accept="png,jpeg,jpg"
             onChange={handleFileChange}
             className="hidden"
           />
@@ -174,6 +176,7 @@ const EditProfileForm: React.FC = () => {
             type="file"
             id="ID_card_photo"
             name="ID_card_photo"
+            accept="jpeg,jpg,png"
             onChange={handleFileChange}
             className="hidden"
           />

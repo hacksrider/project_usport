@@ -7,6 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
+model ResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  user      users    @relation(fields: [userId], references: [user_ID])
+  userId    Int
+  expiresAt DateTime
+}
+
 model bookings {
   booking_ID           Int      @id @default(autoincrement()) // เพิ่มฟิลด์ id ที่เป็น primary key
   user_ID              Int
@@ -37,41 +47,34 @@ model order_Bookings {
 
 
 model buying_exercise {
-  buying_ID            Int      @id @default(autoincrement())
+  buying_ID            Int                   @id @default(autoincrement())
   user_ID              Int
-  payment_confirmation String   @db.VarChar(255)
+  payment_confirmation String                @db.VarChar(255)
   buying_date          DateTime
   buying_status        Boolean
   emp_ID               Int?
-
-  // Relationships
-  employees           employees?            @relation(fields: [emp_ID], references: [emp_ID], map: "Buying_Exercise_emp_ID_fkey")
-  users               users                 @relation(fields: [user_ID], references: [user_ID], map: "Buying_Exercise_user_ID_fkey")
-  orders              orders[]
-  service_of_exercise service_of_exercise[]
+  employees            employees?            @relation(fields: [emp_ID], references: [emp_ID], map: "Buying_Exercise_emp_ID_fkey")
+  users                users                 @relation(fields: [user_ID], references: [user_ID], map: "Buying_Exercise_user_ID_fkey")
+  orders_exercise      orders_exercise[]
+  service_of_exercise  service_of_exercise[]
 
   @@index([emp_ID], map: "Buying_Exercise_emp_ID_fkey")
   @@index([user_ID], map: "Buying_Exercise_user_ID_fkey")
 }
 
-model orders {
-  order_ID           Int      @id @default(autoincrement())
-  buying_ID          Int
-  service_ID         Int
-  service_name       String
-  amount_of_time     String   @db.VarChar(15)
-  units              String   @db.VarChar(10)
-  desired_start_date DateTime
-  status_order       Int      @default(0)
-  expire_date        DateTime
-  Price              Int
-
-  // Relationships
+model orders_exercise {
+  order_ID            Int                 @id @default(autoincrement())
+  buying_ID           Int
+  service_ID          Int
+  service_name        String
+  amount_of_time      String              @db.VarChar(15)
+  units               String              @db.VarChar(10)
+  desired_start_date  DateTime
+  status_order        String              @default("รอใช้บริการ")
+  expire_date         DateTime
+  Price               Int
   buying_exercise     buying_exercise     @relation(fields: [buying_ID], references: [buying_ID], map: "Order_Buying_Exercise_fkey", onDelete: Cascade)
-  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "Order_Service_ID_fkey")
-
-  @@index([buying_ID], map: "Order_Buying_Exercise_fkey")
-  @@index([service_ID], map: "Order_Service_ID_fkey")
+  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "Order_Service_ID_fkey", onDelete: Cascade)
 }
 
 model content {
@@ -87,21 +90,10 @@ model employees {
   emp_tel         String?           @db.VarChar(10)
   emp_job         Boolean
   emp_username    String            @unique(map: "Employees_emp_username_key") @db.VarChar(20)
+  emp_email       String?           @unique(map: "Employees_emp_email_key") @db.VarChar(100)
   emp_password    String            @db.VarChar(10)
   oders          order_Bookings[]
   buying_exercise buying_exercise[]
-}
-
-model price_exercise {
-  price_ID            Int                 @id @default(autoincrement())
-  service_ID          Int
-  time_ID             Int
-  price               Int
-  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], onDelete: Cascade, map: "Price_Exercise_service_ID_fkey")
-  time_of_service     time_of_service     @relation(fields: [time_ID], references: [time_ID], map: "Price_Exercise_time_ID_fkey")
-
-  @@index([service_ID], map: "Price_Exercise_service_ID_fkey")
-  @@index([time_ID], map: "Price_Exercise_time_ID_fkey")
 }
 
 model fields {
@@ -150,18 +142,22 @@ model service_of_exercise {
   service_name     String            @db.VarChar(20)
   capacity_of_room Int
   Status           Boolean
+  deleted          Int               @default(1) @db.TinyInt // 1 ใช้ 0 ไม่ใช้
   buying_exercise  buying_exercise[]
-  price_exercise   price_exercise[]
+  time_and_price   time_and_price[]
   reviews          reviews[]
-
-  order orders[] @relation(map: "Order_Service_ID_fkey")
+  orders_exercise  orders_exercise[] @relation(map: "Order_Service_ID_fkey")
 }
 
-model time_of_service {
-  time_ID          Int              @id @default(autoincrement())
-  quantity_of_days Int
-  unit             String           @db.VarChar(10)
-  price_exercise   price_exercise[]
+model time_and_price {
+  time_ID             Int                 @id @default(autoincrement())
+  service_ID          Int
+  quantity_of_days    Int?
+  unit                String?             @db.VarChar(10)
+  price               Int?
+  service_of_exercise service_of_exercise @relation(fields: [service_ID], references: [service_ID], map: "time_and_price_service_ID_fkey", onDelete: Cascade)
+
+  @@index([service_ID], map: "time_and_price_service_ID_fkey")
 }
 
 model users {
@@ -183,6 +179,7 @@ model users {
   bookings                 bookings[]
   buying_exercise          buying_exercise[]
   reviews                  reviews[]
+  ResetToken ResetToken[]
 }
 
 model accountBank{
@@ -190,3 +187,113 @@ model accountBank{
   path_image_acc        String            @db.VarChar(255)
   path_image_Prom       String?           @db.VarChar(255)
 }
+
+
+model page_home {
+  page_home_id        Int                   @id @default(autoincrement())
+  title               String?               @db.VarChar(50)
+  subtitle            String?               @db.VarChar(255)
+  banner              String?               @db.VarChar(255)
+  page_home_promotion page_home_promotion[]
+  page_home_exercise  page_home_exercise[]
+  page_home_gallery   page_home_gallery[]
+}
+
+model page_home_exercise {
+  page_home_service_id Int     @id @default(autoincrement())
+  name_exercise        String? @db.VarChar(50)
+  description          String? @db.VarChar(255)
+  banner_exercise      String? @db.VarChar(255) // ไฟล์รูป
+  page_home_id         Int
+
+  page_home page_home @relation(fields: [page_home_id], references: [page_home_id])
+}
+
+model page_home_promotion {
+  page_home_promotion_id Int     @id @default(autoincrement())
+  title_promotion        String? @db.VarChar(50)
+  detail_promotion       String? @db.VarChar(255)
+  banner_promotion       String? @db.VarChar(255) // ไฟล์รูป
+  page_home_id           Int
+
+  page_home page_home @relation(fields: [page_home_id], references: [page_home_id])
+}
+
+model page_home_gallery {
+  page_home_gallery_id Int     @id @default(autoincrement())
+  picture_gallery      String? @db.VarChar(255)
+  page_home_id         Int
+
+  page_home page_home @relation(fields: [page_home_id], references: [page_home_id])
+}
+
+//////////////////////////////////////////////
+model page_about {
+  page_about_id  Int              @id @default(autoincrement())
+  title          String?          @db.VarChar(50)
+  detail         String?          @db.VarChar(255)
+  banner         String?          @db.VarChar(255)
+  detail_usport1 String?          @db.VarChar(255)
+  detail_usport2 String?          @db.VarChar(255)
+  video          String?          @db.VarChar(255)
+  exercise_about exercise_about[]
+}
+
+model exercise_about {
+  exercise_about_id Int        @id @default(autoincrement())
+  title             String?    @db.VarChar(50)
+  detail            String?    @db.VarChar(255)
+  page_about_id     Int
+  page_about        page_about @relation(fields: [page_about_id], references: [page_about_id], map: "Order_Page_About_fkey")
+
+  @@index([exercise_about_id], map: "Exercise_About_Exercise_About_ID_fkey") // เปลี่ยนชื่อดัชนีที่ไม่ซ้ำ
+}
+
+////////////////////////////////////////////////
+model page_contact {
+  page_contact_ID  Int                @id @default(autoincrement())
+  title            String?            @db.VarChar(50)
+  subtitle         String?            @db.VarChar(255)
+  banner           String?            @db.VarChar(255)
+  title_contact    String?            @db.VarChar(50)
+  subtitle_contact String?            @db.VarChar(255)
+  title_map        String?            @db.VarChar(50)
+  link_map         String?            @db.VarChar(2000)
+  contact_channels contact_channels[]
+}
+
+model contact_channels {
+  contact_channels_ID Int          @id @default(autoincrement())
+  name                String?      @db.VarChar(25)
+  data                String?      @db.VarChar(255)
+  page_contact_ID     Int // ใช้ชื่อเดียวกับ FK ใน page_contact
+  page_contact        page_contact @relation(fields: [page_contact_ID], references: [page_contact_ID], map: "Order_Page_Contact_fkey")
+
+  @@index([contact_channels_ID], map: "Contact_Channels_Contact_Channels_ID_fkey")
+}
+
+///////////////////////////////////////////
+model page_exercise {
+  page_exercise_ID Int             @id @default(autoincrement())
+  title            String?         @db.VarChar(50) // หัวข้อ
+  subtitle         String?         @db.VarChar(255) // รายละเอียด
+  banner           String?         @db.VarChar(255) // รูปภาพ
+  exercise_data    exercise_data[]
+}
+
+model exercise_data {
+  exercise_data_ID Int           @id @default(autoincrement())
+  name             String?       @db.VarChar(25) // ชื่อบริการ
+  banner           String?       @db.VarChar(255) // รูปภาพแบนเนอร์
+  price            String?       @db.VarChar(25) // ราคา
+  detail           String?       @db.VarChar(255) // รายละเอียด
+  table_price      String?       @db.VarChar(255) // รายละเอียดราคา
+  picture          String?       @db.VarChar(255) // รูปภาพบริการ
+  page_exercise_ID Int // ใช้ชื่อเดียวกับ FK ใน page_exercise
+  page_exercise    page_exercise @relation(fields: [page_exercise_ID], references: [page_exercise_ID], map: "Order_Page_Exercise_fkey")
+
+  @@index([exercise_data_ID], map: "Exercise_Data_Exercise_Data_ID_fkey")
+}
+
+//npx prisma migrate dev --name init
+

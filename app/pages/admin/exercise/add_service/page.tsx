@@ -1,15 +1,20 @@
 "use client";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
+import { AdminInterface } from "@/app/interface/admin";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 
 export default function AddService() {
+  const { data } = useSession();
+  const adminData = data as AdminInterface;
   const [service_name, setservice_name] = useState("");
   const [capacity_of_room, setcapacity_of_room] = useState("");
-  const [daylyRates, setdaylyRates] = useState([{ quantity_of_days: "", price: "", unit: "" }]);
+  const [daylyRates, setdaylyRates] = useState([{ quantity_of_days: "", price: "", unit: "", isPromo: false }]); // เพิ่ม isPromo เพื่อบอกว่ามันเป็นโปรโมชั่น
   const [Status, setStatus] = useState(false);
+
   const handleAdddaylyRate = () => {
-    setdaylyRates([...daylyRates, { quantity_of_days: "", price: "", unit: "" }]);
+    setdaylyRates([...daylyRates, { quantity_of_days: "", price: "", unit: "", isPromo: true }]); // กำหนด isPromo เป็น true สำหรับโปรโมชั่น
   };
 
   const handleRemovedaylyRate = (index: number) => {
@@ -26,7 +31,11 @@ export default function AddService() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const detail = daylyRates;
+    // ปรับค่า quantity_of_days เป็น 1 ถ้า isPromo เป็น false
+    const detail = daylyRates.map(rate => ({
+      ...rate,
+      quantity_of_days: rate.isPromo ? rate.quantity_of_days : "1", // บังคับให้เป็น 1
+    }));
 
     try {
       const response = await axios.post("/api/services", {
@@ -34,20 +43,16 @@ export default function AddService() {
         capacity_of_room,
         detail,
         Status
-      }); // ส่งข้อมูลไปยัง API
+      });
       if (response.status === 201) {
         alert("บันทึกข้อมูลเรียบร้อย!");
         window.location.href = "/pages/admin/exercise";
       }
     } catch (error) {
       console.error(error);
-      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-
+      alert("กรุณากรอกข้อมูลให้ครบ");
     }
   };
-
-
-
 
   return (
     <MainLayoutAdmin>
@@ -55,8 +60,7 @@ export default function AddService() {
         <div className="hover:underline cursor-pointer hover:text-blue-800"><button onClick={() => window.history.back()}>บริการการออกกำลังกาย</button></div> - <div className="hover:underline cursor-pointer hover:text-blue-800">เพิ่มบริการ</div>
       </h1>
       <div className="w-full bg-gray-300 p-6 mb-6 rounded shadow-md">
-        {/* ฟอร์มการเพิ่มบริการ */}
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-black font-medium mb-2">ชื่อบริการ</label>
             <input
@@ -79,66 +83,89 @@ export default function AddService() {
             />
           </div>
 
+          {adminData.user.emp_job ? (
+            <div className="mb-4">
+              <label className="block text-black font-medium mb-2">กำหนดราคา</label>
+              {daylyRates.map((rate, index) => (
+                <div key={index} className={`grid grid-cols-12 gap-4 mb-2 items-center border border-gray-400 rounded p-2 ${rate.isPromo ? 'bg-yellow-200' : 'bg-green-200'}`}>
+                  {/* เพิ่มข้อความเพื่อบอกว่าเป็นโปรโมชั่น */}
+                  {rate.isPromo && (
+                    <div className="col-span-12 text-center font-bold text-red-600">
+                      <span className="border-b-2 border-red-600">โปรโมชั่น {index + 0}</span>
+                    </div>
+                  )}
 
-          <div className="mb-4">
-            <label className="block text-black font-medium mb-2">กำหนดราคา</label>
-            {daylyRates.map((rate, index) => (
-              <div key={index} className="grid grid-cols-12 gap-4 mb-2 items-center border border-gray-400 rounded p-2 bg-green-200">
-                <div className="col-span-4">
-                  <label className="block text-sm text-black mb-1">จำนวน</label>
-                  <input
+                  <div className="col-span-4">
+                    <label className="block text-sm text-black mb-1">จำนวน</label>
+                    {/* <input
                     type="number"
                     min={1}
                     value={rate.quantity_of_days}
                     onChange={(e) => handledaylyRateChange(index, "quantity_of_days", e.target.value)}
                     className="w-full p-2 border border-gray-400 rounded"
                     placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <label className="block text-sm text-black mb-1">หน่วย</label>
-                  <select
-                    value={rate.unit}
-                    onChange={(e) => handledaylyRateChange(index, "unit", e.target.value)}
-                    className="w-full p-2 border border-gray-400 rounded"
-                  >
-                    <option value="เลือกหน่วย">เลือกหน่วย</option>
-                    <option value="วัน">วัน</option>
-                    <option value="สัปดาห์">สัปดาห์</option>
-                    <option value="เดือน">เดือน</option>
-                    <option value="ปี">ปี</option>
-                  </select>
+                  /> */}
+                    <input
+                      type="number"
+                      min={1}
+                      value={rate.isPromo ? rate.quantity_of_days : 1}
+                      onChange={(e) => rate.isPromo && handledaylyRateChange(index, "quantity_of_days", e.target.value)}
+                      // onChange={(e) => handledaylyRateChange(index, "quantity_of_days", e.target.value)}
+                      className={`w-full p-2 border border-gray-400 rounded ${rate.isPromo ? 'bg-white' : 'bg-gray-200'}`}
+                      placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
+                      disabled={!rate.isPromo}
+                    />
+
+                  </div>
+                  <div className="col-span-3">
+                    <label className="block text-sm text-black mb-1">หน่วย</label>
+                    <select
+                      value={rate.unit}
+                      onChange={(e) => handledaylyRateChange(index, "unit", e.target.value)}
+                      className="w-full p-2 border border-gray-400 rounded"
+                    >
+                      <option value="">เลือกหน่วย</option>
+                      <option value="วัน">วัน</option>
+                      <option value="สัปดาห์">สัปดาห์</option>
+                      <option value="เดือน">เดือน</option>
+                      <option value="ปี">ปี</option>
+                    </select>
+                  </div>
+
+                  <div className="col-span-4">
+                    <label className="block text-sm text-black mb-1">ราคา/หน่วย</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={rate.price}
+                      onChange={(e) => handledaylyRateChange(index, "price", e.target.value)}
+                      className="w-full p-2 border border-gray-400 rounded"
+                      placeholder="กำหนดราคา (บาท)"
+                    />
+                  </div>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemovedaylyRate(index)}
+                      className="text-black col-span-1 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded p-2 h-full"
+                    >
+                      ลบ
+                    </button>
+                  )}
                 </div>
 
-                <div className="col-span-4">
-                  <label className="block text-sm text-black mb-1">ราคา/หน่วย</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={rate.price}
-                    onChange={(e) => handledaylyRateChange(index, "price", e.target.value)}
-                    className="w-full p-2 border border-gray-400 rounded"
-                    placeholder="กำหนดราคา (บาท)"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemovedaylyRate(index)}
-                  className="text-black col-span-1 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded p-2 h-full"
-                >
-                  ลบ
-                </button>
-
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={handleAdddaylyRate}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-            >
-              + เพิ่มจำนวนเดือนและราคา
-            </button>
-          </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleAdddaylyRate}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                + เพิ่มโปรโมชั่น
+              </button>
+            </div>
+          ) : (
+            ""
+          )}
 
           <div className="flex justify-end items-center gap-10 mt-4 xsm:mt-0">
             <label
@@ -204,7 +231,6 @@ export default function AddService() {
               </div>
             </label>
 
-
             <div className="flex justify-end">
               <button
                 onClick={handleSubmit}
@@ -219,5 +245,3 @@ export default function AddService() {
     </MainLayoutAdmin>
   );
 };
-
-

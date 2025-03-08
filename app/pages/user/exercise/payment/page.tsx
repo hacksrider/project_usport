@@ -3,14 +3,12 @@
 'use client';
 
 import MainLayout from "@/app/components/mainLayout";
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ServiceToSave } from "@/app/interface/buyingExercise";
 import axios from "axios";
 import { UserInterface } from "@/app/interface/user";
 import { useSession } from "next-auth/react";
-// import axios from "axios";
-// import { useSession } from "next-auth/react";
 
 export default function Payment() {
     const router = useRouter();
@@ -18,16 +16,51 @@ export default function Payment() {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("bankTransfer");
     const [slipFile, setSlipFile] = useState<File | null>(null);
     const [totalAmount, setTotalAmount] = useState<number>(0); // Default value
-    // const [timeLeft, setTimeLeft] = useState<string>("");
+    const [timeLeft, setTimeLeft] = useState<string>("15:00");
     const [selectedActivities, setSelectedActivities] = useState<ServiceToSave[]>([]);
     const { data } = useSession();
     const userData = data as UserInterface;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // const [userData, setUserData] = useState<any>(null); // แก้ไขตามโครงสร้างข้อมูล API ของคุณ
-    // const { data: session } = useSession();
-    // const [selectedActivities, setSelectedActivities] = useState<
-    //     { name: string; price: number; duration: number; dateStart: string; dateEnd: string }[]
-    // >([]);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const secondsLeftRef = useRef<number>(15 * 60); // 15 minutes in seconds
+
+    const startCountdown = () => {
+        // Clear existing timer if any
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+
+        // Set initial time to 15 minutes (900 seconds)
+        secondsLeftRef.current = 15 * 60;
+        updateTimeDisplay();
+
+        // Start the countdown
+        timerRef.current = setInterval(() => {
+            secondsLeftRef.current -= 1;
+            
+            // Check if countdown is complete
+            if (secondsLeftRef.current <= 0) {
+                if (timerRef.current) {
+                    clearInterval(timerRef.current);
+                }
+                alert("เวลาในการชำระเงินหมดลงแล้ว กรุณาทำรายการใหม่");
+                router.push("../exercise");
+            }
+            
+            updateTimeDisplay();
+        }, 1000);
+    };
+
+    const updateTimeDisplay = () => {
+        const minutes = Math.floor(secondsLeftRef.current / 60);
+        const seconds = secondsLeftRef.current % 60;
+        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    };
+
+    const handleCancel = () => {
+        // Reset timer when cancel button is clicked
+        startCountdown();
+        router.push("/pages/user/exercise/pageExercise");
+    };
 
     const handleSubmitToSave = async () => {
         if ((selectedPaymentMethod === "bankTransfer" || selectedPaymentMethod === "qr_code") && !slipFile) {
@@ -44,9 +77,6 @@ export default function Payment() {
                 throw new Error("User ID is missing");
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            // const filteredActivities = selectedActivities.map(({ service_name, ...rest }) => rest); // ลบ service_name ออกจากแต่ละ object
-
             fData.append("user_ID", userData.user.id.toString());
             fData.append("buying_date", new Date().toISOString());
             fData.append("dataToCreate", JSON.stringify(selectedActivities));
@@ -58,9 +88,13 @@ export default function Payment() {
             });
 
             if (res.data.status === 200) {
+                // Clear the timer when payment is successful
+                if (timerRef.current) {
+                    clearInterval(timerRef.current);
+                }
                 alert("การชำระเงินสำเร็จ! ระบบจะดำเนินการต่อ");
-                router.push("/pages/user/exercise/order_summary");
-                console.log("Success:", res.data);
+                router.push("/pages/user/purchase_order");
+                // console.log("Success:", res.data);
             } else {
                 console.error("Error:", res.data);
             }
@@ -79,40 +113,17 @@ export default function Payment() {
         if (activitiesData) {
             setSelectedActivities(JSON.parse(activitiesData));
         }
+
+        // Start countdown when component mounts
+        startCountdown();
+
+        // Clean up timer on component unmount
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        };
     }, []);
-
-
-    // useEffect(() => {
-    //     const countdownKey = "paymentCountdown";
-    //     const now = new Date().getTime();
-    //     const storedEndTime = sessionStorage.getItem(countdownKey);
-
-    //     let endTime;
-    //     if (storedEndTime) {
-    //         endTime = parseInt(storedEndTime, 10);
-    //     } else {
-    //         endTime = now + 10 * 60 * 1000; // Set 10 minutes countdown
-    //         sessionStorage.setItem(countdownKey, endTime.toString());
-    //     }
-
-    //     const countdownInterval = setInterval(() => {
-    //         const currentTime = new Date().getTime();
-    //         const timeDifference = endTime - currentTime;
-
-    //         if (timeDifference <= 0) {
-    //             clearInterval(countdownInterval);
-    //             sessionStorage.removeItem(countdownKey);
-    //             alert("ครบเวลาการชำระเงิน");
-    //             router.push("../exercise");
-    //         } else {
-    //             const minutes = Math.floor(timeDifference / (1000 * 60));
-    //             const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-    //             setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-    //         }
-    //     }, 1000);
-
-    //     return () => clearInterval(countdownInterval);
-    // }, [router]);
 
     const handlePaymentChange = (method: string) => {
         setSelectedPaymentMethod(method);
@@ -145,7 +156,7 @@ export default function Payment() {
                     <div className="mb-10">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">ยอดที่ต้องชำระเงิน</h2>
                         <div className="text-2xl font-bold text-green-500 mb-4">฿ {totalAmount} <span className="text-black">บาท</span></div>
-                        {/* <p className="text-xl font-bold text-gray-500 mb-4">** กรุณาชำระเงินภายใน <span className="text-red-500">{timeLeft}</span> นาที **</p> */}
+                        <p className="text-xl font-bold text-gray-500 mb-4">** กรุณาชำระเงินภายใน <span className="text-red-500">{timeLeft}</span> นาที **</p>
                         <h2 className="text-2xl font-bold text-gray-800 mb-6">เลือกวิธีการชำระเงิน</h2>
                         <div className="grid gap-6">
                             <label className="flex items-center bg-gray-100 p-4 rounded-lg shadow-md cursor-pointer">
@@ -239,7 +250,7 @@ export default function Payment() {
                     <div className="mt-10 flex gap-6">
                         <button
                             className="w-full bg-gray-200 text-gray-800 py-4 rounded-xl font-bold hover:bg-gray-300 transition-colors"
-                            onClick={() => router.push("../exercise")}
+                            onClick={handleCancel}
                         >
                             ยกเลิก
                         </button>

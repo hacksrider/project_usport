@@ -239,9 +239,6 @@
 // const handler = NextAuth(authOption);
 // export { handler as GET, handler as POST };
 
-
-
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from "@/lib/db";
 import NextAuth from "next-auth/next";
@@ -253,6 +250,32 @@ import { Session } from "next-auth";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { AuthOptions } from "next-auth";
+import { employees, users } from "@prisma/client";
+
+async function findAdminByUsernameOrEmail(
+  credentials: Record<"username" | "password", string> | undefined
+): Promise<employees | null> {
+  const data = await prisma.$queryRaw`
+    SELECT *
+    FROM employees  
+    WHERE BINARY emp_username = ${credentials?.username}
+       OR BINARY emp_email = ${credentials?.username}
+    LIMIT 1
+  ` as employees[];
+  return data[0] as employees || null;
+}
+async function findUserByUsernameOrEmail(
+  credentials: Record<"username" | "password", string> | undefined
+): Promise<users | null> {
+  const data = await prisma.$queryRaw`
+    SELECT *
+    FROM users  
+    WHERE BINARY user_username = ${credentials?.username}
+       OR BINARY user_email = ${credentials?.username}
+    LIMIT 1
+  ` as users[];
+  return data[0] as users || null;
+}
 
 export const authOption: AuthOptions = {
   providers: [
@@ -268,15 +291,11 @@ export const authOption: AuthOptions = {
         },
         async authorize(credentials) {
           if (!credentials) return null;
-
-          const user = await prisma.users.findFirst({
-            where: {
-              OR: [
-                { user_username: credentials.username },
-                { user_email: credentials.username },
-              ],
-            },
-          });
+          console.log(
+            "credentials.username --------------> ",
+            credentials.username
+          );
+          const user = await findUserByUsernameOrEmail(credentials);
 
           if (!user) {
             throw new Error("Invalid username or password");
@@ -325,11 +344,22 @@ export const authOption: AuthOptions = {
         async authorize(credentials) {
           if (!credentials) return null;
 
-          const admin = await prisma.employees.findFirst({
-            where: {
-              OR: [{ emp_username: credentials.username }],
-            },
-          });
+          console.log(
+            "credentials.username ad --------------> ",
+            credentials.username
+          );
+          // const admin = await prisma.employees.findFirst({
+          //   where: {
+          //     OR: [
+          //       { emp_username: credentials.username },
+          //       { emp_email: credentials.username },
+          //     ],
+
+          //   },
+          // });
+
+          const admin = await findAdminByUsernameOrEmail(credentials);
+          console.log("admin --------------> ", admin);
 
           if (!admin) {
             throw new Error("Invalid username or password");
@@ -341,6 +371,7 @@ export const authOption: AuthOptions = {
             emp_lastname,
             emp_job,
             emp_sex,
+            emp_email,
             emp_tel,
             emp_username,
           } = admin;
@@ -350,6 +381,7 @@ export const authOption: AuthOptions = {
             emp_lastname,
             emp_job,
             emp_sex,
+            emp_email,
             emp_tel,
             emp_username,
             type: "admin",
@@ -392,6 +424,7 @@ export const authOption: AuthOptions = {
         token.emp_job = session.emp_job;
         token.emp_sex = session.emp_sex;
         token.emp_tel = session.emp_tel;
+        token.emp_email = session.emp_email;
         token.emp_username = session.emp_username;
       }
 
@@ -415,6 +448,7 @@ export const authOption: AuthOptions = {
         token.emp_job = user.emp_job;
         token.emp_sex = user.emp_sex;
         token.emp_tel = user.emp_tel;
+        token.emp_email = user.emp_email;
         token.emp_username = user.emp_username;
         token.type = user.type;
       }
@@ -440,6 +474,7 @@ export const authOption: AuthOptions = {
         session.user.emp_lastname = token.emp_lastname;
         session.user.emp_job = token.emp_job;
         session.user.emp_sex = token.emp_sex;
+        session.user.emp_email = token.emp_email;
         session.user.emp_tel = token.emp_tel;
         session.user.emp_username = token.emp_username;
       }
