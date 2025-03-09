@@ -1,6 +1,6 @@
 import prisma from "../../../../lib/db";
 import * as cron from 'node-cron';
-let fiveMinutesAgo: Date = new Date(Date.now() - 15 * 60 * 1000);
+const fiveMinutesAgo: Date = new Date(Date.now() - 15 * 60 * 1000);
 
 const checkAndUpdateBookings = async () => {
   try {

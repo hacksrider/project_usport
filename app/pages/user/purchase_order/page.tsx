@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 'use client';
 import { useEffect, useState } from "react";
@@ -10,54 +11,6 @@ import axios from "axios";
 // import Image from "next/image";
 // import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-
-
-function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear() + 543;
-    return `${day}/${month}/${year}`;
-}
-
-// function calculateRemainingTime(expireDateStr: string | number | Date) {
-//     const now = new Date(new Date().getTime());
-//     const expireDate = new Date(expireDateStr);
-//     // @ts-expect-error
-//     const diffInMs = expireDate - now;
-
-//     console.log("----", expireDate)
-//     console.log("--->", now)
-
-//     if (diffInMs <= 0) {
-//         return "หมดเวลาแล้ว";
-//     }
-
-//     const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-//     const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-//     const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
-//     const seconds = Math.floor((diffInMs % (1000 * 60)) / 1000);
-
-//     if (days > 0) {
-//         if (hours === 0) {
-//             return `${days} วัน`;
-//         }
-//         return `${days} วัน ${hours} ชั่วโมง`;
-//     }
-//     if (days <= 0 && hours > 0) {
-//         if (minutes === 0) {
-//             return `${hours} ชั่วโมง`;
-//         }
-//         return `${hours} ชั่วโมง ${minutes} นาที`;
-//     }
-//     if (days <= 0 && hours <= 0 && minutes <= 0) {
-//         if (seconds === 0) {
-//             return `หมดเวลาแล้ว`;
-//         }
-//         return `${seconds} วินาที`;
-//     }
-
-// }
 
 function calculateRemainingTime(expireDateStr: string | number | Date) {
     const now = new Date();
@@ -303,7 +256,7 @@ export default function PurchaseOrder() {
             <div className="mx-auto w-full max-w-[1100px] my-10">
                 <div className="flex justify-between items-center mb-5">
                     <h1 className="text-2xl font-semibold text-white">คำสั่งซื้อของฉัน</h1>
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded" onClick={() => router.push("/pages/user/exercise")}>+ ซื้อบริการ</button>
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded" onClick={() => router.push("/pages/user/exercise/pageExercise")}>+ ซื้อบริการ</button>
                 </div>
                 {loading ? (
                     <p>Loading orders...</p>
@@ -338,8 +291,8 @@ export default function PurchaseOrder() {
                                                             <td rowSpan={order.orders_exercise.length} className="border p-2">{i + 1}</td>
                                                         )}
                                                         <td className="border p-2">{od.service_name}</td>
-                                                        <td className="border p-2">{formatDate(od.desired_start_date)}</td>
-                                                        <td className="border p-2">{formatDate(od.expire_date)}</td>
+                                                        <td className="border p-2">{formatDateToThai(od.desired_start_date)}</td>
+                                                        <td className="border p-2">{formatDateToThai(od.expire_date)}</td>
                                                         <td className="border p-2">
                                                             {order.buying_status ? (
                                                                 (od.status_order === "รอใช้บริการ" || od.status_order === "หมดอายุ") ? (

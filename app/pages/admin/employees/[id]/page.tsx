@@ -2,16 +2,14 @@
 "use client";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
 import axios from "axios";
-import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+// import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 export default function EditService() {
     const params = useParams()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data, status, update } = useSession();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [data2, setData] = useState();
     const [emp_name, setEmp_Name] = useState("");
@@ -73,7 +71,6 @@ export default function EditService() {
             });
 
             if (response.status === 200) {
-                update(response.data.res);
                 alert("บันทึกข้อมูลเรียบร้อย!");
                 router.push("/pages/admin/employees");
                 // window.location.href = "/pages/admin/employees";
@@ -197,10 +194,10 @@ export default function EditService() {
                                 placeholder="Password"
                             />
                             <span
-                                onClick={() => setShowPassword(!showPassword)}
+                                onClick={() => setShowPassword}
                                 className="absolute inset-y-0 top-6 right-3 flex items-center cursor-pointer"
                             >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                {/* {showPassword ? <FaEyeSlash /> : <FaEye />} */}
                             </span>
                         </div>
                     </div>

@@ -119,13 +119,13 @@ export default function Employees() {
                           <span className="text-black font-semibold">อีเมล:</span>{" "}
                           {admin.emp_email || "ไม่ระบุ"}
                         </p>
-                        {/* <p className="text-sm text-gray-600">
-                          <span className="text-black font-semibold">เพศ:</span>{" "}
-                          {admin.emp_sex || "ไม่ระบุ"}
-                          </p> */}
                         <p className="text-sm text-gray-600">
                           <span className="text-black font-semibold">เบอร์โทร:</span>{" "}
                           {admin.emp_tel || "ไม่ระบุ"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <span className="text-black font-semibold">เพศ:</span>{" "}
+                          {admin.emp_sex || "ไม่ระบุ"}
                         </p>
                         <p className="text-sm text-gray-600">
                           <span className="text-black font-semibold">ตำแหน่ง:</span>{" "}

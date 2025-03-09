@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export async function GET(req:NextRequest) {
     const url = new URL(req.url); // สร้าง URL จาก req.url

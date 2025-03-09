@@ -79,7 +79,7 @@ export default function AddService() {
               value={capacity_of_room}
               onChange={(e) => setcapacity_of_room(e.target.value)}
               className="w-full p-2 border border-gray-400 rounded"
-              placeholder="ใส่ความจุจำนวนคน"
+              placeholder="ใส่ความจุจำนวนคน หรือ ไม่ต้องใส่ก็ได้"
             />
           </div>
 
