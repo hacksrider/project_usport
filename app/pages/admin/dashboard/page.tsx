@@ -32,7 +32,7 @@ export default function Dashboard() {
           </div>
           <ChatCard />
         </div>
-
+        {/* <ChatCard /> */}
       </div>
     </MainLayoutAdmin>
   );

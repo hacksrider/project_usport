@@ -1,4 +1,15 @@
 -- CreateTable
+CREATE TABLE `ResetToken` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `token` VARCHAR(191) NOT NULL,
+    `userId` INTEGER NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `ResetToken_token_key`(`token`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `bookings` (
     `booking_ID` INTEGER NOT NULL AUTO_INCREMENT,
     `user_ID` INTEGER NOT NULL,
@@ -42,7 +53,7 @@ CREATE TABLE `buying_exercise` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `orders` (
+CREATE TABLE `orders_exercise` (
     `order_ID` INTEGER NOT NULL AUTO_INCREMENT,
     `buying_ID` INTEGER NOT NULL,
     `service_ID` INTEGER NOT NULL,
@@ -50,12 +61,10 @@ CREATE TABLE `orders` (
     `amount_of_time` VARCHAR(15) NOT NULL,
     `units` VARCHAR(10) NOT NULL,
     `desired_start_date` DATETIME(3) NOT NULL,
-    `status_order` INTEGER NOT NULL DEFAULT 0,
+    `status_order` VARCHAR(191) NOT NULL DEFAULT 'รอใช้บริการ',
     `expire_date` DATETIME(3) NOT NULL,
     `Price` INTEGER NOT NULL,
 
-    INDEX `Order_Buying_Exercise_fkey`(`buying_ID`),
-    INDEX `Order_Service_ID_fkey`(`service_ID`),
     PRIMARY KEY (`order_ID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -76,22 +85,12 @@ CREATE TABLE `employees` (
     `emp_tel` VARCHAR(10) NULL,
     `emp_job` BOOLEAN NOT NULL,
     `emp_username` VARCHAR(20) NOT NULL,
+    `emp_email` VARCHAR(100) NULL,
     `emp_password` VARCHAR(10) NOT NULL,
 
     UNIQUE INDEX `Employees_emp_username_key`(`emp_username`),
+    UNIQUE INDEX `Employees_emp_email_key`(`emp_email`),
     PRIMARY KEY (`emp_ID`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `price_exercise` (
-    `price_ID` INTEGER NOT NULL AUTO_INCREMENT,
-    `service_ID` INTEGER NOT NULL,
-    `time_ID` INTEGER NOT NULL,
-    `price` INTEGER NOT NULL,
-
-    INDEX `Price_Exercise_service_ID_fkey`(`service_ID`),
-    INDEX `Price_Exercise_time_ID_fkey`(`time_ID`),
-    PRIMARY KEY (`price_ID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -144,16 +143,20 @@ CREATE TABLE `service_of_exercise` (
     `service_name` VARCHAR(20) NOT NULL,
     `capacity_of_room` INTEGER NOT NULL,
     `Status` BOOLEAN NOT NULL,
+    `deleted` TINYINT NOT NULL DEFAULT 1,
 
     PRIMARY KEY (`service_ID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `time_of_service` (
+CREATE TABLE `time_and_price` (
     `time_ID` INTEGER NOT NULL AUTO_INCREMENT,
-    `quantity_of_days` INTEGER NOT NULL,
-    `unit` VARCHAR(10) NOT NULL,
+    `service_ID` INTEGER NOT NULL,
+    `quantity_of_days` INTEGER NULL,
+    `unit` VARCHAR(10) NULL,
+    `price` INTEGER NULL,
 
+    INDEX `time_and_price_service_ID_fkey`(`service_ID`),
     PRIMARY KEY (`time_ID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -161,21 +164,20 @@ CREATE TABLE `time_of_service` (
 CREATE TABLE `users` (
     `user_ID` INTEGER NOT NULL AUTO_INCREMENT,
     `user_name` VARCHAR(50) NOT NULL,
-    `user_date_of_birth` DATETIME(3) NOT NULL,
+    `user_lastname` VARCHAR(50) NOT NULL,
     `user_tel` VARCHAR(15) NOT NULL,
-    `user_username` VARCHAR(20) NOT NULL,
+    `user_date_of_birth` DATETIME(3) NULL,
     `ID_card_photo` VARCHAR(255) NULL,
     `accom_rent_contrac_photo` VARCHAR(255) NULL,
-    `status_of_VIP` BOOLEAN NOT NULL DEFAULT false,
-    `status_of_Member` BOOLEAN NOT NULL DEFAULT false,
+    `status_of_VIP` BOOLEAN NULL DEFAULT false,
+    `status_of_Member` BOOLEAN NULL DEFAULT false,
     `user_email` VARCHAR(100) NULL,
-    `user_lastname` VARCHAR(50) NOT NULL,
-    `user_password` VARCHAR(255) NOT NULL,
+    `user_username` VARCHAR(20) NULL,
+    `user_password` VARCHAR(255) NULL,
     `sex` VARCHAR(20) NULL,
     `user_profile_picture` VARCHAR(255) NULL,
+    `type_of_user` VARCHAR(255) NULL,
 
-    UNIQUE INDEX `Users_user_username_key`(`user_username`),
-    UNIQUE INDEX `Users_user_email_key`(`user_email`),
     PRIMARY KEY (`user_ID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -189,6 +191,121 @@ CREATE TABLE `accountBank` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `page_home` (
+    `page_home_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NULL,
+    `subtitle` VARCHAR(255) NULL,
+    `banner` VARCHAR(255) NULL,
+
+    PRIMARY KEY (`page_home_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `page_home_exercise` (
+    `page_home_service_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name_exercise` VARCHAR(50) NULL,
+    `description` VARCHAR(255) NULL,
+    `banner_exercise` VARCHAR(255) NULL,
+    `page_home_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`page_home_service_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `page_home_promotion` (
+    `page_home_promotion_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title_promotion` VARCHAR(50) NULL,
+    `detail_promotion` VARCHAR(255) NULL,
+    `banner_promotion` VARCHAR(255) NULL,
+    `page_home_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`page_home_promotion_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `page_home_gallery` (
+    `page_home_gallery_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `picture_gallery` VARCHAR(255) NULL,
+    `page_home_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`page_home_gallery_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `page_about` (
+    `page_about_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NULL,
+    `detail` VARCHAR(255) NULL,
+    `banner` VARCHAR(255) NULL,
+    `detail_usport1` VARCHAR(255) NULL,
+    `detail_usport2` VARCHAR(255) NULL,
+    `video` VARCHAR(255) NULL,
+
+    PRIMARY KEY (`page_about_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `exercise_about` (
+    `exercise_about_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NULL,
+    `detail` VARCHAR(255) NULL,
+    `page_about_id` INTEGER NOT NULL,
+
+    INDEX `Exercise_About_Exercise_About_ID_fkey`(`exercise_about_id`),
+    PRIMARY KEY (`exercise_about_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `page_contact` (
+    `page_contact_ID` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NULL,
+    `subtitle` VARCHAR(255) NULL,
+    `banner` VARCHAR(255) NULL,
+    `title_contact` VARCHAR(50) NULL,
+    `subtitle_contact` VARCHAR(255) NULL,
+    `title_map` VARCHAR(50) NULL,
+    `link_map` VARCHAR(2000) NULL,
+
+    PRIMARY KEY (`page_contact_ID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `contact_channels` (
+    `contact_channels_ID` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(25) NULL,
+    `data` VARCHAR(255) NULL,
+    `page_contact_ID` INTEGER NOT NULL,
+
+    INDEX `Contact_Channels_Contact_Channels_ID_fkey`(`contact_channels_ID`),
+    PRIMARY KEY (`contact_channels_ID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `page_exercise` (
+    `page_exercise_ID` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NULL,
+    `subtitle` VARCHAR(255) NULL,
+    `banner` VARCHAR(255) NULL,
+
+    PRIMARY KEY (`page_exercise_ID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `exercise_data` (
+    `exercise_data_ID` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(25) NULL,
+    `banner` VARCHAR(255) NULL,
+    `price` VARCHAR(25) NULL,
+    `detail` VARCHAR(255) NULL,
+    `table_price` VARCHAR(255) NULL,
+    `picture` VARCHAR(255) NULL,
+    `page_exercise_ID` INTEGER NOT NULL,
+
+    INDEX `Exercise_Data_Exercise_Data_ID_fkey`(`exercise_data_ID`),
+    PRIMARY KEY (`exercise_data_ID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `_buying_exerciseToservice_of_exercise` (
     `A` INTEGER NOT NULL,
     `B` INTEGER NOT NULL,
@@ -196,6 +313,9 @@ CREATE TABLE `_buying_exerciseToservice_of_exercise` (
     UNIQUE INDEX `_buying_exerciseToservice_of_exercise_AB_unique`(`A`, `B`),
     INDEX `_buying_exerciseToservice_of_exercise_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `ResetToken` ADD CONSTRAINT `ResetToken_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`user_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `bookings` ADD CONSTRAINT `Bookings_field_ID_fkey` FOREIGN KEY (`field_ID`) REFERENCES `fields`(`field_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -216,16 +336,10 @@ ALTER TABLE `buying_exercise` ADD CONSTRAINT `Buying_Exercise_emp_ID_fkey` FOREI
 ALTER TABLE `buying_exercise` ADD CONSTRAINT `Buying_Exercise_user_ID_fkey` FOREIGN KEY (`user_ID`) REFERENCES `users`(`user_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `orders` ADD CONSTRAINT `Order_Buying_Exercise_fkey` FOREIGN KEY (`buying_ID`) REFERENCES `buying_exercise`(`buying_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `orders_exercise` ADD CONSTRAINT `Order_Buying_Exercise_fkey` FOREIGN KEY (`buying_ID`) REFERENCES `buying_exercise`(`buying_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `orders` ADD CONSTRAINT `Order_Service_ID_fkey` FOREIGN KEY (`service_ID`) REFERENCES `service_of_exercise`(`service_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `price_exercise` ADD CONSTRAINT `Price_Exercise_service_ID_fkey` FOREIGN KEY (`service_ID`) REFERENCES `service_of_exercise`(`service_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `price_exercise` ADD CONSTRAINT `Price_Exercise_time_ID_fkey` FOREIGN KEY (`time_ID`) REFERENCES `time_of_service`(`time_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `orders_exercise` ADD CONSTRAINT `Order_Service_ID_fkey` FOREIGN KEY (`service_ID`) REFERENCES `service_of_exercise`(`service_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `pricefield` ADD CONSTRAINT `PriceField_field_ID_fkey` FOREIGN KEY (`field_ID`) REFERENCES `fields`(`field_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -238,6 +352,27 @@ ALTER TABLE `reviews` ADD CONSTRAINT `Reviews_service_ID_fkey` FOREIGN KEY (`ser
 
 -- AddForeignKey
 ALTER TABLE `reviews` ADD CONSTRAINT `Reviews_user_ID_fkey` FOREIGN KEY (`user_ID`) REFERENCES `users`(`user_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `time_and_price` ADD CONSTRAINT `time_and_price_service_ID_fkey` FOREIGN KEY (`service_ID`) REFERENCES `service_of_exercise`(`service_ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `page_home_exercise` ADD CONSTRAINT `page_home_exercise_page_home_id_fkey` FOREIGN KEY (`page_home_id`) REFERENCES `page_home`(`page_home_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `page_home_promotion` ADD CONSTRAINT `page_home_promotion_page_home_id_fkey` FOREIGN KEY (`page_home_id`) REFERENCES `page_home`(`page_home_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `page_home_gallery` ADD CONSTRAINT `page_home_gallery_page_home_id_fkey` FOREIGN KEY (`page_home_id`) REFERENCES `page_home`(`page_home_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `exercise_about` ADD CONSTRAINT `Order_Page_About_fkey` FOREIGN KEY (`page_about_id`) REFERENCES `page_about`(`page_about_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `contact_channels` ADD CONSTRAINT `Order_Page_Contact_fkey` FOREIGN KEY (`page_contact_ID`) REFERENCES `page_contact`(`page_contact_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `exercise_data` ADD CONSTRAINT `Order_Page_Exercise_fkey` FOREIGN KEY (`page_exercise_ID`) REFERENCES `page_exercise`(`page_exercise_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_buying_exerciseToservice_of_exercise` ADD CONSTRAINT `_buying_exerciseToservice_of_exercise_A_fkey` FOREIGN KEY (`A`) REFERENCES `buying_exercise`(`buying_ID`) ON DELETE CASCADE ON UPDATE CASCADE;

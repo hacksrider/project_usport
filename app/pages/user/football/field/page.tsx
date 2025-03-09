@@ -44,18 +44,17 @@ export default function Feild() {
         return feildData.map((field, index) => (
             <Card
                 key={index}
-                className={`text-white mb-5 w-[35rem] h-[5rem] hover:scale-105 hover:border-2 hover:border-red-700 ${JSON.parse(field.status) === false ? 'pointer-events-none opacity-50' : ''}`}
-                style={
-                        {
-                        backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/user/img/football-2.jpg')`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        }
-                }
+                className={`text-white mb-5 w-[30rem] h-[5rem] hover:scale-105 hover:border-2 hover:border-red-700 transition-all duration-300 ${JSON.parse(field.status) === false ? 'pointer-events-none opacity-50' : ''}`}
+                style={{
+                    backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/user/img/สนามหญ้าเทียม.jpg')`, // ปรับโปร่งใสให้ลดลง
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'brightness(1.2)', // เพิ่มความสว่างของภาพ
+                }}
                 onClick={() => JSON.parse(field.status) !== false && showVal(field.field_ID)}
             >
                 <CardHeader className='text-2xl text-center'>
-                    <CardTitle> สนาม {field.field_name}</CardTitle> 
+                    <CardTitle>สนาม {field.field_name}</CardTitle>
                 </CardHeader>
             </Card>
         ));
@@ -64,10 +63,49 @@ export default function Feild() {
     return (
         <MainLayout>
             <div className='flex flex-col items-center mt-20'>
-                {handleListFeild()}
-                    {/* <div>
-                        <h1 className="text-white">{ValBuffer}</h1>
-                    </div> */}
+            <h1 className="text-5xl font-extrabold text-white mb-12 text-center">
+                    เลือกสนามที่คุณต้องการเล่น
+                </h1>
+
+                <div className="w-full flex flex-wrap justify-center gap-6">
+                    {handleListFeild()}
+                </div>
+
+                {/* รูปภาพ 4 รูป พร้อมข้อความ */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 w-full mt-8 mb-4">
+                    <div className="relative h-72 bg-cover bg-center rounded-lg shadow-lg overflow-hidden"
+                         style={{ backgroundImage: "url('/user/img/football-1.jpg')", filter: "brightness(1.2)" }}>
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center text-white text-xl font-semibold">
+                            
+                        </div>
+                    </div>
+
+                    <div className="relative h-72 bg-cover bg-center rounded-lg shadow-lg overflow-hidden"
+                         style={{ backgroundImage: "url('/user/img/football-2.jpg')", filter: "brightness(1.2)" }}>
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center text-white text-xl font-semibold">
+                            
+                        </div>
+                    </div>
+
+                    <div className="relative h-72 bg-cover bg-center rounded-lg shadow-lg overflow-hidden"
+                         style={{ backgroundImage: "url('/user/img/football-3.jpg')", filter: "brightness(1.2)" }}>
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center text-white text-xl font-semibold">
+                            
+                        </div>
+                    </div>
+
+                    <div className="relative h-72 bg-cover bg-center rounded-lg shadow-lg overflow-hidden"
+                         style={{ backgroundImage: "url('/user/img/football-4.jpg')", filter: "brightness(1.2)" }}>
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex justify-center items-center text-white text-xl font-semibold">
+                            
+                        </div>
+                    </div>
+                </div>
+
+              
+
+                {/* {handleListFeild()} */}
+                    
             </div>
         </MainLayout>
         

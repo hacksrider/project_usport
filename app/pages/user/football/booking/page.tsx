@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import MainLayout from '@/app/components/mainLayout';
 import { UserInterface } from '../../../../interface/user';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar} from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import React from 'react';
@@ -23,22 +25,43 @@ interface dataBookingFromAPI{
   end_Time:string
   booking_status: string;
 }
+
+interface ReviewField {
+  field_ID: number;
+  user_ID: number;
+  rating: number;
+  comment: string;
+}
+
+
+
 type Slots = Record<string, Slot[]>;
 
 const Booking : React.FC = () => {
   
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPaymantPageOpen, setIsPaymantPageOpen] = useState(false);
+    const [isReveiwOpen, setIsReveiwOpen] = useState(false);
+
     const [currentStartDate, setCurrentStartDate] = useState(dayjs().format('YYYY-MM-DD'));
     const [slots, setSlots] = useState<Slots>({});
     const [selectedSlots, setSelectedSlots] = useState<{ID: string; date: string; time: string }[]>([]);
     const [dataBooking, setDataBooking] = useState<dataBookingFromAPI[]>([]);
+
     const searchParams = useSearchParams()
     const IDF = Number(searchParams.get('val'));
     const [IDUSER,setIDUSER] = useState(0);
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [previewImgBanking, setPreviewImgBanking] = useState<string | null>(null);
-    const { data,status } = useSession(); // ตรวจสอบ session
+    const [dataBanking, setDataBanking] = useState([])
+    const [selectedImage, setSelectedImage] = useState<"path_image_acc" | "path_image_Prom">('path_image_acc');
+    const [previewImgBanking, setPreviewImgBanking] = useState("");
+
+    const [rating, setRating] = useState<number>(0);
+    const [comment, setComment] = useState<string>('');
+    const [dataforReveiw,setDataForReveiw] = useState({})
+
+    const { data,status } = useSession(); 
     const userData = data as UserInterface;
     const router = useRouter();
 
@@ -50,8 +73,7 @@ const Booking : React.FC = () => {
       } else if (status === 'authenticated' && data) {
             setIDUSER(Number(userData.user.id))
       }
-      console.log(IDUSER)
-    }, [data, status, router]);
+    }, [data, status, router]);  
   
     useEffect(() => {
       const fetchBookings = async (field_ID: number) => {
@@ -77,8 +99,18 @@ const Booking : React.FC = () => {
           };
       };
       fetchBookings(IDF);
+      
   }, []);  
 
+  useEffect(()=>{
+    const data = {
+      field_ID: IDF,
+      user_ID: IDUSER,
+      rating: rating,
+      comment: comment ,
+    }
+    setDataForReveiw(data);
+  },[rating,comment])
 
   useEffect(() => {
     const generateWeekSlots = (startDate: string, dataBooking: dataBookingFromAPI[]): Slots => {
@@ -196,7 +228,12 @@ const Booking : React.FC = () => {
           }
       } 
       fetchPrice();
-    },[IDF])
+      // console.log(price1hForPeriod1);
+      // console.log(price1hForPeriod2);
+      // console.log(price2hForPeriod1);
+      // console.log(price2hForPeriod2);
+  //console.log(dataBanking)
+    },[IDF,price1hForPeriod1])
 
     
     const handleProcessingBooking = () => {
@@ -511,7 +548,7 @@ const handleConfirmBooking = () => {
 
   const closePayment = () => {
     setIsPaymantPageOpen(false);
-    window.location.reload();
+    reveiwOpen();
   };
 
 
@@ -554,8 +591,10 @@ const handleConfirmBooking = () => {
         alert("อัปโหลดสลิปสำเร็จแล้ว โปรดติดตามสถานะการจอง");
         console.log("ไฟล์ถูกบันทึกที่:", result.filePath);
         closePayment();
+        reveiwOpen();
       } else {
         alert("อัปโหลดไฟล์ล้มเหลว!");
+        return;
       }
     } catch (error) {
       console.error("เกิดข้อผิดพลาด:", error);
@@ -566,13 +605,76 @@ const handleConfirmBooking = () => {
   const fetchAccountBankData = async () => {
     try {
           const response = await axios.get('/api/booking/uploadPayment');
-          console.log(response);
-          setPreviewImgBanking(response.data);
+          const getdata = response.data;
+          console.log(getdata);
+          setDataBanking(getdata);
+          if (getdata && getdata.length > 0) {
+            setPreviewImgBanking(getdata[0].path_image_acc); 
+          }
     } catch (error) {
       console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
     }
   };
 
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedPath = event.target.value as "path_image_acc" | "path_image_Prom"; 
+    setSelectedImage(selectedPath);
+    if (dataBanking.length > 0) {
+      const selectedData = dataBanking[0]; // สมมติว่าเลือกแค่ตัวแรก
+      setPreviewImgBanking(selectedData[selectedPath]); // ตั้งค่า previewImgBanking ตาม path ที่เลือก
+    }
+  };
+
+  const reveiwOpen = ()=>{
+    setIsReveiwOpen(true)
+  }
+  const handleRatingChange = (rating:number) => {
+    setRating(rating);
+  };
+  const handleCommentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(event.target.value);
+  };
+  const handleSubmitReveiw = async () => {
+    try {
+      if (rating === 0) {
+        alert('โปรให้คะแนนรีวิวสนามด้วยค่ะ');
+        return;
+      }else {
+        const response = await axios.post('/api/booking/reviewField',dataforReveiw);
+        if (response.status === 200) {
+          alert("ขอบคุณสำหรับการให้คะแนนและข้อคิดเห็นค่ะ")
+          closReveiw();
+        }else{
+          alert("เกิดข้อผิดพลาดค่ะ")
+          return;
+        }
+        console.log(response)
+      }
+    } catch (error: any) {
+      alert("เกิดข้อผิดพลาดค่ะ")
+      console.log("error massege :",error)
+    }
+  };
+
+  const closReveiw=()=>{
+    setRating(0)
+    setComment('')
+    setIsReveiwOpen(false)
+    window.location.reload();
+  }
+
+  let star = [];
+  for (let i = 0; i < 5; i++) {
+    let value = i+1
+    star.push(
+          <FontAwesomeIcon 
+              key={i}
+              icon={faStar} 
+              className={`h-10 w-10 hover:text-yellow-700 ${value <= rating?'text-yellow-500':'text-gray-500' } `}   //booking.bookings?.[0].booking_status === 'booked'?'text-gray-400 cursor-not-allowed pointer-events-none' :'text-red-500'
+              onClick={() => handleRatingChange(value)} 
+          />
+    )
+  }
 
     return (
         <MainLayout>
@@ -668,7 +770,6 @@ const handleConfirmBooking = () => {
                         <button className="mr-2 font-bold bg-blue-400 text-black rounded hover:bg-gray-700 w-40"
                                 onClick={handleProcessingBooking}> ตรวจสอบราคา </button>
                     </h3>
-                          
 
                     <div className="flex justify-between mt-4">
                         <button
@@ -728,8 +829,38 @@ const handleConfirmBooking = () => {
             <div className="bg-white p-6 rounded-lg max-w-[800px] w-full max-h-[100vh] overflow-y-auto" >
               <h2 className="text-xl font-semibold mb-4">ชำระเงิน</h2>
                 <p className="mb-4">ชำระเงิน และอัปโหลดหลักฐานการชำระเงิน</p>
+                  <div className="flex flex-row">
+                  <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="greeting"
+                      value= "path_image_acc"
+                      checked={selectedImage === "path_image_acc"}
+                      onChange={handleRadioChange}
+                      className="form-radio h-5 w-5 text-blue-500"
+                    />
+                    <span className="ml-2">บัญชีธนาคาร</span>
+                  </label>
+                </div>
+                <div>
+                  <label className="ml-5 inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="greeting"
+                      value="path_image_Prom"
+                      checked={selectedImage === "path_image_Prom"}
+                      onChange={handleRadioChange}
+                      className="form-radio h-5 w-5 text-green-500"
+                    />
+                    <span className="ml-2">คิวอาร์โค้ด</span>
+                  </label>
+                </div>
+                  </div>
+
               <div className="flex justify-center items-center mt-4">
-              <img src={previewImgBanking? previewImgBanking : undefined } alt="Uploaded Payment" className="mt-4 max-w-full h-auto" />
+
+              <img src={previewImgBanking? previewImgBanking : undefined } alt="Uploaded Payment" className="mt-4 mb-4 max-w-full h-auto" />
               </div>
               <input
                   className="mb-[15px]"
@@ -737,7 +868,6 @@ const handleConfirmBooking = () => {
                   accept="image/*"
                   onChange={handleFileChange}
                 />
-                {/* <button onClick={handleSubmit}>ส่งไฟล์</button> */}
                   
             <div className="flex justify-end space-x-4">
                 <button onClick={handleSubmit}    
@@ -746,6 +876,47 @@ const handleConfirmBooking = () => {
                 </button>
                 <button onClick={closePayment} className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">
                   ยกเลิก
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isReveiwOpen &&(
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
+              <h2 className="text-2xl font-semibold mb-4">รีวิวสนาม</h2>
+      
+              {/* Rating Input */}
+              <label className="block text-sm font-medium text-gray-700">คะแนน (1-5) :</label>
+              <div className="mb-4 mt-2 flex flex-row justify-between ">
+                    {
+                      star        
+                    }
+              </div>
+
+              {/* Comment Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">ข้อคิดเห็นเพิ่มเติม :</label>
+                <textarea
+                  value={comment}
+                  onChange={handleCommentChange}
+                  rows={4}
+                  className="mt-2 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+      
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={closReveiw}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                >
+                  ปิด
+                </button>
+                <button
+                  onClick={handleSubmitReveiw}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                >
+                  ส่งรีวิว
                 </button>
               </div>
             </div>

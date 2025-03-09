@@ -43,11 +43,11 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const data = await prisma.accountBank.findMany();
-       const aaa = data.map((e)=>{
-        return e.path_image_acc
-       })
+      //  const aaa = data.map((e)=>{
+      //   return e.path_image_acc
+      //  })
     console.log("ข้อมูลจากฐานข้อมูล:", data);
-    return Response.json(aaa);
+    return Response.json(data);
   } catch (error) {
     console.error("เกิดข้อผิดพลาดนะจ๊ะ:", error);
   }

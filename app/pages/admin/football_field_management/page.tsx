@@ -14,7 +14,6 @@ import { faPen } from '@fortawesome/free-solid-svg-icons';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 
-
 interface Field {     
     field_ID: number;
     field_name: string;

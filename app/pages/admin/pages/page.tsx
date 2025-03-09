@@ -198,7 +198,6 @@ export default function HomeAdmin() {
     //             </div>
     //         );
     //     }
-
     //     return null;
     // };
 
@@ -238,7 +237,6 @@ export default function HomeAdmin() {
         }));
 
         formData.append("page_home_exercise", JSON.stringify(exercisesMetadata));
-
         // Append exercise files
         pageData.page_home_exercise.forEach(exercise => {
             if (exercise.banner_exercise instanceof File) {
