@@ -1,19 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useState, useRef } from "react";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
 
+interface FieldStatistic {
+  field_name: string;
+  booking_count: number;
+  total_spent: number;
+}
+
 interface ReportData {
   user_ID: number;
   user_name: string;
-  totalPurchases: number;
-  totalPrice: number;
-  serviceBreakdown: {
-    [serviceName: string]: number;
-  };
-  buying_exercise: any[]; // Ensure this is an array of buying_exercise data
+  field_statistics: FieldStatistic[];
+  total_bookings: number;
+  total_spent: number;
 }
 
-export default function ReportUserExercise() {
+export default function ReportFieldBookings() {
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,12 +26,12 @@ export default function ReportUserExercise() {
   useEffect(() => {
     async function fetchReport() {
       try {
-        const res = await fetch("/api/report/user_exercise");
+        const res = await fetch("/api/report/user_football");
         if (!res.ok) {
           throw new Error("ไม่สามารถดึงข้อมูลรายงานได้");
         }
         const data = await res.json();
-        setReportData(data);
+        setReportData(data.data); // Accessing the data property from the response
       } catch (err: any) {
         setError(err.message || "เกิดข้อผิดพลาด");
       } finally {
@@ -42,10 +46,9 @@ export default function ReportUserExercise() {
     const printContent = printRef.current;
     if (!printContent) return;
 
-    const originalContents = document.body.innerHTML;
     const printStyles = `
       @page {
-        size: A4 landscape;
+        size: A4 landscape; /* กำหนดกระดาษ A4 แนวนอน */
         margin: 10mm;
       }
       table {
@@ -73,11 +76,11 @@ export default function ReportUserExercise() {
       printWindow.document.write(`
         <html>
           <head>
-            <title>รายงานการซื้อบริการของสมาชิก</title>
+            <title>รายงานการจองสนามของสมาชิก</title>
             <style>${printStyles}</style>
           </head>
           <body>
-            <h2>รายงานการซื้อบริการของสมาชิก</h2>
+            <h2>รายงานการใช้สนามของสมาชิก</h2>
             ${printContent.innerHTML}
           </body>
         </html>
@@ -97,16 +100,18 @@ export default function ReportUserExercise() {
   if (loading) return <div>กำลังโหลด...</div>;
   if (error) return <div>ข้อผิดพลาด: {error}</div>;
 
-  // Get all unique service names
-  const allServiceNames = [
-    ...new Set(reportData.flatMap((user) => Object.keys(user.serviceBreakdown))),
-  ];
+  // Get all unique field names
+  const allFieldNames = reportData.length > 0
+    ? [...new Set(reportData.flatMap(user => 
+        user.field_statistics.map(stat => stat.field_name)
+      ))]
+    : [];
 
   return (
     <MainLayoutAdmin>
-      <div className="w-[1200px] bg-gray-300 p-4 rounded shadow-md mx-auto mb-5 mt-6">
+      <div className="w-full max-w-6xl bg-gray-300 p-4 rounded shadow-md mx-auto mb-5 mt-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">รายงานการซื้อบริการของสมาชิก</h2>
+          <h2 className="text-2xl font-bold">รายงานการใช้สนามของสมาชิก</h2>
           <button 
             onClick={handlePrint}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
@@ -117,46 +122,47 @@ export default function ReportUserExercise() {
             พิมพ์รายงาน (PDF)
           </button>
         </div>
-        
-        <div ref={printRef}>
+        <div className="overflow-x-auto" ref={printRef}>
           <table className="min-w-full bg-white">
             <thead>
               <tr>
                 <th className="py-2 px-4 border">No.</th>
                 <th className="py-2 px-4 border">ชื่อ</th>
-                <th className="py-2 px-4 border">จํานวนครั้งที่ซื้อบริการ</th>
-                {allServiceNames.map((serviceName) => (
-                  <th key={serviceName} className="py-2 px-4 border">
-                    {serviceName}
+                {allFieldNames.map((fieldName) => (
+                  <th key={fieldName} className="py-2 px-4 border">
+                    {fieldName}<br />(จำนวนครั้ง)
                   </th>
                 ))}
-                <th className="py-2 px-4 border">รวมจำนวนรายการ</th>
-                <th className="py-2 px-4 border">รวมเงิน</th>
+                <th className="py-2 px-4 border">รวมการจอง<br />(จำนวนครั้ง)</th>
+                <th className="py-2 px-4 border">จำนวนเงิน <br /> (บาท)</th>
               </tr>
             </thead>
             <tbody>
-              {reportData.map((user, index) => {
-                // Calculate the total number of services purchased
-                const totalServices = Object.values(user.serviceBreakdown).reduce(
-                  (acc, count) => acc + count,
-                  0
-                );
-
-                return (
-                  <tr key={index}>
-                    <td className="py-2 px-4 border text-center">{index + 1}</td>
-                    <td className="py-2 px-4 border text-left">{user.user_name}</td>
-                    <td className="py-2 px-4 border text-center">{user.totalPurchases}</td>
-                    {allServiceNames.map((serviceName) => (
-                      <td key={serviceName} className="py-2 px-4 border text-center">
-                        {user.serviceBreakdown[serviceName] || 0}
+              {reportData.map((user, index) => (
+                <tr key={user.user_ID}>
+                  <td className="py-2 px-4 border text-center">{index + 1}</td>
+                  <td className="py-2 px-4 border text-left">{user.user_name}</td>
+                  
+                  {/* Field booking counts */}
+                  {allFieldNames.map((fieldName) => {
+                    const fieldStat = user.field_statistics.find(
+                      (stat) => stat.field_name === fieldName
+                    );
+                    return (
+                      <td key={fieldName} className="py-2 px-4 border text-center">
+                        {fieldStat ? fieldStat.booking_count : 0}
                       </td>
-                    ))}
-                    <td className="py-2 px-4 border text-center">{totalServices}</td>
-                    <td className="py-2 px-4 border text-center">{user.totalPrice}</td>
-                  </tr>
-                );
-              })}
+                    );
+                  })}
+                  
+                  <td className="py-2 px-4 border text-center font-medium">
+                    {user.total_bookings}
+                  </td>
+                  <td className="py-2 px-4 border text-center font-medium">
+                    {user.total_spent.toLocaleString()}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

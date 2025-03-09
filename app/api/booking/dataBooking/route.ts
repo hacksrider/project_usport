@@ -113,6 +113,7 @@ export async function GET(req: NextRequest) {
       
       return NextResponse.json("อัปเดตแล้วจ้าาาา ข้อมูล : "+ updateBooking);
     } catch (error) {
+      console.error('Error fetching booking:', error);
       return NextResponse.json({ error: 'Error fetching booking' }, { status: 500 });
     }
   }

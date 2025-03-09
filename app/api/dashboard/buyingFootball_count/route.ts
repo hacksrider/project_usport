@@ -17,23 +17,22 @@ export async function GET(req: Request) {
         }
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
-        const orders = await prisma.buying_exercise.findMany({
+        const orders = await prisma.bookings.findMany({
             where: {
-                buying_date: {
+                booking_date: {
                     gte: startDate,
                     lte: endDate
                 }
             },
             select: {
-                buying_date: true
+                booking_date: true
             }
         });
         const monthlyCounts = Array(12).fill(0);
         orders.forEach(order => {
-            const month = new Date(order.buying_date).getUTCMonth();
+            const month = new Date(order.booking_date).getUTCMonth();
             monthlyCounts[month] += 1;
         });
-        
         return NextResponse.json({ year: yearNum, monthlyCounts });
     } catch (error) {
         return NextResponse.json({ error: error }, { status: 500 });

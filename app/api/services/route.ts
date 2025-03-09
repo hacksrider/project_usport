@@ -13,13 +13,7 @@ export async function POST(request: Request) {
       await request.json();
 
     // Validate all required fields
-    if (
-      !service_name ||
-      !capacity_of_room ||
-      Status === null ||
-      Status === undefined ||
-      !detail
-    ) {
+    if (!service_name || Status === null || Status === undefined || !detail) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }

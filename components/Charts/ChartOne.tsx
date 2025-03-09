@@ -9,7 +9,7 @@ const ChartOne: React.FC = () => {
   const [series, setSeries] = useState([
     {
       name: "สนามฟุตบอล",
-      data: [44, 55, 41, 67, 35, 43, 65, 60, 70, 55, 80, 75],
+      data: Array(12).fill(0), // ข้อมูลเริ่มต้น
     },
     {
       name: "บริการออกกำลังกาย",
@@ -27,12 +27,14 @@ const ChartOne: React.FC = () => {
       setLoading(true);
       try {
         const response = await fetch(`/api/dashboard/buying_count?year=${selectedYear}`, { cache: "no-store" });
+        const res = await fetch(`/api/dashboard/buyingFootball_count?year=${selectedYear}`, { cache: "no-store" });
         const data = await response.json();
+        const dataFootball = await res.json();
         console.log("API Response:", data); // ตรวจสอบค่าที่ API ส่งมา
 
         if (data.year === selectedYear) { // ตรวจสอบว่าปีที่ได้รับตรงกัน
           setSeries([
-            { name: "สนามฟุตบอล", data: [44, 55, 41, 67, 35, 43, 65, 60, 70, 55, 80, 75] },
+            { name: "สนามฟุตบอล", data: dataFootball.monthlyCounts },
             { name: "บริการออกกำลังกาย", data: data.monthlyCounts },
           ]);
         } else {
@@ -122,7 +124,7 @@ const ChartOne: React.FC = () => {
       <div className="flex items-center justify-evenly px-7.5 text-center">
         <div className="border-stroke dark:border-dark-3 xsm:w-1/2 xsm:border-r">
           <p className="font-medium">สนามฟุตบอล</p>
-          <h4 className="mt-1 text-xl font-bold text-dark dark:text-white">650 ครั้ง</h4>
+          <h4 className="mt-1 text-xl font-bold text-dark dark:text-white">{series[0].data.reduce((sum, num) => sum + num, 0)} ครั้ง</h4>
         </div>
         <div className="xsm:w-1/2">
           <p className="font-medium">บริการออกกำลังกาย</p>

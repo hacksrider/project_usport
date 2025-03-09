@@ -60,6 +60,7 @@ export async function GET() {
 
     return Response.json(sortedData);
   } catch (error) {
+    console.error(error);
     return Response.json("เกิดข้อผิดพลาดในการดึงข้อมูลการจองสนาม");
   }
 }

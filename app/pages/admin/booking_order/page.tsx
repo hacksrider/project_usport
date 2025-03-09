@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -7,7 +10,7 @@ import { AdminInterface } from '../../../interface/admin';
 import dayjs from 'dayjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AddBooking from './addBooking/page';
-import EditBooking  from './editBooking/page';
+import EditBooking from './editBooking/page';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { faPen } from '@fortawesome/free-solid-svg-icons'; // นำเข้าไอคอนดินสอ
 import { useRouter } from 'next/navigation';
@@ -21,25 +24,25 @@ interface Booking {
     totalprice: number;
     payment_confirmation: string;
     bookings: {
-      booking_ID: number; // มี booking_ID แล้ว
-      users: {
-        user_ID:number
-        user_name: string;
-        user_lastname: string;
-        type_of_user: string;
-      };
-      fields: {
-        field_ID: number;
-        field_name: string;
-      };
-      booking_date: string;
-      desired_booking_date: string;
-      end_Time: string;
-      start_Time: string;
-      booking_status: string;
-      Price: number;
+        booking_ID: number; // มี booking_ID แล้ว
+        users: {
+            user_ID: number
+            user_name: string;
+            user_lastname: string;
+            type_of_user: string;
+        };
+        fields: {
+            field_ID: number;
+            field_name: string;
+        };
+        booking_date: string;
+        desired_booking_date: string;
+        end_Time: string;
+        start_Time: string;
+        booking_status: string;
+        Price: number;
     }[];
-  }
+}
 
 export default function BookingOrder() {
     const [showOrderPage, setShowOrderPage] = useState(true);
@@ -50,64 +53,64 @@ export default function BookingOrder() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);  // สำหรับเปิด/ปิด หน้าย่อยแก้ไข
     const [showBookingPage, setShowBookingPage] = useState(false);  // สำหรับเปิด/ปิด หน้าเพิ่ม
     const [showEditBookingPage, setShowEditBookingPage] = useState(false);  // สำหรับเปิด/ปิด หน้าเพิ่ม
-    const [keepOrderID,setKeepOrderID] = useState(0);               //เก็บ order ID
+    const [keepOrderID, setKeepOrderID] = useState(0);               //เก็บ order ID
     const [fullImage, setFullImage] = useState('');                 // เก็บพาธ
     const [selectedBookingForEdit, setSelectedBookingForEdit] = useState<any>(null); //เก็บสถานะการจอง
-    const [datafromBooking,setDataFromBooking] = useState<Booking[]>([]);
+    const [datafromBooking, setDataFromBooking] = useState<Booking[]>([]);
     const [selectedBooking, setSelectedBooking] = useState<any>(null);
-    const [IDEmp,setIDEmp] = useState(0);
-    const { data,status } = useSession(); // ตรวจสอบ session
+    const [IDEmp, setIDEmp] = useState(0);
+    const { data, status } = useSession(); // ตรวจสอบ session
     const empData = data as AdminInterface;
     const router = useRouter();
-    
-        useEffect(() => {
-          if (status === 'unauthenticated') {
-                alert("กรุณาเข้าสู่ระบบก่อนค่ะ !!");
-                router.push('/pages/admin');
-                
-          } else if (status === 'authenticated' && data) {
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            alert("กรุณาเข้าสู่ระบบก่อนค่ะ !!");
+            router.push('/pages/admin');
+
+        } else if (status === 'authenticated' && data) {
             setIDEmp(empData.user.id)
-          }
-        }, [data, status, router]);
+        }
+    }, [data, status, router, empData.user.id]);
 
 
-    const fetchBooking = async () =>{
-        try{
+    const fetchBooking = async () => {
+        try {
             const bookingOrder = await axios.get('/api/booking/dataOrder');
             setDataFromBooking(bookingOrder.data)
             console.log(bookingOrder.data)
-        }catch{
+        } catch {
             console.log("ดึงข้อมูลไม่ได้")
         }
     }
 
-    const deleteBooking = async (orderID : number)=>{
-       // console.log(orderID)
-        try{
+    const deleteBooking = async (orderID: number) => {
+        // console.log(orderID)
+        try {
             const deleteBooking = await axios.delete(`/api/booking/updateDataBooking?order_ID=${orderID}`);
             console.log(deleteBooking.data)
             refreshData();
             closeDeleteModal();
-        }catch{
+        } catch {
             console.log("เกิดข้อผิดพลาดในการลบข้อมูล")
         }
     }
 
-    const approveBooking = async(orderID : number, status : string) =>{
-        try{
-            const updateBookingStatus  = await axios.put(`/api/booking/dataBooking?order_ID=${orderID}&status=${status}&emp_ID=${IDEmp}`)
+    const approveBooking = async (orderID: number, status: string) => {
+        try {
+            const updateBookingStatus = await axios.put(`/api/booking/dataBooking?order_ID=${orderID}&status=${status}&emp_ID=${IDEmp}`)
             console.log(updateBookingStatus.data)
             closeApprovement();
             refreshData();
-        }catch{
+        } catch {
             console.log("เกิดข้อผิดพลาดในการอัปเดตสถานะ")
             alert("เกิดข้อผิดพลาดในการอนุมัติ")
         }
     };
 
-    useEffect(()=>{    
+    useEffect(() => {
         fetchBooking();
-    },[])
+    }, [])
 
     const refreshData = async () => {
         await fetchBooking(); // เรียกฟังก์ชัน fetchData ใหม่เพื่อรีเฟรชข้อมูล
@@ -117,8 +120,8 @@ export default function BookingOrder() {
         setShowOrderPage(false);
         setShowBookingPage(true); // เมื่อคลิกปุ่มจะทำให้แสดงหน้า "การจอง"
     };
-    
-    const closBookingPage=()=>{
+
+    const closBookingPage = () => {
         setShowBookingPage(false);
         setShowOrderPage(true)
         refreshData();
@@ -129,8 +132,8 @@ export default function BookingOrder() {
         setShowBookingPage(false)
         setShowEditBookingPage(true); // เมื่อคลิกปุ่มจะทำให้แสดงหน้า "การจอง"
     };
-    
-    const closEditBookingPage=()=>{
+
+    const closEditBookingPage = () => {
         setShowEditBookingPage(false);
         setIsEditModalOpen(false)
         setShowOrderPage(true)
@@ -138,282 +141,277 @@ export default function BookingOrder() {
     }
 
 
-    const openDeleteModal = (orderID : number) => {
+    const openDeleteModal = (orderID: number) => {
         setKeepOrderID(orderID);
         setIsDeleteOpen(true)
     };
-    
-    const closeDeleteModal=()=>{
-        setKeepOrderID(0); 
+
+    const closeDeleteModal = () => {
+        setKeepOrderID(0);
         setIsDeleteOpen(false)
     }
 
     const openApprovement = (ordID: number) => {
         setKeepOrderID(ordID); // เก็บ URL รูปภาพที่คลิก
         setIsApproveOpen(true); // เปิด modal
-      };
-    
-      // ฟังก์ชันเพื่อปิด modal
-      const closeApprovement = () => {
+    };
+
+    // ฟังก์ชันเพื่อปิด modal
+    const closeApprovement = () => {
         setKeepOrderID(0); // เก็บ URL รูปภาพที่คลิก
         setIsApproveOpen(false);  // ปิด modal
         refreshData();
-      };
+    };
 
     const openModal = (imageSrc: string) => {
         setFullImage(imageSrc); // เก็บ URL รูปภาพที่คลิก
         setIsModalOpen(true); // เปิด modal
-      };
-    
-      const closeModal = () => {
+    };
+
+    const closeModal = () => {
         setFullImage(''); // เก็บ URL รูปภาพที่คลิก
         setIsModalOpen(false); // ปิด modal
-      };
+    };
 
-      const openDetail = (booking: any) => {
+    const openDetail = (booking: any) => {
         console.log(booking);
         setSelectedBooking(booking);
         setIsDetailOpen(true);
-      };
-    
-      const closeDetail = () => {
-        setIsDetailOpen(false);
-        setSelectedBooking(null); 
-      };
+    };
 
-      const openEditModal = (booking: any) => {
+    const closeDetail = () => {
+        setIsDetailOpen(false);
+        setSelectedBooking(null);
+    };
+
+    const openEditModal = (booking: any) => {
         const updatedBooking = {
             ...booking,
             emp_ID: IDEmp, // ใส่ค่าของ emp_ID ที่ต้องการ
-          };
+        };
         setSelectedBookingForEdit(updatedBooking); // เก็บข้อมูลการจองที่เลือก
         setIsEditModalOpen(true); // เปิดโมดอลแก้ไข
-      };
-      
-      const closeEditModal = () => {
+    };
+
+    const closeEditModal = () => {
         setIsEditModalOpen(false); // ปิดโมดอลแก้ไข
         setSelectedBookingForEdit(null); // ล้างข้อมูลการจองที่เลือก
-      };
-    
-     return (
-             <MainLayoutAdmin>
-                <h1 className="text-2xl font-semibold mb-3 text-black">{ showOrderPage===true?'รวมคำสั่งจองสนามฟุตบอล':showBookingPage===true?'เพิ่มการจอง':showEditBookingPage === true?'แก้ไขการจอง':''} </h1>
-                    <div>
-                       {showOrderPage &&(
-                            <div className="w-full bg-gray-300 ml-2 p-6 rounded shadow-md">
-                            <div className="p-0 ">
-                                <div className=' w-full flex flex-row items-center justify-between'>
-                                    <p>คำสั่งจองสนามฟุตบอล</p>
-                                    <button className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none'
-                                            onClick={openBookingPage}
-                                        >
-                                        + เพิ่มการจองสนาม
-                                    </button>
-                                </div>
-                                <table className="table-auto w-full bg-white rounded shadow mt-4">
-                                    <thead>
-                                        <tr className="bg-gray-100 text-center border-2 border-gray-800">
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">orderID.</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">ชื่อ - นามสกุล {IDEmp}</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">ประเภทสมาชิก</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">สนาม</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">ราคารวม</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">สลิปโอนเงิน</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">รายละเอียด</th>
-                                            <th className="px-4 py-2 text-gray-800 bg-gray-400">สถานะ</th>
-                                            <th className="px-4 py-2 text-gray-800 border-2 border-gray-800 bg-gray-400">การจัดการ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {datafromBooking.map((booking, index) => { 
-                                                     const usertype =   booking.bookings?.[0]?.users?.type_of_user
-                                                return (    
-                                                    <tr key={index} className="text-center border-2 border-gray-400 ">
-                                                        <td className="px-4 py-2">{booking.order_ID}</td>
-                                                        <td className="px-4 py-2">{booking.bookings?.[0]?.users?.user_name+'  '+booking.bookings?.[0]?.users?.user_lastname}</td>
-                                                        <td className={`px-4 py-2 ${usertype ==='external'? 'text-pink-500' : 'text-green-500'}` }>{usertype ==='external'? 'ลูกค้าภายนอก' : 'สมาชิกในระบบ'}</td>
-                                                        <td className="px-4 py-2">{booking.bookings?.[0]?.fields?.field_name}</td>
-                                                        <td className="px-4 py-2">{booking.totalprice}</td>
-                                                        <td className="px-4 py-2 flex justify-center items-center">{
-                                                                                booking.payment_confirmation==='n/a'? 
-                                                                                booking.payment_confirmation : 
-                                                                                <img src={booking.payment_confirmation}
-                                                                                    style={{width:'50px',height:'70px'}}
-                                                                                    onClick={ () => openModal(booking.payment_confirmation? 
-                                                                                        booking.payment_confirmation : ''
-                                                                                    )}
-                                                                                ></img> 
-                                                                                }
-                                                            </td>
-                                                           
-                                                        <td className="text-blue-500 italic hover:text-blue-700">
-                                                            <button onClick={()=>openDetail(booking.bookings)}>ดูรายละเอียด</button>
-                                                         </td>
-                                                         <td className={`px-4 py-2 ${
-                                                                            booking.bookings?.[0]?.booking_status === 'รอการตรวจสอบ' ? 'bg-yellow-500' :
-                                                                            booking.bookings?.[0]?.booking_status === 'ว่าง' ? 'bg-pink-500' :
-                                                                            booking.bookings?.[0]?.booking_status === 'ไม่อนุมัติ' ? 'bg-red-500':
-                                                                            booking.bookings?.[0]?.booking_status === 'เกินเวลาจ่ายเงิน' ? 'bg-gray-500':
+    };
 
-                                                                             'bg-green-600' 
-                                                                            
-                                                                            }`}>"{booking.bookings?.[0]?.booking_status}"
-                                                            </td>
-                                                        <td className="px-4 py-2 border-2 border-gray-400 ">
-                                                            <button 
-                                                                className={`text-blue-500 hover:text-blue-700 ${booking.bookings?.[0]?.booking_status === 'จองสำเร็จ' || booking.bookings?.[0]?.booking_status === "ไม่อนุมัติ"? 'text-gray-400 italic cursor-not-allowed pointer-events-none' :''}`}                      
-                                                                       
-                                                                onClick={()=>openApprovement(booking.order_ID)}
-                                                               
-                                                              >อนุมัติ  
-                                                            </button>
-                                                                <span className="mx-2 mr-5 ml-5 border-r-2 border-gray-800"></span>
-                                                            <FontAwesomeIcon 
-                                                                icon={faPen} 
-                                                                className={` ml-2 mr-2 h-5 w-5 hover:text-red-700 text-red-500`}   //booking.bookings?.[0].booking_status === 'booked'?'text-gray-400 cursor-not-allowed pointer-events-none' :'text-red-500'
-                                                                onClick={() => openEditModal(booking)} 
-                                                            />
-                                                                <span className="mx-2 mr-5 ml-5 border-r-2 border-gray-800"></span>
-                                                            <FontAwesomeIcon 
-                                                                icon={faTrashAlt} 
-                                                                className="ml-2 h-full w-5  text-red-500 hover:text-red-700"
-                                                                onClick={()=>openDeleteModal(booking.order_ID)}
-                                                            /> 
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            })
-                                        }
-                                    </tbody>
-                                </table>
-                                {isModalOpen && (
-                                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" onClick={closeModal}>
-                                        <div className="bg-white p-4 rounded shadow-lg">
-                                            <img
+    return (
+        <MainLayoutAdmin>
+            <h1 className="text-2xl font-semibold mb-3 text-black">{showOrderPage === true ? 'รวมคำสั่งจองสนามฟุตบอล' : showBookingPage === true ? 'เพิ่มการจอง' : showEditBookingPage === true ? 'แก้ไขการจอง' : ''} </h1>
+            <div>
+                {showOrderPage && (
+                    <div className="w-full bg-gray-300 ml-2 p-6 rounded shadow-md">
+                        <div className="p-0 ">
+                            <div className=' w-full flex flex-row items-center justify-between'>
+                                <p>คำสั่งจองสนามฟุตบอล</p>
+                                <button className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none'
+                                    onClick={openBookingPage}
+                                >
+                                    + เพิ่มการจองสนาม
+                                </button>
+                            </div>
+                            <table className="table-auto w-full bg-white rounded shadow mt-4">
+                                <thead>
+                                    <tr className="bg-gray-100 text-center border-2 border-gray-800">
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">orderID.</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">ชื่อ - นามสกุล {IDEmp}</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">ประเภทสมาชิก</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">สนาม</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">ราคารวม</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">สลิปโอนเงิน</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">รายละเอียด</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">สถานะ</th>
+                                        <th className="px-4 py-2 text-gray-800 border-2 border-gray-800 bg-gray-400">การจัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {datafromBooking.map((booking, index) => {
+                                        const usertype = booking.bookings?.[0]?.users?.type_of_user
+                                        return (
+                                            <tr key={index} className="text-center border-2 border-gray-400 align-middle">
+                                                <td className="px-4 py-2">{booking.order_ID}</td>
+                                                <td className="px-4 py-2">{booking.bookings?.[0]?.users?.user_name + '  ' + booking.bookings?.[0]?.users?.user_lastname}</td>
+                                                <td className={`px-4 py-2 ${usertype === 'external' ? 'text-pink-500' : 'text-green-500'}`}>{usertype === 'external' ? 'ลูกค้าภายนอก' : 'สมาชิกในระบบ'}</td>
+                                                <td className="px-4 py-2">{booking.bookings?.[0]?.fields?.field_name}</td>
+                                                <td className="px-4 py-2">{booking.totalprice}</td>
+                                                <td className="px-4 py-2 flex justify-center items-center">{
+                                                    booking.payment_confirmation === 'n/a' ?
+                                                        booking.payment_confirmation :
+                                                        <div className="cursor-pointer text-blue-500 hover:text-blue-700" onClick={() => openModal(booking.payment_confirmation)}>กดดูสลิป</div>
+
+                                                }
+                                                </td>
+
+                                                <td className="px-4 py-2">
+                                                    <button className=' text-blue-500 hover:text-blue-700' onClick={() => openDetail(booking.bookings)}>ดูรายละเอียด</button>
+                                                </td>
+                                                <td className={`px-4 py-2 ${booking.bookings?.[0]?.booking_status === 'รอการตรวจสอบ' ? 'bg-yellow-500' :
+                                                        booking.bookings?.[0]?.booking_status === 'ว่าง' ? 'bg-pink-500' :
+                                                            booking.bookings?.[0]?.booking_status === 'ไม่อนุมัติ' ? 'bg-red-500' :
+                                                                booking.bookings?.[0]?.booking_status === 'เกินเวลาจ่ายเงิน' ? 'bg-gray-500' :
+
+                                                                    'bg-green-600'
+
+                                                    }`}>&quot;{booking.bookings?.[0]?.booking_status}&quot;
+                                                </td>
+                                                <td className="px-4 py-2 border-2 border-gray-400 ">
+                                                    <button
+                                                        className={`text-blue-500 hover:text-blue-700 ${booking.bookings?.[0]?.booking_status === 'จองสำเร็จ' || booking.bookings?.[0]?.booking_status === "ไม่อนุมัติ" ? 'text-gray-400 italic cursor-not-allowed pointer-events-none' : ''}`}
+
+                                                        onClick={() => openApprovement(booking.order_ID)}
+
+                                                    >อนุมัติ
+                                                    </button>
+                                                    <span className="mx-2 mr-5 ml-5 border-r-2 border-gray-800"></span>
+                                                    <FontAwesomeIcon
+                                                        icon={faPen}
+                                                        className={` ml-2 mr-2 h-5 w-5 hover:text-red-700 text-red-500`}   //booking.bookings?.[0].booking_status === 'booked'?'text-gray-400 cursor-not-allowed pointer-events-none' :'text-red-500'
+                                                        onClick={() => openEditModal(booking)}
+                                                    />
+                                                    <span className="mx-2 mr-5 ml-5 border-r-2 border-gray-800"></span>
+                                                    <FontAwesomeIcon
+                                                        icon={faTrashAlt}
+                                                        className="ml-2 h-full w-5  text-red-500 hover:text-red-700"
+                                                        onClick={() => openDeleteModal(booking.order_ID)}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        )
+                                    })
+                                    }
+                                </tbody>
+                            </table>
+                            {isModalOpen && (
+                                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" onClick={closeModal}>
+                                    <div className="bg-white p-4 rounded shadow-lg">
+                                        <img
                                             src={fullImage}
                                             alt="Full Image"
                                             className="max-w-full max-h-[80vh]" // จำกัดขนาดรูปภาพ
-                                            />
-                                        </div>
+                                        />
                                     </div>
-                                )}
-                                {isDetailOpen && (
-                                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" >
-                                        <div className="bg-white p-4 rounded shadow-lg">
+                                </div>
+                            )}
+                            {isDetailOpen && (
+                                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" >
+                                    <div className="bg-white p-4 rounded shadow-lg">
                                         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
                                             <div className="bg-white p-8 rounded-lg w-max-[1200px]">
                                                 <h2 className="text-2xl font-bold mb-4">รายละเอียดการจอง</h2>
-                                                    <table className="min-w-full table-auto border-collapse">
-                                                        <thead className="bg-gray-200 ">
-                                                            <tr className='text-center'>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">Booking ID</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">ชื่อผู้ใช้</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">สนาม</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">ราคา</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">วันที่จอง</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">วันที่ต้องการใช้บริการ</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">ระยะเวลา</th>
-                                                                <th className="px-4 py-2 border-b  text-sm text-gray-600">สถานะการจอง</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {selectedBooking.map((bookingItem: any, index: number) => {
-                                                                const strTime = bookingItem.start_Time.split('T')[1].split(':').slice(0, 2).join(':');
-                                                                const endTime = bookingItem.end_Time.split('T')[1].split(':').slice(0, 2).join(':');
-                                                                const rangTime = `${strTime} - ${endTime}`;
-                                                                return (
-                                                                    <tr key={index} className="hover:bg-gray-50 text-center">
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.booking_ID}</td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.users?.user_name}</td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.fields?.field_name}</td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.Price}</td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">
-                                                                            {dayjs.utc(bookingItem.booking_date.split('T')[0]).format('DD/MM/YYYY')}
-                                                                        </td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">
-                                                                            {dayjs.utc(bookingItem.desired_booking_date.split('T')[0]).format('DD/MM/YYYY')}
-                                                                        </td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">{rangTime}</td>
-                                                                        <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.booking_status}</td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                        </tbody>
-                                                    </table>
+                                                <table className="min-w-full table-auto border-collapse">
+                                                    <thead className="bg-gray-200 ">
+                                                        <tr className='text-center'>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">Booking ID</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">ชื่อผู้ใช้</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">สนาม</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">ราคา</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">วันที่จอง</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">วันที่ต้องการใช้บริการ</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">ระยะเวลา</th>
+                                                            <th className="px-4 py-2 border-b  text-sm text-gray-600">สถานะการจอง</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {selectedBooking.map((bookingItem: any, index: number) => {
+                                                            const strTime = bookingItem.start_Time.split('T')[1].split(':').slice(0, 2).join(':');
+                                                            const endTime = bookingItem.end_Time.split('T')[1].split(':').slice(0, 2).join(':');
+                                                            const rangTime = `${strTime} - ${endTime}`;
+                                                            return (
+                                                                <tr key={index} className="hover:bg-gray-50 text-center">
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.booking_ID}</td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.users?.user_name}</td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.fields?.field_name}</td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.Price}</td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">
+                                                                        {dayjs.utc(bookingItem.booking_date.split('T')[0]).format('DD/MM/YYYY')}
+                                                                    </td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">
+                                                                        {dayjs.utc(bookingItem.desired_booking_date.split('T')[0]).format('DD/MM/YYYY')}
+                                                                    </td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">{rangTime}</td>
+                                                                    <td className="px-4 py-2 border-b text-sm text-gray-800">{bookingItem.booking_status}</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
                                                 <div className='flex justify-end'>
                                                     <button
                                                         className="mr-10 bg-blue-500 text-white py-2 px-4 rounded mt-4 z-10"
                                                         onClick={closeDetail}
-                                                        >
+                                                    >
                                                         ปิด
                                                     </button>
-                                                </div>               
-                                                
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                                </div>
 
-                                { isDeleteOpen&&(
-                                    <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-                                        <div className="bg-white p-6 rounded-lg max-w-md w-full">
-                                            <h2 className="text-xl font-semibold mb-4">อนุมัติการจอง</h2>
-                                                <p className="mb-4">คุณต้องลบการจองสนาม oder ID : {keepOrderID} หรือไม่</p>
-                                                    <div className="flex justify-end space-x-4">
-                                                        <button     
-                                                            className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                                                            onClick={()=>deleteBooking(keepOrderID)}
-                                                         >ยืนยัน
-                                                        </button>
-                                                        <button  
-                                                            className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                                            onClick={closeDeleteModal}
-                                                         >ยกเลิก
-                                                        </button>
-                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                )}
-                                { isApproveOpen&&(
-                                    <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-                                        <div className="bg-white p-6 rounded-lg max-w-md w-full">
-                                            <h2 className="text-xl font-semibold mb-4">อนุมัติการจอง</h2>
-                                                <p className="mb-4">คุณต้องการอนุมัติการจองสนาม oder ID : {keepOrderID} หรือไม่</p>
-                                                    <div className="flex justify-end space-x-4">
-                                                        <button     
-                                                                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-600"
-                                                                onClick={()=>approveBooking(keepOrderID,'จองสำเร็จ')}
-                                                            >
-                                                            อนุมัติ
-                                                         </button>
-                                                         <button     
-                                                                className="px-6 py-2 bg-red-500 text-white rounded hover:bg-green-600"
-                                                                onClick={()=>approveBooking(keepOrderID,'ไม่อนุมัติ')}
-                                                            >
-                                                            ไม่อนุมัติ
-                                                         </button>
-                                                        <button  
-                                                                className="px-6 py-2  bg-gray-500 text-white rounded hover:bg-red-600"
-                                                                onClick={closeApprovement}
-                                                            >
-                                                            ยกเลิก
-                                                        </button>  
-                                                </div>
+                                </div>
+                            )}
+
+                            {isDeleteOpen && (
+                                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+                                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                                        <h2 className="text-xl font-semibold mb-4">อนุมัติการจอง</h2>
+                                        <p className="mb-4">คุณต้องลบการจองสนาม oder ID : {keepOrderID} หรือไม่</p>
+                                        <div className="flex justify-end space-x-4">
+                                            <button
+                                                className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                                onClick={() => deleteBooking(keepOrderID)}
+                                            >ยืนยัน
+                                            </button>
+                                            <button
+                                                className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                                onClick={closeDeleteModal}
+                                            >ยกเลิก
+                                            </button>
                                         </div>
                                     </div>
-                                )}
-                                {isEditModalOpen && (
-                                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                        <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                                </div>
+                            )}
+                            {isApproveOpen && (
+                                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+                                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                                        <h2 className="text-xl font-semibold mb-4">อนุมัติการจอง</h2>
+                                        <p className="mb-4">คุณต้องการอนุมัติการจองสนาม oder ID : {keepOrderID} หรือไม่</p>
+                                        <div className="flex justify-end space-x-4">
+                                            <button
+                                                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-600"
+                                                onClick={() => approveBooking(keepOrderID, 'จองสำเร็จ')}
+                                            >
+                                                อนุมัติ
+                                            </button>
+                                            <button
+                                                className="px-6 py-2 bg-red-500 text-white rounded hover:bg-green-600"
+                                                onClick={() => approveBooking(keepOrderID, 'ไม่อนุมัติ')}
+                                            >
+                                                ไม่อนุมัติ
+                                            </button>
+                                            <button
+                                                className="px-6 py-2  bg-gray-500 text-white rounded hover:bg-red-600"
+                                                onClick={closeApprovement}
+                                            >
+                                                ยกเลิก
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {isEditModalOpen && (
+                                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
                                         <h2 className="text-xl font-semibold mb-4">การแก้ไข</h2>
                                         <form onSubmit={(e) => {
-                                            approveBooking(selectedBookingForEdit?.order_ID,selectedBookingForEdit?.bookings[0]?.booking_status)
+                                            approveBooking(selectedBookingForEdit?.order_ID, selectedBookingForEdit?.bookings[0]?.booking_status)
                                             e.preventDefault();
                                             closeEditModal();
                                         }}>
                                             <div className="mb-4">
-                                            <label className="block text-gray-700">แก้ไขสถานะ</label>
+                                                <label className="block text-gray-700">แก้ไขสถานะ</label>
                                                 <select className="w-full px-3 py-2 border rounded"
                                                     value={selectedBookingForEdit?.bookings?.[0]?.booking_status}
                                                     onChange={(e) => {
@@ -428,70 +426,70 @@ export default function BookingOrder() {
                                                 >
                                                     <option value="จองสำเร็จ">จองสำเร็จ</option>
                                                     <option value="รอการตรวจสอบ">รอการตรวจสอบ</option>
-                                                   
+
                                                 </select>
                                             </div>
 
                                             <div className="mb-4">
-                                            <label className="block text-gray-700">แก้ไขการจอง</label>
-                                                        <button
-                                                            type="button"
-                                                            className="px-6 py-2 bg-red-500 text-white rounded hover:bg-gray-600"
-                                                            onClick={openEditBookingPage}
-                                                        >
-                                                            Edit
-                                                        </button>
+                                                <label className="block text-gray-700">แก้ไขการจอง</label>
+                                                <button
+                                                    type="button"
+                                                    className="px-6 py-2 bg-red-500 text-white rounded hover:bg-gray-600"
+                                                    onClick={openEditBookingPage}
+                                                >
+                                                    Edit
+                                                </button>
                                             </div>
                                             <div className="flex justify-end space-x-4">
-                                            <button
-                                                type="button"
-                                                className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                                                onClick={closeEditModal}
-                                            >
-                                                ยกเลิก
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                            >
-                                                บันทึก
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                                    onClick={closeEditModal}
+                                                >
+                                                    ยกเลิก
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                >
+                                                    บันทึก
+                                                </button>
                                             </div>
                                         </form>
-                                        </div>
                                     </div>
-                                    )}
-                            </div>
-                        </div>
-                       )}
-                        
-                        {showBookingPage&&(
-                                    <div className=' w-[1600px] bg-gray-300 ml-2 p-6 rounded shadow-md'>
-                                        <div className='flex items-end w-full '>
-                                            <button 
-                                                className='text-2xl font-bold ml-auto  mr-15 bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200'
-                                                onClick={closBookingPage}
-                                                >ปิด
-                                            </button>
-                                        </div>                             
-                                        <AddBooking></AddBooking>
-                                    </div>
-                                )}
-
-                            {showEditBookingPage && (
-                            <div className='w-[1600px] bg-gray-300 ml-2 p-6 rounded shadow-md'>
-                                <div className='flex items-end w-full'>
-                                <button 
-                                    className='text-2xl font-bold ml-auto mr-15 bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200'
-                                    onClick={closEditBookingPage}
-                                >
-                                    ปิด
-                                </button>
                                 </div>
-                                <EditBooking data={selectedBookingForEdit}></EditBooking>
-                            </div>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {showBookingPage && (
+                    <div className=' w-[1600px] bg-gray-300 ml-2 p-6 rounded shadow-md'>
+                        <div className='flex items-end w-full '>
+                            <button
+                                className='text-2xl font-bold ml-auto  mr-15 bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200'
+                                onClick={closBookingPage}
+                            >ปิด
+                            </button>
+                        </div>
+                        <AddBooking></AddBooking>
+                    </div>
+                )}
+
+                {showEditBookingPage && (
+                    <div className='w-[1600px] bg-gray-300 ml-2 p-6 rounded shadow-md'>
+                        <div className='flex items-end w-full'>
+                            <button
+                                className='text-2xl font-bold ml-auto mr-15 bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200'
+                                onClick={closEditBookingPage}
+                            >
+                                ปิด
+                            </button>
+                        </div>
+                        <EditBooking data={selectedBookingForEdit}></EditBooking>
+                    </div>
+                )}
             </div>
         </MainLayoutAdmin>
-     );
+    );
 }

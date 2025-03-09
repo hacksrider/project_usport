@@ -1,23 +1,79 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApexOptions } from "apexcharts";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import DefaultSelectOption from "@/components/SelectOption/DefaultSelectOption";
 
 const ChartThree: React.FC = () => {
-  // เปลี่ยนข้อมูลใน series เป็นข้อมูลใหม่
-  const series = [50, 30, 15, 5];  // ปรับค่าเป็น 50%, 30%, 15%, 5% ตามลำดับ
+  const [series, setSeries] = useState<number[]>([]);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [percentages, setPercentages] = useState<number[]>([]);
+  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("ทั้งหมด");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const fetchData = async (year: string, month: string) => {
+    setIsLoading(true);
+    try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (year) params.append('year', year);
+      if (month) params.append('month', month);
+
+      // Fetch data from the API
+      const response = await fetch(`/api/dashboard/static_football?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success) {
+        
+        const counts = data.data.map((item: any) => item.count);
+        const total = counts.reduce((sum: number, value: number) => sum + value, 0);
+        const percentValues = counts.map((value: number) =>
+          (total > 0 ? (value / total) * 100 : 0)
+        );
+
+        setSeries(counts);
+        setLabels(data.data.map((item: any) => item.field_name));
+        setPercentages(percentValues);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial data load
+  useEffect(() => {
+    const currentYear = new Date().getFullYear().toString();
+    setSelectedYear(currentYear);
+    fetchData(currentYear, "ทั้งหมด");
+  }, []);
+
+  // Fetch data when year or month changes
+  useEffect(() => {
+    if (selectedYear) {
+      fetchData(selectedYear, selectedMonth);
+    }
+  }, [selectedYear, selectedMonth]);
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, index) => (currentYear - index).toString());
+
+  const months = [
+    "ทั้งหมด", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+  ];
 
   const options: ApexOptions = {
     chart: {
       type: "donut",
     },
     colors: ["#0000FF", "#0000CC", "#000099", "#000066", "#000033"],
-    labels: ["สนามฟุตบอล 1", "สนามฟุตบอล 2", "สนามฟุตบอล 3", "สนามฟุตบอล 4"], // ค่าของสนามฟุตบอลยังคงเหมือนเดิม
+    labels: labels,
     legend: {
       show: false,
       position: "bottom",
     },
-
     plotOptions: {
       pie: {
         donut: {
@@ -72,55 +128,62 @@ const ChartThree: React.FC = () => {
             สถิติการจองสนามฟุตบอล
           </h4>
         </div>
-        <div className="flex items-center gap-2.5 mr-4 mt-3">
-          <DefaultSelectOption options={["Monthly", "Yearly"]} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 mr-4 mt-3">
+            <span>ปี</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="rounded border border-gray-300 px-2 py-1"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2.5 mr-4 mt-3">
+            <span>เดือน</span>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="rounded border border-gray-300 px-2 py-1"
+            >
+              {months.map((month, index) => (
+                <option key={index} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
       <div className="mb-8">
         <div className="mx-auto flex justify-center">
-          <ReactApexChart options={options} series={series} type="donut" />
+          {isLoading ? (
+            <div className="flex h-64 w-64 items-center justify-center">
+              <span>กำลังโหลดข้อมูล...</span>
+            </div>
+          ) : series.length > 0 ? (
+            <ReactApexChart options={options} series={series} type="donut" />
+          ) : (
+            <div className="flex h-64 w-64 items-center justify-center">
+              <span>ไม่พบข้อมูล</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[350px]">
-        <div className="mx-7.5 flex flex-wrap items-center justify-center gap-y-2.5">
-          <div className="w-full px-7.5 sm:w-1/2">
-            <div className="flex w-full items-center">
-              <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue"></span>
-              <p className="flex w-full justify-stretch text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> สนามฟุตบอล 1 </span>
-                <span className="text-left"> 50% </span>  {/* เปลี่ยนค่าเป็น 50% */}
-              </p>
+      <div className="mx-auto w-[430px]">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {series.map((item, index) => (
+            <div className="flex w-full justify-between text-body-sm font-medium text-dark dark:text-dark-6" key={index}>
+              <span className="text-left">{labels[index]}</span>
+              <span className="ml-2">{percentages[index].toFixed(2)}%</span>
             </div>
-          </div>
-          <div className="w-full px-7.5 sm:w-1/2">
-            <div className="flex w-full items-center">
-              <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue-light"></span>
-              <p className="flex w-full justify-stretch text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> สนามฟุตบอล 2 </span>
-                <span className="text-left"> 30% </span>  {/* เปลี่ยนค่าเป็น 30% */} 
-              </p>
-            </div>
-          </div>
-          <div className="w-full px-7.5 sm:w-1/2">
-            <div className="flex w-full items-center">
-              <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue-light-2"></span>
-              <p className="flex w-full justify-stretch text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> สนามฟุตบอล 3 </span>
-                <span className="text-left"> 15% </span>  {/* เปลี่ยนค่าเป็น 15% */}
-              </p>
-            </div>
-          </div>
-          <div className="w-full px-7.5 sm:w-1/2">
-            <div className="flex w-full items-center">
-              <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-blue-light-3"></span>
-              <p className="flex w-full justify-stretch text-body-sm font-medium text-dark dark:text-dark-6">
-                <span> สนามฟุตบอล 4 </span>
-                <span className="text-left"> 5% </span>  {/* เปลี่ยนค่าเป็น 5% */}
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

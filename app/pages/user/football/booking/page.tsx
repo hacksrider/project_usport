@@ -33,12 +33,10 @@ interface ReviewField {
   comment: string;
 }
 
-
-
 type Slots = Record<string, Slot[]>;
 
 const Booking : React.FC = () => {
-  
+    const [fieldName, setFieldName] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPaymantPageOpen, setIsPaymantPageOpen] = useState(false);
     const [isReveiwOpen, setIsReveiwOpen] = useState(false);
@@ -81,6 +79,10 @@ const Booking : React.FC = () => {
               const response = await axios.get(`/api/booking/dataBooking?field_ID=${field_ID}`);
               const data = response.data;
               console.log(data);
+              if (data && data[0] && data[0].fields) {
+                setFieldName(data[0].fields.field_name); // ตั้งค่า field_name จากข้อมูลใน API
+              }   
+
               const updatedData = data.map((booking: dataBookingFromAPI) => {
                   const date = dayjs.utc(booking.desired_booking_date).format('YYYY-MM-DD');
                   const str = `${booking.start_Time.split("T")[1].split(':')[0]}`;
@@ -121,9 +123,7 @@ const Booking : React.FC = () => {
             slots[date] = Array.from({ length: 15 }, (_, index) => {
                 let STAhour = 9 + index;
                 let ENDhour = 10 + index;
-               
                 const time = `${STAhour}:00 - ${ENDhour}:00`;
-
                 let status = 'ว่าง';
                            
                 for (let j = 0; j < dataBooking.length; j++) {
@@ -131,20 +131,11 @@ const Booking : React.FC = () => {
                     const bookingDate = booking.desired_booking_date; 
                     const str = parseInt(booking.start_Time);
                     const end =parseInt(booking.end_Time);
-
                     if (bookingDate === date) {
-                          // console.log("เวลาเริ่ม",STAhour);
-                          // console.log("เวลาเริ่มตัวเปรียบเทียบ",str);
-                          // console.log("เวลาจบ",ENDhour);
-                          // console.log("เวลาจบตัวเปรียบเทียบ",end);
-
                            if ( STAhour >= str && STAhour < end) {
-                              //console.log("สามารถตรวจพบเวลาเริ่มต้นได้");
                               status = booking.booking_status;  // เปลี่ยนสถานะตามข้อมูลการจองจาก API
-                             // console.log("ถูกต้อง",bookingDate);
                               break;  
                            }
-                            //console.log("ไม่เข้าเงื่อนไข");
                     }
                 }
                 return { ID: `${index + 1}`, time, status };
@@ -152,10 +143,8 @@ const Booking : React.FC = () => {
         }
         return slots;
     };
-
         const updatedSlots = generateWeekSlots(currentStartDate, dataBooking); // เรียกฟังก์ชันสร้าง slots
         setSlots(updatedSlots);  // ตั้งค่า slots
-
 }, [currentStartDate, dataBooking]);
 
     const handleDateSearch = (date: string) => {
@@ -680,10 +669,12 @@ const handleConfirmBooking = () => {
         <MainLayout>
             <div className="w-[1500px] p-8 mx-auto">
             <div className="flex justify-end items-center mb-4 space-x-4">
+              <div>
+                 {fieldName}
+              </div>
               <div className="flex items-center text-white">
                   <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
                   <span>ว่าง</span>
-                  
               </div>
               <div className="flex items-center text-white">
                   <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
@@ -693,7 +684,6 @@ const handleConfirmBooking = () => {
                   <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
                   <span>ไม่ว่าง</span>
               </div>
-
               <input
                   type="date"
                   value={currentStartDate}

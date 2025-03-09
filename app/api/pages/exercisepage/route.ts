@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return NextResponse.json(
       { error: `Something went wrong: ${error}` },
       { status: 500 }
@@ -128,8 +128,8 @@ export async function PUT(request: Request) {
     const banner = formData.get("banner") as File | null;
     const exerciseDataJson = formData.get("exerciseData")?.toString() || "[]";
     const exerciseData = JSON.parse(exerciseDataJson);
-    console.log("exerciseData",exerciseData);
-    console.log("exerciseDataJson",exerciseDataJson);
+    // console.log("exerciseData",exerciseData);
+    // console.log("exerciseDataJson",exerciseDataJson);
     if (!page_exercise_ID) {
       return NextResponse.json(
         { error: "Page Exercise ID is required" },

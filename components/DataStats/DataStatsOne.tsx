@@ -3,6 +3,7 @@ import { dataStats } from "@/types/dataStats";
 const DataStatsOne: React.FC<dataStats> = () => {
   const [userCount, setUserCount] = useState<number | null>(null);
   const [user_income_excersice, setUser_income_excersice] = useState<number | null>(null);
+  const [user_income_football, setUser_income_football] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUserCount = async () => {
@@ -29,8 +30,21 @@ const DataStatsOne: React.FC<dataStats> = () => {
         console.error("Error fetching income:", error);
       }
     };
+    const fetchIncome_Football = async () => {
+      try {
+        const response = await fetch("/api/dashboard/income_football"); // แก้ให้ตรงกับ API ที่สร้าง
+        const data = await response.json();
+
+        if (data.success) {
+          setUser_income_football(data.totalRevenue); // แก้จาก data.data เป็น data.totalRevenue
+        }
+      } catch (error) {
+        console.error("Error fetching income:", error);
+      }
+    };
 
     fetchUserCount();
+    fetchIncome_Football();
     fetchIncome_Exercise();
   }, []);
   const dataStatsList = [
@@ -87,7 +101,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       color: "#FF9C55",
       title: "รายได้รวม",
       value: "สนามฟุตบอล",
-      growthRate: 1230,
+      growthRate: user_income_football || 0,
       unit_icon: (
         <svg className="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">  <path stroke="none" d="M0 0h24v24H0z" />  <circle cx="12" cy="12" r="9" />  <path d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-2a2 2 0 0 1 -1.8 -1" />  <path d="M12 6v2m0 8v2" /></svg>
 
