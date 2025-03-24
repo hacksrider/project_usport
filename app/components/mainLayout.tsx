@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { UserInterface } from '../interface/user';
 import { RiVipFill } from "react-icons/ri";
+import { FiUserCheck } from "react-icons/fi";
 
 interface mainLayoutProp {
   children: React.ReactNode;
@@ -63,7 +64,7 @@ export default function MainLayout({ children }: mainLayoutProp) {
       </div>
     );
   }
-  
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -164,9 +165,10 @@ export default function MainLayout({ children }: mainLayoutProp) {
                     className="flex items-center text-white font-bold hover:text-gray-300 focus:outline-none"
                     onClick={toggleDropdown}
                   >
-                    {userData.user.status_of_VIP ? <RiVipFill className='w-7 h-7 mr-3 text-yellow-500'/> : ""}
+                    {userData.user.status_of_VIP ? <RiVipFill className='w-7 h-7 mr-3 text-yellow-500' /> : ""}
+                    {userData.user.status_of_Member ? <FiUserCheck className='w-7 h-7 mr-3 text-yellow-500' /> : ""}
                     <div className="mr-2 w-6 h-6 rounded-full overflow-hidden">
-                      <img src={userData.user.user_profile_picture ? `/${userData.user.user_profile_picture}` : "/user/img/user.jpeg"} alt="user" />
+                      <img src={userData.user.user_profile_picture ? `http://localhost:4000/${userData.user.user_profile_picture}` : "/user/img/user.jpeg"} alt="user" />
                     </div>
                     {userData.user.user_username}
                     <FaChevronDown className="ml-2" />
@@ -185,7 +187,6 @@ export default function MainLayout({ children }: mainLayoutProp) {
                               xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
-
                           </button>
                         </li>
                         <li>
@@ -299,13 +300,13 @@ export default function MainLayout({ children }: mainLayoutProp) {
                   {servicesMenuOpen && (
                     <ul className="mt-2 space-y-2">
                       <li
-                          onClick={() => {
-                            router.push('/pages/user/exercise');
-                            toggleMobileMenu();
-                          }}
-                          role="button"
-                          className="block text-black text-[16px] ml-5"
-                        > 
+                        onClick={() => {
+                          router.push('/pages/user/exercise');
+                          toggleMobileMenu();
+                        }}
+                        role="button"
+                        className="block text-black text-[16px] ml-5"
+                      >
                         บริการออกกำลังกาย
                       </li>
                       <li>
@@ -317,7 +318,7 @@ export default function MainLayout({ children }: mainLayoutProp) {
                           role="button"
                           className="block text-black text-lg text-[16px] ml-5"
                         >
-                        สนามฟุตบอล
+                          สนามฟุตบอล
                         </a>
                       </li>
                     </ul>

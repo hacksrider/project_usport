@@ -101,8 +101,8 @@ const ChartOne: React.FC = () => {
   // const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   return (
-    <div className="col-span-12 rounded-[10px] bg-white px-7.5 pb-6 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card xl:col-span-7">
-      <div className="ml-4 mt-3 mb-3.5 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="col-span-12 rounded-[10px] bg-white px-7.5 pb-6 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card xl:col-span-12">
+      <div className="ml-4 mt-3 mb-3.5 flex items-center justify-between">
         <div>
           <h4 className="text-body-2xlg font-bold text-dark dark:text-white">
             สถิติการซื้อบริการออกกำลังกายกับการจองสนามฟุตบอล {selectedYear}

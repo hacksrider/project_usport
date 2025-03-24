@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
   const { to } = await req.json();
-  console.log("to ---> ", to);
+  // console.log("to ---> ", to);
   // ตรวจสอบว่ามีข้อมูลครบถ้วนหรือไม่
   if (!to) {
     return NextResponse.json(
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         pass: process.env.EMAIL_PASS, // ใช้ App Password ที่สร้างไว้
       },
     });
-    console.log("transporter ---> ", transporter);
+    // console.log("transporter ---> ", transporter);
     // กำหนดรายละเอียดอีเมล
     const resetURL = `http://localhost:3000/pages/user/AAA/repassword/${to}`;
 
@@ -43,13 +43,13 @@ export async function POST(req: Request) {
       `,
     };
     // ส่งอีเมล
-    console.log("mailOptions ---> ", mailOptions);
+    // console.log("mailOptions ---> ", mailOptions);
 
     await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
-    console.log("error ---> ", error);
+    // console.log("error ---> ", error);
 
     return NextResponse.json({ message: "error: " + error }, { status: 500 });
   }
@@ -61,6 +61,8 @@ export async function PUT(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const updateUser = await prisma.users.update({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       where: { user_email: email },
       data: { user_password: hashedPassword },
     });

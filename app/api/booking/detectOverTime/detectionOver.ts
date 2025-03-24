@@ -1,6 +1,6 @@
 import prisma from "../../../../lib/db";
 import * as cron from 'node-cron';
-const fiveMinutesAgo: Date = new Date(Date.now() - 15 * 60 * 1000);
+const fiveMinutesAgo: Date = new Date(Date.now() - 2 * 60 * 1000);
 
 const checkAndUpdateBookings = async () => {
   try {
@@ -21,7 +21,7 @@ const checkAndUpdateBookings = async () => {
     for (const booking of bookings) {
       await prisma.bookings.update({
         where: { booking_ID: booking.booking_ID },
-        data: { booking_status: 'รอการตรวจสอบ' },
+        data: { booking_status: 'เกินกำหนดจ่าย' },
       });
       console.log(`อัปเดต booking ID ${booking.booking_ID} เป็น 'เกินกำหนดจ่าย'`);
     }
@@ -30,7 +30,7 @@ const checkAndUpdateBookings = async () => {
   }
 };
 
-cron.schedule('*/5 * * * *', () => {
+cron.schedule('*/2 * * * *', () => {
   console.log('กำลังตรวจสอบการจอง...');
   checkAndUpdateBookings();
 });

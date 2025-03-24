@@ -3,10 +3,10 @@ import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
 import ChartOne from "@/components/Charts/ChartOne";
 import ChartThree from "@/components/Charts/ChartThree";
 import ChartThreeEx from "@/components/Charts/ChartThreeEx";
-import ChartTwo from "@/components/Charts/ChartTwo";
 import ChatCard from "@/components/Chat/ChatCard";
+import ChatCardEx from "@/components/ChatEx/ChatCardEX";
 import DataStatsOne from "@/components/DataStats/DataStatsOne";
-import TableOne from "@/components/Tables/TableOne";
+// import TableOne from "@/components/Tables/TableOne";
 import React from "react";
 
 
@@ -18,7 +18,7 @@ export default function Dashboard() {
         <DataStatsOne />
         <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
           <ChartOne />
-          <ChartTwo />
+          {/* <ChartTwo /> */}
           <div className="col-span-12 grid grid-cols-2 gap-4">
             <div className="w-full">
               <ChartThree />
@@ -27,10 +27,11 @@ export default function Dashboard() {
               <ChartThreeEx />
             </div>
           </div>
-          <div className="col-span-12 xl:col-span-8">
+          {/* <div className="col-span-12 xl:col-span-8">
             <TableOne />
-          </div>
+          </div> */}
           <ChatCard />
+          <ChatCardEx />
         </div>
         {/* <ChatCard /> */}
       </div>

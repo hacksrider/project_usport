@@ -33,7 +33,7 @@ interface PageData {
 
 export default function HomeAdmin() {
     const [pageData, setPageData] = useState<PageData>({
-        page_home_id: 9,
+        page_home_id: 1,
         title: "",
         subtitle: "",
         banner: null,
@@ -48,7 +48,7 @@ export default function HomeAdmin() {
                 const response = await fetch("/api/pages/homepage");
                 const data = await response.json();
                 console.log(data); // ตรวจสอบข้อมูลที่ได้รับจาก API
-                const page = data.find((p: PageData) => p.page_home_id === 9);
+                const page = data.find((p: PageData) => p.page_home_id === 1);
                 if (page) {
                     setPageData(page);
                 }
@@ -317,7 +317,7 @@ export default function HomeAdmin() {
                                 <div className="mb-2">
                                     <div className="flex items-center">
                                         <img
-                                            src={pageData.banner.startsWith('/') ? pageData.banner : `/${pageData.banner}`}
+                                            src={pageData.banner.startsWith('/') ? 'http://localhost:4000/'+pageData.banner : `http://localhost:4000/${pageData.banner}`}
                                             alt="Current banner"
                                             className="h-24 object-cover rounded mr-2"
                                         />
@@ -393,7 +393,7 @@ export default function HomeAdmin() {
                                     {typeof exercise.banner_exercise === 'string' && (
                                         <div className="mb-2 flex items-center">
                                             <img
-                                                src={exercise.banner_exercise.startsWith('/') ? exercise.banner_exercise : `/${exercise.banner_exercise}`}
+                                                src={exercise.banner_exercise.startsWith('/') ? 'http://localhost:4000/'+exercise.banner_exercise : `http://localhost:4000/${exercise.banner_exercise}`}
                                                 alt="Exercise banner"
                                                 className="h-16 object-cover rounded mr-2"
                                             />
@@ -470,7 +470,7 @@ export default function HomeAdmin() {
                                     {typeof promotion.banner_promotion === 'string' && (
                                         <div className="mb-2 flex items-center">
                                             <img
-                                                src={promotion.banner_promotion.startsWith('/') ? promotion.banner_promotion : `/${promotion.banner_promotion}`}
+                                                src={promotion.banner_promotion.startsWith('/') ? 'http://localhost:4000/'+promotion.banner_promotion : `http://localhost:4000/${promotion.banner_promotion}`}
                                                 alt="Promotion banner"
                                                 className="h-16 object-cover rounded mr-2"
                                             />
@@ -515,7 +515,7 @@ export default function HomeAdmin() {
                                     {typeof gallery.picture_gallery === 'string' && (
                                         <div className="mb-2">
                                             <img
-                                                src={gallery.picture_gallery.startsWith('/') ? gallery.picture_gallery : `/${gallery.picture_gallery}`}
+                                                src={gallery.picture_gallery.startsWith('/') ? 'http://localhost:4000/'+gallery.picture_gallery : `http://localhost:4000/${gallery.picture_gallery}`}
                                                 alt="Gallery image"
                                                 className="h-32 w-full object-cover rounded"
                                             />

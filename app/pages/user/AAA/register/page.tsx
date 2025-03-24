@@ -210,6 +210,7 @@ const RegisterForm: React.FC = () => {
                             <option value="">เลือกเพศ</option>
                             <option value="ชาย">ชาย</option>
                             <option value="หญิง">หญิง</option>
+                            <option value="LGBTQ+">LGBTQ+</option>
                             <option value="ไม่ระบุ">ไม่ระบุ</option>
                         </select>
                     </div>

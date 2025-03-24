@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url, "http://localhost");
         const year = searchParams.get("year");
-        console.log("API received year:", year);
+        // console.log("API received year:", year);
         if (!year) {
             return NextResponse.json({ error: "Year parameter is required" }, { status: 400 });
         }

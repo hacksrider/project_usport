@@ -46,7 +46,7 @@ export async function GET() {
       //  const aaa = data.map((e)=>{
       //   return e.path_image_acc
       //  })
-    console.log("ข้อมูลจากฐานข้อมูล:", data);
+    // console.log("ข้อมูลจากฐานข้อมูล:", data);
     return Response.json(data);
   } catch (error) {
     console.error("เกิดข้อผิดพลาดนะจ๊ะ:", error);

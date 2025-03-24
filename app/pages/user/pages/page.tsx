@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import React, { useState, useEffect } from 'react'
 import MainLayout from '@/app/components/mainLayout'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { DataHomepages, GetAllHomepages } from '@/app/interface/pages/homepage/home'
 import axios from 'axios'
 // import { it } from 'node:test'
@@ -13,6 +14,7 @@ export default function Home() {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
   const [dataHomepage, setDataHomepage] = useState<DataHomepages[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Fetch data from API
   const fetchData = async () => {
@@ -34,13 +36,27 @@ export default function Home() {
     setIsVisible(true);
   }, []);
 
+  // Handle image click to show popup
+  const openImagePopup = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+    // Prevent body scrolling when popup is open
+    document.body.style.overflow = 'hidden';
+  };
+
+  // Close popup
+  const closeImagePopup = () => {
+    setSelectedImage(null);
+    // Re-enable body scrolling
+    document.body.style.overflow = 'auto';
+  };
+
   return (
     <MainLayout>
       {dataHomepage.map((item) => (
         <div key={item.page_home_id}>
           {/* Hero Section with Animated Text */}
           <section className="relative min-h-screen flex items-center justify-center text-white text-center">
-            <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${item.banner ? `/${item.banner}` : ""})` }}></div>
+            <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${item.banner ? `http://localhost:4000/${item.banner}` : ""})` }}></div>
 
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70" />
 
@@ -105,11 +121,14 @@ export default function Home() {
                     viewport={{ once: true, margin: "-100px" }}
                     whileHover={{ y: -5 }}
                   >
-                    <div className="relative h-56 overflow-hidden">
-                      <Image
-                        src={`/${service.banner_exercise}`}
+                    <div 
+                      className="relative h-56 overflow-hidden"
+                      onClick={() => openImagePopup(`http://localhost:4000/${service.banner_exercise}`)}
+                    >
+                      <img
+                        src={`http://localhost:4000/${service.banner_exercise}`}
                         alt={service.name_exercise}
-                        fill
+                        loading="lazy"
                         sizes="(max-width: 768px) 100vw, 300px"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
@@ -118,9 +137,6 @@ export default function Home() {
                     <div className="p-6 relative">
                       <h3 className="text-2xl font-bold mb-2 text-white">{service.name_exercise}</h3>
                       <p className="text-gray-300 mb-4">{service.description}</p>
-                      {/* <button className="w-full py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300 group-hover:from-red-600 group-hover:to-red-700">
-            ดูรายละเอียด
-          </button> */}
                     </div>
                   </motion.div>
                 ))}
@@ -155,11 +171,14 @@ export default function Home() {
                     whileHover={{ y: -5 }}
                     onClick={() => { }}
                   >
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        src={`/${promo.banner_promotion}`}
+                    <div 
+                      className="relative h-48 overflow-hidden"
+                      onClick={() => openImagePopup(`http://localhost:4000/${promo.banner_promotion}`)}
+                    >
+                      <img
+                        src={`http://localhost:4000/${promo.banner_promotion}`}
                         alt={promo.title_promotion}
-                        fill
+                        loading="lazy"
                         sizes="(max-width: 768px) 100vw, 400px"
                         className="object-cover transition-transform duration-500 hover:scale-105"
                       />
@@ -167,9 +186,6 @@ export default function Home() {
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-2 text-gray-900">{promo.title_promotion}</h3>
                       <p className="text-gray-600 mb-4">{promo.detail_promotion}</p>
-                      {/* <button className="inline-flex items-center text-red-600 font-medium hover:text-red-800">
-                        รายละเอียดเพิ่มเติม
-                      </button> */}
                     </div>
                   </motion.div>
                 ))}
@@ -177,7 +193,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Replace the existing Gallery Section with this code */}
+          {/* Gallery Section with Clickable Images */}
           <section className="py-20 px-4 bg-gray-900">
             <div className="container mx-auto">
               <motion.div
@@ -196,14 +212,15 @@ export default function Home() {
                 {item.page_home_gallery.map((image, index) => (
                   <motion.div
                     key={index}
-                    className="relative rounded-lg overflow-hidden shadow-lg"
+                    className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer"
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true, margin: "-100px" }}
+                    onClick={() => openImagePopup(`http://localhost:4000/${image.picture_gallery}`)}
                   >
-                    <Image
-                      src={`/${image.picture_gallery}`}
+                    <img
+                      src={`http://localhost:4000/${image.picture_gallery}`}
                       alt={`Gallery Image ${index + 1}`}
                       width={500}
                       height={300}
@@ -215,8 +232,50 @@ export default function Home() {
             </div>
           </section>
         </div>
-      ))
-      }
-    </MainLayout >
+      ))}
+
+      {/* Image Popup/Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+            onClick={closeImagePopup}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className="relative max-h-[80vh] w-[500px]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative w-full h-full">
+                <Image
+                  src={selectedImage}
+                  alt="Enlarged view"
+                  layout="responsive"
+                  width={800}
+                  height={600}
+                  className="object-contain rounded-lg shadow-2xl"
+                />
+                <button
+                  onClick={closeImagePopup}
+                  className="absolute top-4 right-4 bg-black/70 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </MainLayout>
   );
 }

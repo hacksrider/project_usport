@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 
-export async function GET(req:Request) {
+export async function GET() {
     try {
       const dataFeild = await prisma.fields.findMany({
         include:{
@@ -9,6 +9,7 @@ export async function GET(req:Request) {
       }); // ดึงข้อมูลจากฐานข้อมูล
       return Response.json(dataFeild); // ส่งข้อมูลกลับ
     } catch (error) {
+        console.error(error);
         return Response.json("ไม่ถูกต้อง"); // ส่งข้อมูลกลับ // หากเกิดข้อผิดพลาด
     }
   }
@@ -24,6 +25,7 @@ export async function POST(req:Request) {
       }); 
        return Response.json("เพิ่มสนามสำเร็จแล้ว : "+ dataFeild);
     } catch (error) {
+        console.log(error);
         return Response.json("ไม่ถูกต้อง"); 
     }
   }
@@ -42,6 +44,7 @@ export async function POST(req:Request) {
       }); 
         return Response.json("แก้ไขข้อมูลสำหรับแล้ว : "+ dataFeild);
     } catch (error) {
+        console.log(error);
         return Response.json("ไม่ถูกต้อง"); 
     }
   }
@@ -58,6 +61,7 @@ export async function POST(req:Request) {
         })
         return Response.json("แก้ไขข้อมูลสำหรับแล้ว : "+ dataFeild);
     } catch (error) {
+        console.log(error);
         return Response.json("ไม่ถูกต้อง"); 
     }
   }

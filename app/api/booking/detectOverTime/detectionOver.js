@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var db_1 = require("../../../../lib/db");
 var cron = require("node-cron");
-var fiveMinutesAgo = new Date(Date.now() - 1 * 60 * 1000);
+var fiveMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
 var checkAndUpdateBookings = function () { return __awaiter(void 0, void 0, void 0, function () {
     var bookings, _i, bookings_1, booking, error_1;
     return __generator(this, function (_a) {
@@ -67,7 +67,7 @@ var checkAndUpdateBookings = function () { return __awaiter(void 0, void 0, void
                 booking = bookings_1[_i];
                 return [4 /*yield*/, db_1.default.bookings.update({
                         where: { booking_ID: booking.booking_ID },
-                        data: { booking_status: 'รอการตรวจสอบ' },
+                        data: { booking_status: 'เกินกำหนดจ่าย' },
                     })];
             case 3:
                 _a.sent();
@@ -85,7 +85,7 @@ var checkAndUpdateBookings = function () { return __awaiter(void 0, void 0, void
         }
     });
 }); };
-cron.schedule('*/1 * * * *', function () {
+cron.schedule('*/2 * * * *', function () {
     console.log('กำลังตรวจสอบการจอง...');
     checkAndUpdateBookings();
 });

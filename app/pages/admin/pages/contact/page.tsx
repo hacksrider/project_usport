@@ -23,7 +23,7 @@ interface PageContact {
 
 export default function ContactAdmin() {
     const [pageData, setPageData] = useState<PageContact>({
-        page_contact_ID: 7,
+        page_contact_ID: 1,
         title: "",
         subtitle: "",
         banner: "",
@@ -45,8 +45,8 @@ export default function ContactAdmin() {
                 const response = await fetch('/api/pages/contactpage');
                 const data = await response.json();
 
-                // Find the contact page with ID = 7
-                const contactPage = data.find((page: PageContact) => page.page_contact_ID === 7);
+                // Find the contact page with ID = 1
+                const contactPage = data.find((page: PageContact) => page.page_contact_ID === 1);
 
                 if (contactPage) {
                     setPageData(contactPage);
@@ -220,6 +220,7 @@ export default function ContactAdmin() {
                                 type="file"
                                 id="banner"
                                 onChange={handleFileChange}
+                                accept="image/*"
                                 className="w-full p-2 border border-gray-300 rounded bg-gray-100"
                             />
                         </div>

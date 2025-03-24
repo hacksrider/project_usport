@@ -18,6 +18,7 @@ export default function Member() {
     const [selectedUserId, setSelectedUserId] = useState(null);
     const rowsPerPage = 20;
 
+
     // Fetch user data
     useEffect(() => {
         const userApi = async () => {
@@ -65,7 +66,7 @@ export default function Member() {
 
     // Handle delete confirmation
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const confirmDelete = (userId:any) => {
+    const confirmDelete = (userId: any) => {
         setShowConfirmation(true);
         setSelectedUserId(userId);
     };
@@ -136,7 +137,7 @@ export default function Member() {
                                         <td className="px-4 py-1 text-center border-r flex items-center justify-center">
                                             <div className="w-6 h-6 bg-blue-200 rounded-full overflow-hidden">
                                                 <img
-                                                    src={row.user_profile_picture ? `/${row.user_profile_picture}` : "/user/img/user.jpeg"}
+                                                    src={row.user_profile_picture ? `http://localhost:4000/${row.user_profile_picture}` : "/user/img/user.jpeg"}
                                                     alt="User Image"
                                                     className="w-full h-full object-cover border rounded-full"
                                                 />
@@ -147,12 +148,14 @@ export default function Member() {
                                         <td className="px-4 py-0 border-r">{row.user_email} {row.status_of_VIP}</td>
                                         <td className="px-4 py-0 border-r text-center">
                                             {row.status_of_VIP ? (
-                                                <label className="text-green-500 ">active</label>
+                                                <label className="text-green-500">active</label>
+                                            ) : row.accom_rent_contrac_photo && row.accom_rent_contrac_photo.trim() !== "" ? (
+                                                <label className="text-yellow-500">มีเอกสาร</label>
                                             ) : (
-                                                <label className="text-red-500 ">inactive</label>
-                                            )
-                                            }
+                                                <label className="text-red-500">inactive</label>
+                                            )}
                                         </td>
+
                                         <td className="px-4 py-0 text-center border-r">
                                             {row.status_of_Member ? (
                                                 <label className="text-green-500 ">active</label>

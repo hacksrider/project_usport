@@ -54,6 +54,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     const user_lastname = formData.get("user_lastname")?.toString();
     const user_date_of_birth = formData.get("user_date_of_birth")?.toString();
     const user_email = formData.get("user_email")?.toString();
+    const sex = formData.get("sex")?.toString();
     const user_tel = formData.get("user_tel")?.toString();
     const user_username = formData.get("user_username")?.toString();
     const status_of_VIP = formData.get("status_of_VIP") === "true";
@@ -89,6 +90,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
         user_lastname,
         user_date_of_birth: user_date_of_birth ? new Date(user_date_of_birth) : undefined,
         user_email,
+        sex,
         user_tel,
         user_username,
         status_of_VIP,

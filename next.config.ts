@@ -10,4 +10,10 @@ const nextConfig: NextConfig = {
   },
 };
 
+// module.exports = {
+//   images: {
+//     domains: ['localhost'], // เพิ่ม localhost เข้าไปใน domains
+//   },
+// };
+
 export default nextConfig;

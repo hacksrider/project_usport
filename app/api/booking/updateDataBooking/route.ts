@@ -143,7 +143,7 @@ export async function PUT(req: Request) {
         }
       })
       if(deletebooking.count !== 0){
-        let results=[] ;
+        const results=[] ;
         for (let i = 0; i < getdata.length; i++) {
           const createdBooking = await prisma.bookings.create({
             data: {

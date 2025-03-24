@@ -1,15 +1,14 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import React, { useState, useEffect ,FormEvent} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import { useRouter } from 'next/navigation';
-import { faSearch  } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-//import { useSearchParams } from 'next/navigation';
-// import MainLayout from '@/app/components/mainLayout';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import e from 'express';
 
 
 dayjs.extend(utc);
@@ -52,8 +51,6 @@ export default function AddBooking(){
 
     const [userID,setUserID] = useState(0)
 
-    const route = useRouter();
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewImgBanking, setPreviewImgBanking] = useState<string | null>(null);
   
 
@@ -105,8 +102,8 @@ export default function AddBooking(){
         for (let i = 0; i < 7; i++) {
             const date = dayjs.utc(startDate).add(i, 'day').format('YYYY-MM-DD');  // วันที่ของ slot แต่ละวัน
             slots[date] = Array.from({ length: 15 }, (_, index) => {
-                let STAhour = 9 + index;
-                let ENDhour = 10 + index;
+                const STAhour = 9 + index;
+                const ENDhour = 10 + index;
                 
                 const time = `${STAhour}:00 - ${ENDhour}:00`;
 
@@ -281,8 +278,8 @@ function countConsecutive(
     if (times.length === 0) return { consecutive: [], nonConsecutive: [], totalPrice: 0 };
 
    // const numberArray: number[] = times.map(item => Number(item.ID));
-    let consecutive: { count: number, details: { ID: string, value : string}[], price:number }[] = [];
-    let nonConsecutive: { count: number, details: { ID: string, value : string }[], price:number }[] = [];
+    const consecutive: { count: number, details: { ID: string, value : string}[], price:number }[] = [];
+    const nonConsecutive: { count: number, details: { ID: string, value : string }[], price:number }[] = [];
     let tempConsecutive: { ID: string, value: string }[] = [];
   
     // ฟังก์ชันสำหรับคำนวณราคา
@@ -555,7 +552,11 @@ const sendBookingToAPI = async (bookingData: any[], key :string) => {
             'Content-Type': 'application/json',
           },
         });
-        response.status === 200? alert("จองสนามสำเร็จแล้ว") : alert("จองสนามสำเร็จแล้ว") 
+        if(response.status === 200 || response.status === 201){
+          alert("บันทึกการจองสําเร็จ");
+        } else {
+          alert("บันทึกการจองไม่สําเร็จ");
+        }
         console.log("data :",response)
         closeModalA();
         closeModalB();

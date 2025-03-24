@@ -119,7 +119,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const formData = await request.formData();
-    console.log("formData", formData);
+    // console.log("formData", formData);
     const page_exercise_ID = parseInt(
       formData.get("page_exercise_ID")?.toString() || "0"
     );
@@ -177,7 +177,7 @@ export async function PUT(request: Request) {
             ? item.banner
             : `account/${item.banner}`;
         }
-        console.log("banner", itemBanner);
+        // console.log("banner", itemBanner);
 
         // Check if picture is a File object in formData
         const itemPicture = formData.get(`picture_${item.name}`) as File | null;
@@ -200,7 +200,7 @@ export async function PUT(request: Request) {
           picture: picturePath,
           page_exercise_ID,
         });
-        console.log("123", exerciseDataItems);
+        // console.log("123", exerciseDataItems);
       }
 
       await prisma.exercise_data.createMany({

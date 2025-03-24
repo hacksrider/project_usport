@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     try {
       // รับข้อมูลจาก request
       const bookingData = await req.json();
-      console.log("Received booking data:", bookingData);
+      // console.log("Received booking data:", bookingData);
   
       // ตรวจสอบว่า bookingData เป็น array หรือไม่
       if (!Array.isArray(bookingData)) {
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         skipDuplicates: true, // ข้ามข้อมูลที่ซ้ำ ถ้ามี
       });
   
-      console.log("Successfully booked data:", result);
+      // console.log("Successfully booked data:", result);
       return new Response(
         JSON.stringify({ message: "Success", data: result }),
         { status: 201 }

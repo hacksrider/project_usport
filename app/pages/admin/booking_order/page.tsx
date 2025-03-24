@@ -217,7 +217,7 @@ export default function BookingOrder() {
                                 <thead>
                                     <tr className="bg-gray-100 text-center border-2 border-gray-800">
                                         <th className="px-4 py-2 text-gray-800 bg-gray-400">orderID.</th>
-                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">ชื่อ - นามสกุล {IDEmp}</th>
+                                        <th className="px-4 py-2 text-gray-800 bg-gray-400">ชื่อ - นามสกุล</th>
                                         <th className="px-4 py-2 text-gray-800 bg-gray-400">ประเภทสมาชิก</th>
                                         <th className="px-4 py-2 text-gray-800 bg-gray-400">สนาม</th>
                                         <th className="px-4 py-2 text-gray-800 bg-gray-400">ราคารวม</th>
@@ -240,7 +240,7 @@ export default function BookingOrder() {
                                                 <td className="px-4 py-2 flex justify-center items-center">{
                                                     booking.payment_confirmation === 'n/a' ?
                                                         booking.payment_confirmation :
-                                                        <div className="cursor-pointer text-blue-500 hover:text-blue-700" onClick={() => openModal(booking.payment_confirmation)}>กดดูสลิป</div>
+                                                        <div className="cursor-pointer text-blue-500 hover:text-blue-700" onClick={() => openModal('http://localhost:4000/'+booking.payment_confirmation)}>กดดูสลิป</div>
 
                                                 }
                                                 </td>
@@ -251,9 +251,8 @@ export default function BookingOrder() {
                                                 <td className={`px-4 py-2 ${booking.bookings?.[0]?.booking_status === 'รอการตรวจสอบ' ? 'bg-yellow-500' :
                                                         booking.bookings?.[0]?.booking_status === 'ว่าง' ? 'bg-pink-500' :
                                                             booking.bookings?.[0]?.booking_status === 'ไม่อนุมัติ' ? 'bg-red-500' :
-                                                                booking.bookings?.[0]?.booking_status === 'เกินเวลาจ่ายเงิน' ? 'bg-gray-500' :
-
-                                                                    'bg-green-600'
+                                                                booking.bookings?.[0]?.booking_status === 'เกินกำหนดจ่าย' ? 'bg-gray-500' : 
+                                                                booking.bookings?.[0]?.booking_status === 'จองสำเร็จ' ? 'bg-green-500' : ''
 
                                                     }`}>&quot;{booking.bookings?.[0]?.booking_status}&quot;
                                                 </td>

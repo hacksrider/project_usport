@@ -70,7 +70,7 @@ export default function ProfileMember() {
                     {/* Profile Picture */}
                     <div className="w-full md:w-1/3 text-center">
                         <img
-                            src={userData.user_profile_picture ? `/${userData.user_profile_picture}` : "/user/img/user.jpeg"}
+                            src={userData.user_profile_picture ? `http://localhost:4000/${userData.user_profile_picture}` : "/user/img/user.jpeg"}
                             alt="Profile Picture"
                             className="w-40 h-40 rounded-full mx-auto border-4 border-gray-300 shadow-md"
                         />
@@ -139,7 +139,7 @@ export default function ProfileMember() {
                         <div className="flex flex-col items-center col-span-1">
                             <label className="block text-sm font-medium text-gray-600">รูปบัตรประชาชน</label>
                             <img
-                                src={userData.ID_card_photo ? `/${userData.ID_card_photo}` : "/user/img/noimage.jpg"}
+                                src={userData.ID_card_photo ? `http://localhost:4000/${userData.ID_card_photo}` : "/user/img/noimage.jpg"}
                                 alt="ID Card"
                                 className="mt-2 w-full rounded-lg border-2 border-gray-200 shadow-md md:w-1/2"
                             />
@@ -148,7 +148,7 @@ export default function ProfileMember() {
                         <div className="flex flex-col items-center col-span-1">
                             <label className="block text-sm font-medium text-gray-600">รูปหลักฐานการอาศัย</label>
                             <img
-                                src={userData.accom_rent_contrac_photo ? `/${userData.accom_rent_contrac_photo}` : "/user/img/noimage.jpg"}
+                                src={userData.accom_rent_contrac_photo ? `http://localhost:4000/${userData.accom_rent_contrac_photo}` : "/user/img/noimage.jpg"}
                                 alt="Accommodation Proof"
                                 className="mt-2 w-full rounded-lg border-2 border-gray-200 shadow-md md:w-1/2"
                             />

@@ -5,19 +5,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
-import { useSession } from "next-auth/react";
 
 export default function EditMember() {
   const router = useRouter();
   const params = useParams();
   const userId = params.id;
-  const { update } = useSession();
 
   const [formData, setFormData] = useState({
     user_name: "",
     user_lastname: "",
-    user_date_of_birth: "",
+    user_date_of_birth: new Date().toISOString().split('T')[0],
     user_email: "",
+    sex: "",
     user_tel: "",
     user_username: "",
     status_of_VIP: false,
@@ -38,10 +37,24 @@ export default function EditMember() {
         const response = await axios.get(`/api/user/${userId}`);
         setFormData(response.data);
         setPreviewImages({
-          ID_card_photo: response.data.ID_card_photo ? `/${response.data.ID_card_photo}` : "/user/img/noimage.jpg",
-          accom_rent_contrac_photo: response.data.accom_rent_contrac_photo ? `/${response.data.accom_rent_contrac_photo}` : "/user/img/noimage.jpg",
-          user_profile_picture: response.data.user_profile_picture ? `/${response.data.user_profile_picture}` : "/user/img/user.jpeg",
+          ID_card_photo: response.data.ID_card_photo ? `http://localhost:4000/${response.data.ID_card_photo}` : "/user/img/noimage.jpg",
+          accom_rent_contrac_photo: response.data.accom_rent_contrac_photo ? `http://localhost:4000/${response.data.accom_rent_contrac_photo}` : "/user/img/noimage.jpg",
+          user_profile_picture: response.data.user_profile_picture ? `http://localhost:4000/${response.data.user_profile_picture}` : "/user/img/user.jpeg",
         });
+        const userData = { ...response.data };
+        if (userData.user_date_of_birth) {
+          // Convert to YYYY-MM-DD format
+          const date = new Date(userData.user_date_of_birth);
+          if (!isNaN(date.getTime())) { // Check if date is valid
+            userData.user_date_of_birth = date.toISOString().split('T')[0];
+          } else {
+            userData.user_date_of_birth = new Date().toISOString().split('T')[0];
+          }
+        } else {
+          userData.user_date_of_birth = new Date().toISOString().split('T')[0];
+        }
+
+        setFormData(userData);
       } catch (error) {
         console.error("Error fetching user data:", error);
         alert("ไม่สามารถดึงข้อมูลสมาชิกได้");
@@ -49,6 +62,7 @@ export default function EditMember() {
     };
     fetchUser();
   }, [userId]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type, files } = e.target as HTMLInputElement;
@@ -118,8 +132,8 @@ export default function EditMember() {
           "Content-Type": "multipart/form-data",
         },
       });
-      if(res.status === 200){
-        update(res.data);
+      if (res.status === 200) {
+        // update(res.data);
         alert("บันทึกข้อมูลเรียบร้อย");
         router.push("/pages/admin/member");
       }
@@ -166,18 +180,19 @@ export default function EditMember() {
 
           {/* User Date of Birth */}
           <div className="col-span-1">
-            <label className="block text-sm font-semibold text-gray-700">วันเดือนปีเกิด</label>
+            <label className="block text-sm font-semibold text-gray-700">วัน/เดือน/ปี เกิด</label>
             <input
               type="date"
               name="user_date_of_birth"
               value={formData.user_date_of_birth}
+              max={new Date().toISOString().split("T")[0]}
               onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
           {/* User Email */}
-          <div className="col-span-2">
+          <div className="col-span-1">
             <label className="block text-sm font-semibold text-gray-700">อีเมล</label>
             <input
               type="email"
@@ -186,6 +201,22 @@ export default function EditMember() {
               onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
+          </div>
+
+          {/* User sex */}
+          <div className="col-span-1">
+            <label className="block text-sm font-semibold text-gray-700">เพศ</label>
+            <select
+              name="sex"
+              value={formData.sex}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="ชาย">ชาย</option>
+              <option value="หญิง">หญิง</option>
+              <option value="LGBTQ+">LGBTQ+</option>
+              <option value="ไม่ระบุ">ไม่ระบุ</option>
+            </select>
           </div>
 
           {/* User Telephone */}
@@ -226,6 +257,7 @@ export default function EditMember() {
                 type="file"
                 name="ID_card_photo"
                 onChange={handleInputChange}
+                accept="image/*"
                 className="w-full px-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
@@ -245,6 +277,7 @@ export default function EditMember() {
                 type="file"
                 name="accom_rent_contrac_photo"
                 onChange={handleInputChange}
+                accept="image/*"
                 className="w-full px-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
               <button
@@ -271,6 +304,7 @@ export default function EditMember() {
                 type="file"
                 name="user_profile_picture"
                 onChange={handleInputChange}
+                accept="image/*"
                 className="w-full px-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>

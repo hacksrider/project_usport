@@ -82,7 +82,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
 
     const { service_name, capacity_of_room, Status, detail } = await request.json();
 
-    if (!service_name || !capacity_of_room || Status == null || !detail) {
+    if (!service_name || Status == null || !detail) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }

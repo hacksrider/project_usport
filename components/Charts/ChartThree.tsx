@@ -11,6 +11,9 @@ const ChartThree: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>("ทั้งหมด");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Define chart colors
+  const chartColors = ["#0000FF", "#0000CC", "#000099", "#000066", "#000033"];
+
   const fetchData = async (year: string, month: string) => {
     setIsLoading(true);
     try {
@@ -24,7 +27,7 @@ const ChartThree: React.FC = () => {
       const data = await response.json();
 
       if (data.success) {
-        
+
         const counts = data.data.map((item: any) => item.count);
         const total = counts.reduce((sum: number, value: number) => sum + value, 0);
         const percentValues = counts.map((value: number) =>
@@ -68,7 +71,7 @@ const ChartThree: React.FC = () => {
     chart: {
       type: "donut",
     },
-    colors: ["#0000FF", "#0000CC", "#000099", "#000066", "#000033"],
+    colors: chartColors,
     labels: labels,
     legend: {
       show: false,
@@ -85,20 +88,38 @@ const ChartThree: React.FC = () => {
               show: true,
               showAlways: true,
               label: "รวม",
-              fontSize: "16px",
+              fontSize: "24px",
               fontWeight: "400",
+              formatter: function () {
+                return series.reduce((sum, value) => sum + value, 0) + " ครั้ง";
+              }
             },
             value: {
               show: true,
               fontSize: "28px",
               fontWeight: "bold",
+              formatter: function (w) {
+                // ใช้ w parameter เพื่อให้สามารถเข้าถึงข้อมูลทั้งหมดของ chart
+                return parseFloat(w.toString()).toFixed(2) + "%";
+              }
             },
           },
         },
       },
     },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: function (value) {
+          return value.toFixed(2) + "%";
+        }
+      }
+    },
     dataLabels: {
       enabled: false,
+      formatter: function (val) {
+        return parseFloat(val.toString()).toFixed(2) + "%";
+      }
     },
     responsive: [
       {
@@ -119,7 +140,6 @@ const ChartThree: React.FC = () => {
       },
     ],
   };
-
   return (
     <div className="col-span-5 rounded-[10px] bg-white px-7.5 pb-7 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card xl:col-span-5">
       <div className="mb-9 justify-between gap-4 sm:flex">
@@ -167,7 +187,7 @@ const ChartThree: React.FC = () => {
               <span>กำลังโหลดข้อมูล...</span>
             </div>
           ) : series.length > 0 ? (
-            <ReactApexChart options={options} series={series} type="donut" />
+            <ReactApexChart options={options} series={percentages} type="donut" />
           ) : (
             <div className="flex h-64 w-64 items-center justify-center">
               <span>ไม่พบข้อมูล</span>
@@ -180,8 +200,16 @@ const ChartThree: React.FC = () => {
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           {series.map((item, index) => (
             <div className="flex w-full justify-between text-body-sm font-medium text-dark dark:text-dark-6" key={index}>
-              <span className="text-left">{labels[index]}</span>
-              <span className="ml-2">{percentages[index].toFixed(2)}%</span>
+              <div className="flex items-center">
+                {series[index] > 0 && ( // Changed from parseInt(labels[index]) >= 0
+                  <div
+                    className="h-3 w-3 mr-2 rounded-sm"
+                    style={{ backgroundColor: chartColors[index % chartColors.length] }}
+                  ></div>
+                )}
+                <span>{labels[index]}</span>
+              </div>
+              <span className="ml-2">{series[index]} ครั้ง</span>
             </div>
           ))}
         </div>

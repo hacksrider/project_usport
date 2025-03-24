@@ -19,7 +19,7 @@ export default function EditExercisePage() {
         async function fetchData() {
             const response = await fetch("/api/pages/exercisepage");
             const data = await response.json();
-            const exercise = data.find((item: any) => item.page_exercise_ID === 7);
+            const exercise = data.find((item: any) => item.page_exercise_ID === 1);
             if (exercise) {
                 setTitle(exercise.title);
                 setSubtitle(exercise.subtitle);
@@ -69,7 +69,7 @@ export default function EditExercisePage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const formData = new FormData();
-        formData.append("page_exercise_ID", "7");
+        formData.append("page_exercise_ID", "1");
         formData.append("title", title);
         formData.append("subtitle", subtitle);
         if (banner) formData.append("banner", banner);
@@ -180,6 +180,7 @@ export default function EditExercisePage() {
                             <input
                                 type="file"
                                 onChange={(e) => setBanner(e.target.files?.[0] || null)}
+                                accept="image/*"
                                 className="mt-2 block w-full px-4 py-2 border rounded-md text-gray-800 bg-white"
                             />
                             {/* Show current banner preview */}
@@ -218,6 +219,7 @@ export default function EditExercisePage() {
                                         <input
                                             type="file"
                                             onChange={(e) => handleExerciseFileChange(index, "banner", e.target.files?.[0] || null)}
+                                            accept="image/*"
                                             className="mt-2 block w-full px-4 py-2 border rounded-md bg-white"
                                         />
                                         {/* Show current banner preview */}
@@ -282,6 +284,7 @@ export default function EditExercisePage() {
                                         <input
                                             type="file"
                                             onChange={(e) => handleExerciseFileChange(index, "picture", e.target.files?.[0] || null)}
+                                            accept="image/*"
                                             className="mt-2 block w-full px-4 py-2 border rounded-md bg-white"
                                         />
                                         {/* Show current picture preview */}

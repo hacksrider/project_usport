@@ -41,9 +41,9 @@ export async function GET() {
       const statusOrder = {
         "รอการตรวจสอบ": 1,
         "ถูกเปลี่ยนแปลง": 2,
-        "เกินกำหนดจ่ายเงิน": 3,
-        "จองสำเร็จ": 4,
-        "ไม่อนุมัติ": 5,
+        "จองสำเร็จ": 3,
+        "ไม่อนุมัติ": 4,
+        "เกินกำหนดจ่าย": 5,
       };
     
       // ตรวจสอบว่า statusA และ statusB เป็น key ของ statusOrder
@@ -70,7 +70,7 @@ export async function GET() {
 export async function POST(req: Request) { 
     try {
         const data = await req.json();
-        console.log(data)
+        // console.log(data)
         if(data){
             const insertOderTB = await  prisma.order_Bookings.create({
               data:{

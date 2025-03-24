@@ -291,10 +291,10 @@ export const authOption: AuthOptions = {
         },
         async authorize(credentials) {
           if (!credentials) return null;
-          console.log(
-            "credentials.username --------------> ",
-            credentials.username
-          );
+          // console.log(
+          //   "credentials.username --------------> ",
+          //   credentials.username
+          // );
           const user = await findUserByUsernameOrEmail(credentials);
 
           if (!user) {
@@ -344,10 +344,10 @@ export const authOption: AuthOptions = {
         async authorize(credentials) {
           if (!credentials) return null;
 
-          console.log(
-            "credentials.username ad --------------> ",
-            credentials.username
-          );
+          // console.log(
+          //   "credentials.username ad --------------> ",
+          //   credentials.username
+          // );
           // const admin = await prisma.employees.findFirst({
           //   where: {
           //     OR: [
@@ -359,7 +359,7 @@ export const authOption: AuthOptions = {
           // });
 
           const admin = await findAdminByUsernameOrEmail(credentials);
-          console.log("admin --------------> ", admin);
+          // console.log("admin --------------> ", admin);
 
           if (!admin) {
             throw new Error("Invalid username or password");

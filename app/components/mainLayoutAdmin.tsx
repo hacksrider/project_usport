@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Import FontAwesomeIcon
 import { faDumbbell, faFutbol, faHouse, faAddressCard, faSquarePollHorizontal } from '@fortawesome/free-solid-svg-icons';
@@ -19,17 +20,39 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
 
     const [dropdownVisible, setDropdownVisible] = useState(false); // Manage dropdown visibility
     const [activeMenu, setActiveMenu] = useState(''); // Default active item
+    const [buyingCount, setBuyingCount] = useState('');
+    const [bookingCount, setBookingCount] = useState('');
+    const [vipCount, setVIPCount] = useState();
 
     useEffect(() => {
-        if(status === 'unauthenticated') {
+        if (status === 'unauthenticated') {
             router.push('/pages/admin');
-          }
+        }
         // Ensure activeMenu is set based on the current pathname
         const pName = pathName.split('/').filter(Boolean).pop();
         if (pName) {
             setActiveMenu(pName);
         }
     }, [pathName, router, status]);
+
+    useEffect(() => {
+        const fetchUserCount = async () => {
+            try {
+                const response = await fetch("/api/numberCount");
+                const data = await response.json();
+
+                if (data.success) {
+                    setBuyingCount(data.data.buying);
+                    setBookingCount(data.data.booking);
+                    setVIPCount(data.data.vip);
+                }
+            } catch (error) {
+                console.error("Error fetching user count:", error);
+            }
+        };
+
+        fetchUserCount();
+    }, []);
 
     const handleMenuClick = (menu: string, route: string) => {
         setActiveMenu(menu);
@@ -48,7 +71,7 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
         if (adminData.user.emp_sex === 'หญิง') {
             return "/user/img/adminF.png";
         }
-        else{
+        else {
             return "/user/img/adminAll.png";
         }
     }
@@ -143,9 +166,17 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                                     <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z" />
                                                 </svg>
                                             </span>
-                                            คำสั่งซื้อ
+                                            <div className="flex w-full items-center">
+                                                <p>คําสั่งซื้อบริการ</p>
+                                                {buyingCount == null || buyingCount == "0" ? (
+                                                    ""
+                                                ) : (
+                                                    <p className="ml-auto text-center bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
+                                                        {buyingCount}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </li>
-
                                         <li
                                             className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'booking_order' ? 'bg-gray-500' : ''
                                                 }`}
@@ -157,21 +188,16 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                                     <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z" />
                                                 </svg>
                                             </span>
-                                            คำสั่งจองสนาม
-                                        </li>
-
-                                        <li
-                                            className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'request' ? 'bg-gray-500' : ''
-                                                }`}
-                                            onClick={() => handleMenuClick('request', '#')}
-                                        >
-                                            <span className="mr-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                                                    <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z" />
-                                                    <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z" />
-                                                </svg>
-                                            </span>
-                                            คำขอ VIP
+                                            <div className="flex w-full items-center">
+                                                <p>คำสั่งจองสนาม</p>
+                                                {bookingCount == null || bookingCount == "0" ? (
+                                                    ""
+                                                ) : (
+                                                    <p className="ml-auto text-center bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
+                                                        {bookingCount}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </li>
 
                                         <li
@@ -181,27 +207,38 @@ export default function MainLayoutAdmin({ children }: MainLayoutAdminProp) {
                                         >
                                             <span className="mr-3">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                                                    <path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM2.25 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM6.31 15.117A6.745 6.745 0 0 1 12 12a6.745 6.745 0 0 1 6.709 7.498.75.75 0 0 1-.372.568A12.696 12.696 0 0 1 12 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 0 1-.372-.568 6.787 6.787 0 0 1 1.019-4.38Z" clipRule="evenodd" />
-                                                    <path d="M5.082 14.254a8.287 8.287 0 0 0-1.308 5.135 9.687 9.687 0 0 1-1.764-.44l-.115-.04a.563.563 0 0 1-.373-.487l-.01-.121a3.75 3.75 0 0 1 3.57-4.047ZM20.226 19.389a8.287 8.287 0 0 0-1.308-5.135 3.75 3.75 0 0 1 3.57 4.047l-.01.121a.563.563 0 0 1-.373.486l-.115.04c-.567.2-1.156.349-1.764.441Z" />
+                                                    <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z" />
+                                                    <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z" />
                                                 </svg>
                                             </span>
-                                            สมาชิก
+                                            <div className="flex w-full items-center">
+                                                <p>สมาชิก</p>
+                                                {vipCount == null || vipCount == "0" || vipCount == undefined || vipCount == 0 ? (
+                                                    ""
+                                                ) : (
+                                                    <p className="ml-auto text-center bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
+                                                        {vipCount}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </li>
 
-                                        {adminData.user.emp_job && (
+                                        {adminData.user.emp_job ? (
                                             <li
-                                            className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'employees' ? 'bg-gray-500' : ''
-                                                }`}
-                                            onClick={() => handleMenuClick('employees', '/pages/admin/employees')}
-                                        >
-                                            <span className="mr-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
-                                                    <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clipRule="evenodd" />
-                                                </svg>
-                                            </span>
-                                            พนักงาน
-                                        </li>
-                                        )}
+                                                className={`cursor-pointer flex items-center px-2 py-1 rounded ${activeMenu === 'employees' ? 'bg-gray-500' : ''
+                                                    }`}
+                                                onClick={() => handleMenuClick('employees', '/pages/admin/employees')}
+                                            >
+                                                <span className="mr-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                                                        <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clipRule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                                พนักงาน
+                                            </li>
+                                        )
+                                            : ''
+                                        }
 
                                         <br />
                                         <hr className='pt-2 border-gray-400 ' />

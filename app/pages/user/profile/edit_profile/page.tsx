@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserInterface } from "@/app/interface/user";
-import { fetchData } from "next-auth/client/_utils";
 
 const EditProfileForm: React.FC = () => {
   const { data, update } = useSession();
@@ -21,6 +20,7 @@ const EditProfileForm: React.FC = () => {
     user_tel: "",
     user_profile_picture: "",
     ID_card_photo: "",
+    accom_rent_contrac_photo: "",
     isCardChange: false,
     isContractChange: false,
     isProfileChange: false
@@ -28,6 +28,7 @@ const EditProfileForm: React.FC = () => {
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewIDCard, setPreviewIDCard] = useState<string | null>(null);
+  const [previewAccomCard, setPreviewAccomCard] = useState<string | null>(null);
   const router = useRouter();
 
   // Fetch user data
@@ -45,9 +46,11 @@ const EditProfileForm: React.FC = () => {
               user_tel: userData.user_tel || "",
               user_profile_picture: userData.user_profile_picture || "",
               ID_card_photo: userData.ID_card_photo || "",
+              accom_rent_contrac_photo: userData.accom_rent_contrac_photo || "",
             });
-            setPreviewImage(userData.user_profile_picture ? `/${userData.user_profile_picture}` : null);
-            setPreviewIDCard(userData.ID_card_photo ? `/${userData.ID_card_photo}` : null);
+            setPreviewImage(userData.user_profile_picture ? `http://localhost:4000/${userData.user_profile_picture}` : null);
+            setPreviewIDCard(userData.ID_card_photo ? `http://localhost:4000/${userData.ID_card_photo}` : null);
+            setPreviewAccomCard(userData.accom_rent_contrac_photo ? `http://localhost:4000/${userData.accom_rent_contrac_photo}` : null);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -73,6 +76,7 @@ const EditProfileForm: React.FC = () => {
         ...formData,
         [name]: file,
         isCardChange: name == "ID_card_photo" ? true : formData.isCardChange,
+        isContractChange: name == "accom_rent_contrac_photo" ? true : formData.isContractChange,
         isProfileChange: name == "user_profile_picture" ? true : formData.isProfileChange,
       });
       if (name === "user_profile_picture") {
@@ -80,6 +84,9 @@ const EditProfileForm: React.FC = () => {
       }
       if (name === "ID_card_photo") {
         setPreviewIDCard(URL.createObjectURL(file));
+      }
+      if (name === "accom_rent_contrac_photo") {
+        setPreviewAccomCard(URL.createObjectURL(file));
       }
     }
   };
@@ -105,6 +112,9 @@ const EditProfileForm: React.FC = () => {
     if (!formData.ID_card_photo) {
       apiFormData.append("ID_card_photo", formData.ID_card_photo || "");
     }
+    if (!formData.accom_rent_contrac_photo) {
+      apiFormData.append("accom_rent_contrac_photo", formData.accom_rent_contrac_photo || "");
+    }
 
     try {
       const response = await axios.put(`/api/user`, apiFormData, {
@@ -114,9 +124,9 @@ const EditProfileForm: React.FC = () => {
       });
 
       if (response.status === 200) {
-        await update(response.data.data);
         alert("บันทึกข้อมูลสำเร็จ!");
         router.push("/pages/user/profile");
+        await update(response.data.data);
       }
     } catch (error) {
       alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
@@ -133,7 +143,7 @@ const EditProfileForm: React.FC = () => {
             src={
               previewImage ||
               (formData.user_profile_picture
-                ? `/${formData.user_profile_picture}`
+                ? `http://localhost:4000/${formData.user_profile_picture}`
                 : "/user/img/user.jpeg")
             }
             alt="Profile"
@@ -149,37 +159,65 @@ const EditProfileForm: React.FC = () => {
             type="file"
             id="user_profile_picture"
             name="user_profile_picture"
-            accept="png,jpeg,jpg"
+            accept=".png, .jpg, .jpeg"
             onChange={handleFileChange}
             className="hidden"
           />
         </div>
 
-        <div className="mb-6 text-center">
-          <img
-            src={
-              previewIDCard ||
-              (formData.ID_card_photo
-                ? `/${formData.ID_card_photo}`
-                : "/user/img/noimage.jpg")
-            }
-            alt="ID Card"
-            className="w-32 h-[75px] rounded-md mx-auto mb-4 object-cover border border-gray-300"
-          />
-          <label
-            htmlFor="ID_card_photo"
-            className="bg-blue-600 text-white py-2 px-4 rounded-md cursor-pointer hover:bg-blue-700"
-          >
-            เปลี่ยนรูปบัตรประชาชน
-          </label>
-          <input
-            type="file"
-            id="ID_card_photo"
-            name="ID_card_photo"
-            accept="jpeg,jpg,png"
-            onChange={handleFileChange}
-            className="hidden"
-          />
+        <div className="flex items-center justify-evenly">
+          <div className="mb-6 text-center">
+            <img
+              src={
+                previewIDCard ||
+                (formData.ID_card_photo
+                  ? `http://localhost:4000/${formData.ID_card_photo}`
+                  : "/user/img/noimage.jpg")
+              }
+              alt="ID Card"
+              className="w-32 h-[75px] rounded-md mx-auto mb-4 object-cover border border-gray-300"
+            />
+            <label
+              htmlFor="ID_card_photo"
+              className="bg-blue-600 text-white py-2 px-4 rounded-md cursor-pointer hover:bg-blue-700"
+            >
+              เปลี่ยนรูปบัตรประชาชน
+            </label>
+            <input
+              type="file"
+              id="ID_card_photo"
+              name="ID_card_photo"
+              accept=".png, .jpg, .jpeg"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+          <div className="mb-6 text-center">
+            <img
+              src={
+                previewAccomCard ||
+                (formData.accom_rent_contrac_photo
+                  ? `http://localhost:4000/${formData.accom_rent_contrac_photo}`
+                  : "/user/img/noimage.jpg")
+              }
+              alt="ID Card"
+              className="w-32 h-[75px] rounded-md mx-auto mb-4 object-cover border border-gray-300"
+            />
+            <label
+              htmlFor="accom_rent_contrac_photo"
+              className="bg-blue-600 text-white py-2 px-4 rounded-md cursor-pointer hover:bg-blue-700"
+            >
+              เปลี่ยนหลักฐานที่อยู่อาศัย
+            </label>
+            <input
+              type="file"
+              id="accom_rent_contrac_photo"
+              name="accom_rent_contrac_photo"
+              accept=".png, .jpg, .jpeg"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="w-3/4 mx-auto">

@@ -67,7 +67,7 @@ export default function Contact() {
           <p className="text-lg md:text-xl mt-4 max-w-2xl mb-6 text-white">{item.subtitle}</p>
           <div className="relative w-full h-[400px] md:h-[500px] bg-cover bg-center rounded-lg overflow-hidden">
             <img
-              src={item.banner ? `/${item.banner}` : ""}
+              src={item.banner ? `http://localhost:4000/${item.banner}` : ""}
               alt={item.banner}
               className="w-full h-full object-cover"
             />

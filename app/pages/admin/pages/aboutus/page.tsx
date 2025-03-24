@@ -6,7 +6,7 @@ import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
 
 export default function About_admin() {
   const [pageAbout, setPageAbout] = useState({
-    page_about_id: 5,
+    page_about_id: 1,
     title: "",
     detail: "",
     detail_usport1: "",
@@ -22,7 +22,7 @@ export default function About_admin() {
       try {
         const response = await fetch("/api/pages/aboutuspage");
         const data = await response.json();
-        const pageData = data.find((page: any) => page.page_about_id === 5);
+        const pageData = data.find((page: any) => page.page_about_id === 1);
         if (pageData) {
           setPageAbout({
             ...pageData,
@@ -146,6 +146,7 @@ export default function About_admin() {
               <input
                 type="file"
                 className="w-full p-2 mt-2 border rounded bg-slate-50"
+                accept="image/*"
                 onChange={(e) => {
                   const file = e.target.files ? e.target.files[0] : null;
                   if (file) {
@@ -182,6 +183,7 @@ export default function About_admin() {
               <input
                 type="file"
                 className="w-full p-2 mt-2 border rounded bg-slate-50"
+                accept="video/*"
                 onChange={(e) => {
                   const file = e.target.files ? e.target.files[0] : null;
                   if (file) {

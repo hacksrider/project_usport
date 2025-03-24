@@ -180,7 +180,7 @@ export default function ExerciseData() {
                     <div>
                         <h1 className="text-xl font-bold mb-2 mt-5">สลิปหลักฐานการโอนเงิน</h1>
                         <img
-                            src={buyingService?.payment_confirmation ? `/${buyingService?.payment_confirmation}` : "/user/img/Loading_icon.gif"}
+                            src={buyingService?.payment_confirmation ? `http://localhost:4000/${buyingService?.payment_confirmation}` : "/user/img/Loading_icon.gif"}
                             alt="Slip"
                             width={180} height={200}
                             style={{ objectFit: "contain", cursor: "pointer" }}
@@ -193,7 +193,7 @@ export default function ExerciseData() {
                                         &times;
                                     </button>
                                     <img
-                                        src={`/${buyingService?.payment_confirmation}`}
+                                        src={`http://localhost:4000/${buyingService?.payment_confirmation}`}
                                         alt="Slip"
                                         className="max-w-full h-auto"
                                     />

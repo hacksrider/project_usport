@@ -92,7 +92,7 @@ export default function PageExercise() {
                     <motion.div
 
                         className="relative w-full h-[350px] md:h-[450px] bg-cover bg-center rounded-lg overflow-hidden shadow-lg"
-                        style={{ backgroundImage: `url(http://localhost:3000/${item.banner})` }}
+                        style={{ backgroundImage: `url(http://localhost:4000/${item.banner})` }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1 }}
@@ -141,7 +141,7 @@ export default function PageExercise() {
                                                 animate={{ y: 0, opacity: 1 }}
                                                 transition={{ delay: index * 0.3 }}
                                             >
-                                                <img src={`/${item1.banner}`} alt={item1.name} className="w-full h-48 object-cover rounded-t-lg" />
+                                                <img src={`http://localhost:4000/${item1.banner}`} alt={item1.name} className="w-full h-48 object-cover rounded-t-lg" />
                                                 <div className="p-4 flex items-end justify-between">
                                                     <div className="flex flex-col">
                                                         <h3 className="text-lg font-bold text-left">{item1.name}</h3>
@@ -227,7 +227,7 @@ export default function PageExercise() {
                                                     <img
                                                         width={32}
                                                         height={32}
-                                                        src={review.users.user_profile_picture ? `/${review.users.user_profile_picture}` : "/user/img/user.jpeg"}
+                                                        src={review.users.user_profile_picture ? `http://localhost:4000/${review.users.user_profile_picture}` : "/user/img/user.jpeg"}
                                                         alt={review.users.user_name}
                                                     />
                                                 </div>
@@ -296,7 +296,7 @@ export default function PageExercise() {
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: index * 0.3 }}
                                 >
-                                    <img src={`/${img.picture}`} alt="Gallery" className="w-full h-64 object-cover" />
+                                    <img src={`http://localhost:4000/${img.picture}`} alt="Gallery" className="w-full h-64 object-cover" />
                                 </motion.div>
                             ))}
                         </div>

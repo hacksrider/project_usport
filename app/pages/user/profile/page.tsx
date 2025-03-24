@@ -102,7 +102,7 @@ export default function Profile() {
           <div className="px-4 pb-6 text-center lg:pb-8 xl:pb-11.5">
             <div className="relative z-30 mx-auto -mt-22 w-full max-w-30 rounded-full bg-white/20 p-1 backdrop-blur sm:h-44 sm:max-w-[176px] sm:p-3">
               <img
-                src={userData.user_profile_picture ? `/${userData.user_profile_picture}` : "/user/img/user.jpeg"}
+                src={userData.user_profile_picture ? `http://localhost:4000/${userData.user_profile_picture}` : "/user/img/user.jpeg"}
                 alt="User Profile"
                 className="w-full h-full rounded-full mx-auto mb-4 object-cover border border-gray-300"
               />

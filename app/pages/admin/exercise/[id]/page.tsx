@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import MainLayoutAdmin from "@/app/components/mainLayoutAdmin";
+import { AdminInterface } from "@/app/interface/admin";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function EditService() {
+  const { data } = useSession();
+  const adminData = data as AdminInterface;
   const params = useParams();
   const [service_name, setservice_name] = useState("");
   const [capacity_of_room, setcapacity_of_room] = useState("");
@@ -120,86 +124,78 @@ export default function EditService() {
               placeholder="ใส่ความจุจำนวนคน"
             />
           </div>
-
-          <div className="mb-4">
-            <label className="block text-black font-medium mb-2">กำหนดราคา</label>
-            {daylyRates.map((rate, index) => (
-              <div
-                key={index}
-                className={`grid grid-cols-12 gap-4 mb-2 items-center border border-gray-400 rounded p-2 ${rate.isPromo ? "bg-yellow-200" : "bg-green-200"}`}
-              >
-                {rate.isPromo && (
-                  <div className="col-span-12 text-center font-bold text-red-600">
-                    <span className="border-b-2 border-red-600">โปรโมชั่น {index + 0}</span>
+          {adminData.user.emp_job ? (
+            <div className="mb-4">
+              <label className="block text-black font-medium mb-2">กำหนดราคา</label>
+              {daylyRates.map((rate, index) => (
+                <div
+                  key={index}
+                  className={`grid grid-cols-12 gap-4 mb-2 items-center border border-gray-400 rounded p-2 ${rate.isPromo ? "bg-yellow-200" : "bg-green-200"}`}
+                >
+                  {rate.isPromo && (
+                    <div className="col-span-12 text-center font-bold text-red-600">
+                      <span className="border-b-2 border-red-600">โปรโมชั่น {index + 0}</span>
+                    </div>
+                  )}
+                  <div className="col-span-4">
+                    <label className="block text-sm text-black mb-1">จำนวน</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={rate.quantity_of_days}
+                      onChange={(e) => rate.isPromo && handledaylyRateChange(index, "quantity_of_days", e.target.value)}
+                      className={`w-full p-2 border border-gray-400 rounded ${rate.isPromo ? 'bg-white' : 'bg-gray-200'}`}
+                      placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
+                      disabled={!rate.isPromo}
+                    />
                   </div>
-                )}
-                <div className="col-span-4">
-                  <label className="block text-sm text-black mb-1">จำนวน</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={rate.quantity_of_days}
-                    onChange={(e) => rate.isPromo && handledaylyRateChange(index, "quantity_of_days", e.target.value)}
-                    className={`w-full p-2 border border-gray-400 rounded ${rate.isPromo ? 'bg-white' : 'bg-gray-200'}`}
-                    placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
-                    disabled={!rate.isPromo}
-                  />
-                  {/* <input
-                    type="number"
-                    min={1}
-                    value={rate.isPromo ? rate.quantity_of_days : 1}
-                    onChange={(e) => rate.isPromo && handledaylyRateChange(index, "quantity_of_days", e.target.value)}
-                    // onChange={(e) => handledaylyRateChange(index, "quantity_of_days", e.target.value)}
-                    className={`w-full p-2 border border-gray-400 rounded ${rate.isPromo ? 'bg-white' : 'bg-gray-200'}`}
-                    placeholder="ใส่จำนวนวัน สัปดาห์ หรือ จำนวนปี"
-                    disabled={!rate.isPromo}
-                  /> */}
-                </div>
-                <div className="col-span-3">
-                  <label className="block text-sm text-black mb-1">หน่วย</label>
-                  <select
-                    value={rate.unit}
-                    onChange={(e) => handledaylyRateChange(index, "unit", e.target.value)}
-                    className="w-full p-2 border border-gray-400 rounded"
-                  >
-                    <option value="">เลือกหน่วย</option>
-                    <option value="วัน">วัน</option>
-                    <option value="สัปดาห์">สัปดาห์</option>
-                    <option value="เดือน">เดือน</option>
-                    <option value="ปี">ปี</option>
-                  </select>
-                </div>
-                <div className="col-span-4">
-                  <label className="block text-sm text-black mb-1">ราคา/หน่วย</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={rate.price}
-                    onChange={(e) => handledaylyRateChange(index, "price", e.target.value)}
-                    className="w-full p-2 border border-gray-400 rounded"
-                    placeholder="กำหนดราคา (บาท)"
-                  />
-                </div>
+                  <div className="col-span-3">
+                    <label className="block text-sm text-black mb-1">หน่วย</label>
+                    <select
+                      value={rate.unit}
+                      onChange={(e) => handledaylyRateChange(index, "unit", e.target.value)}
+                      className="w-full p-2 border border-gray-400 rounded"
+                    >
+                      <option value="">เลือกหน่วย</option>
+                      <option value="วัน">วัน</option>
+                      <option value="สัปดาห์">สัปดาห์</option>
+                      <option value="เดือน">เดือน</option>
+                      <option value="ปี">ปี</option>
+                    </select>
+                  </div>
+                  <div className="col-span-4">
+                    <label className="block text-sm text-black mb-1">ราคา/หน่วย</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={rate.price}
+                      onChange={(e) => handledaylyRateChange(index, "price", e.target.value)}
+                      className="w-full p-2 border border-gray-400 rounded"
+                      placeholder="กำหนดราคา (บาท)"
+                    />
+                  </div>
 
-                {index > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemovedaylyRate(index)}
-                    className="text-black col-span-1 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded p-2 h-full"
-                  >
-                    ลบ
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={handleAdddaylyRate}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-            >
-              + เพิ่มโปรโมชั่น
-            </button>
-          </div>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemovedaylyRate(index)}
+                      className="text-black col-span-1 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded p-2 h-full"
+                    >
+                      ลบ
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleAdddaylyRate}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                + เพิ่มโปรโมชั่น
+              </button>
+            </div>
+          ) : ("")}
+
 
           <div className="flex justify-end items-center gap-10 mt-4 xsm:mt-0">
             <label htmlFor="toggle3" className="flex cursor-pointer select-none items-center">

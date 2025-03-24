@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import Image from "next/image";
-import { GetReview, ResGetAllReview } from "@/app/interface/review";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { GetReviewFootball, ResGetAllReviewFottball } from "@/app/interface/reviewField";
 
 const ReviewCard = () => {
-  const [dataReview, setDataReview] = useState<GetReview[]>([]);
+  const [dataReview, setDataReview] = useState<GetReviewFootball[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [reviewCount, setReviewCount] = useState<number | null>(null);
 
   const reviewApi = async () => {
     try {
-      const res = await axios.get<ResGetAllReview>("/api/review");
+      const res = await axios.get<ResGetAllReviewFottball>("/api/booking/reviewField");
+      // data = res.data.data.data;
+      console.log(res.data.data);
       // @ts-expect-error
       setDataReview(res.data.data.data);
       // @ts-expect-error
@@ -28,9 +30,9 @@ const ReviewCard = () => {
   const displayedReviews = showAll ? dataReview : dataReview.slice(0, 7);
 
   return (
-    <div className="col-span-12 rounded-[10px] bg-white py-6 shadow-1 dark:bg-gray-dark dark:shadow-card xl:col-span-4 p-3">
+    <div className="col-span-12 rounded-[10px] bg-white py-6 shadow-1 dark:bg-gray-dark dark:shadow-card xl:col-span-6 p-3">
       <h4 className="mb-3.5 px-4 text-body-2xlg font-bold text-dark dark:text-white">
-        รีวิวจากสมาชิก ({reviewCount || 0})
+        รีวิวสนามฟุตบอลจากสมาชิก ({reviewCount || 0})
       </h4>
 
       <div>
@@ -43,8 +45,8 @@ const ReviewCard = () => {
               <Image
                 width={32}
                 height={32}
-                src={review.users.user_profile_picture ? `/${review.users.user_profile_picture}` : "/user/img/user.jpeg"}
-                alt={review.users.user_name}
+                src={review.user.user_profile_picture ? `/${review.user.user_profile_picture}` : "/user/img/user.jpeg"}
+                alt={review.user.user_name}
               />
             </div>
 
@@ -52,23 +54,23 @@ const ReviewCard = () => {
               <div>
                 <div className="flex items-center justify-between">
                   <h5 className="font-medium text-[12px] mt-1 leading-[8px] text-dark dark:text-white">
-                    {review.users.user_name} {review.users.user_lastname} {" "}
+                    {review.user.user_name} {review.user.user_lastname} {" "}
                     {[...Array(5)].map((_, index) => (
                       <span
                         key={index}
-                        className={`${index < review.score ? "text-yellow-400" : "text-gray-300"} text-sm`}
+                        className={`${index < review.rating ? "text-yellow-400" : "text-gray-300"} text-sm`}
                       >
                         ★
                       </span>
                     ))}
                   </h5>
                   <span className="text-[12px] leading-[8px] text-green-600">
-                    {review.service_of_exercise.service_name}
+                    {review.field.field_name}
                   </span>
                 </div>
                 <p>
                   <span className="text-[12px] leading-[8px] text-gray-600">
-                    {review.Text_review}
+                    {review.comment}
                   </span>
                 </p>
               </div>
@@ -97,31 +99,31 @@ const ReviewCard = () => {
                   <Image
                     width={32}
                     height={32}
-                    src={review.users.user_profile_picture ? `/${review.users.user_profile_picture}` : "/user/img/user.jpeg"}
-                    alt={review.users.user_name}
+                    src={review.user.user_profile_picture ? `/${review.user.user_profile_picture}` : "/user/img/user.jpeg"}
+                    alt={review.user.user_name}
                   />
                 </div>
                 <div className="w-full">
                   <div>
                     <div className="flex items-center justify-between">
                       <h5 className="font-medium text-[12px] mt-1 leading-[8px] text-dark dark:text-white">
-                        {review.users.user_name} {review.users.user_lastname} {" "}
+                        {review.user.user_name} {review.user.user_lastname} {" "}
                         {[...Array(5)].map((_, index) => (
                           <span
                             key={index}
-                            className={`${index < review.score ? "text-yellow-400" : "text-gray-300"} text-sm`}
+                            className={`${index < review.rating ? "text-yellow-400" : "text-gray-300"} text-sm`}
                           >
                             ★
                           </span>
                         ))}
                       </h5>
                       <span className="text-[12px] leading-[8px] text-green-600">
-                        {review.service_of_exercise.service_name}
+                        {review.field.field_name}
                       </span>
                     </div>
                     <p>
                       <span className="text-[12px] leading-[8px] text-gray-600">
-                        {review.Text_review}
+                        {review.comment}
                       </span>
                     </p>
                   </div>

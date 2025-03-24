@@ -59,7 +59,7 @@ export async function POST(request: Request) {
           let temp = parseInt(amount / price.quantity_of_days);
           priceReal += temp * price.price;
           amount = amount % price.quantity_of_days;
-          console.log("==<<", priceReal);
+          // console.log("==<<", priceReal);
         }
       });
 
@@ -167,7 +167,7 @@ export async function GET() {
       for (const order of buying) {
         for (const orders of order.orders_exercise) {
           await updateOrderStatus(orders.order_ID);
-          console.log("order_ID", orders.status_order);
+          // console.log("order_ID", orders.status_order);
         }
       }
     }
